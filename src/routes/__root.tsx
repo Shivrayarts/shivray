@@ -38,6 +38,10 @@ export const Route = createRootRoute({
       { name: "author", content: "Rudra Arts & Handicrafts" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { property: "og:title", content: "Rudra Arts & Handicrafts" },
+      { name: "twitter:title", content: "Rudra Arts & Handicrafts" },
+      { property: "og:description", content: "India's premier studio for authentic Maratha heritage craftsmanship — statues, weapons, and historical replicas." },
+      { name: "twitter:description", content: "India's premier studio for authentic Maratha heritage craftsmanship — statues, weapons, and historical replicas." },
     ],
     links: [
       {
