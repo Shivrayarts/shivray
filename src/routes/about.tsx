@@ -7,10 +7,10 @@ export const Route = createFileRoute("/about")({
   component: AboutPage,
   head: () => ({
     meta: [
-      { title: "About Us — Rudra Arts & Handicrafts" },
+      { title: "About Us - Shivray" },
       { name: "description", content: "Learn about India's premier studio for authentic Maratha heritage craftsmanship, our mission, and the artisans behind every creation." },
-      { property: "og:title", content: "About Us — Rudra Arts & Handicrafts" },
-      { property: "og:description", content: "Discover the story behind Rudra Arts & Handicrafts." },
+      { property: "og:title", content: "About Us - Shivray" },
+      { property: "og:description", content: "Discover the story behind Shivray." },
     ],
   }),
 });
@@ -43,10 +43,10 @@ function AboutPage() {
               <h2 className="font-heading text-3xl font-bold text-foreground mt-2">Satyajeet Arun Vaidya</h2>
               <div className="w-16 h-1 bg-gold mt-3" />
               <p className="mt-6 text-muted-foreground leading-relaxed">
-                With a deep-rooted passion for preserving India's martial heritage, Satyajeet Vaidya founded Rudra Arts & Handicrafts to bridge the gap between history and modern craftsmanship. His vision has transformed traditional art forms into contemporary collectibles, earning recognition at the national level.
+                With a deep-rooted passion for preserving India's martial heritage, Satyajeet Vaidya founded Shivray to bridge the gap between history and modern craftsmanship. His vision has transformed traditional art forms into contemporary collectibles, earning recognition at the national level.
               </p>
               <p className="mt-4 text-muted-foreground leading-relaxed">
-                Under his leadership, Rudra Arts has presented handcrafted replicas to some of India's most distinguished leaders, cementing the studio's reputation as a custodian of warrior tradition.
+                Under his leadership, Shivray has presented handcrafted replicas to some of India's most distinguished leaders, cementing the studio's reputation as a custodian of warrior tradition.
               </p>
             </div>
           </div>
@@ -114,3 +114,4 @@ function AboutPage() {
     </div>
   );
 }
+

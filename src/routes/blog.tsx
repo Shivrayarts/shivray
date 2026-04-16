@@ -5,9 +5,9 @@ export const Route = createFileRoute("/blog")({
   component: BlogPage,
   head: () => ({
     meta: [
-      { title: "Blog — Rudra Arts & Handicrafts" },
-      { name: "description", content: "Read stories about Maratha heritage, traditional craftsmanship, and the artisans behind Rudra Arts." },
-      { property: "og:title", content: "Blog — Rudra Arts & Handicrafts" },
+      { title: "Blog - Shivray" },
+      { name: "description", content: "Read stories about Maratha heritage, traditional craftsmanship, and the artisans behind Shivray." },
+      { property: "og:title", content: "Blog - Shivray" },
       { property: "og:description", content: "Stories of heritage, craft, and cultural preservation." },
     ],
   }),
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/blog")({
 const articles = [
   {
     title: "A Slice of Inspiring History",
-    excerpt: "The great Marathas fought many battles — some of which they won and others they didn't. However, the courage and valor they displayed continues to inspire generations...",
+    excerpt: "The great Marathas fought many battles - some of which they won and others they did not. However, the courage and valor they displayed continues to inspire generations...",
     image: "https://res.cloudinary.com/dxpf6dhn1/image/upload/v1752514959/Rudra-artss/walhtwc7v2de5qr627mw.png",
     tag: "Latest",
   },
@@ -28,16 +28,16 @@ const articles = [
   },
   {
     title: "A Podcast with Gatha Yashyachi",
-    excerpt: "A tale of toil, a tale of simplicity. India — a living legend born out of the sacred flames of tradition and innovation...",
+    excerpt: "A tale of toil, a tale of simplicity. India - a living legend born out of the sacred flames of tradition and innovation...",
     image: "https://res.cloudinary.com/dquyimnmd/image/upload/v1753468714/Rudra-artss/kiuo1hcileihnnycpwo1.jpg",
     tag: "Video",
   },
 ];
 
 const videos = [
-  { title: "शिवकालीन शस्त्रांचे आजचे शिल्पकार", desc: "Satyajit Arun Vaidya shares his journey from passion to profession in historical weapon crafting.", url: "https://youtu.be/xh-ibz0qxaA" },
-  { title: "भेटरूपी ऐतिहासिक शस्त्र बनवतात पुण्यातील सत्यजीत वैद्य", desc: "Historic weapons as gifts — Satyajeet Vaidya from Pune revives the art of traditional weaponry.", url: "https://youtu.be/2alkiZgDxMI" },
-  { title: "पुरातन शस्त्रांचा इतिहास जोपासणारा 'कलाकार मावळा'", desc: "A young artisan keeps alive the martial heritage of Chhatrapati Shivaji Maharaj's era.", url: "https://youtu.be/WpBQTatwZhs" },
+  { title: "Shivkalin Shastranche Aajche Shilpakar", desc: "Satyajit Arun Vaidya shares his journey from passion to profession in historical weapon crafting.", url: "https://youtu.be/xh-ibz0qxaA" },
+  { title: "Bhetarupi Aitihasik Shastra Banavnare Satyajeet Vaidya", desc: "Historic weapons as gifts - Satyajeet Vaidya from Pune revives the art of traditional weaponry.", url: "https://youtu.be/2alkiZgDxMI" },
+  { title: "Puratan Shastrancha Itihas Jopasanara Kalakar Mavala", desc: "A young artisan keeps alive the martial heritage of Chhatrapati Shivaji Maharaj's era.", url: "https://youtu.be/WpBQTatwZhs" },
 ];
 
 function BlogPage() {
@@ -101,3 +101,4 @@ function BlogPage() {
     </div>
   );
 }
+

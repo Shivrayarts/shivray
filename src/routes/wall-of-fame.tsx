@@ -5,10 +5,10 @@ export const Route = createFileRoute("/wall-of-fame")({
   component: WallOfFamePage,
   head: () => ({
     meta: [
-      { title: "Wall of Fame — Rudra Arts & Handicrafts" },
-      { name: "description", content: "Moments of pride — presentations to India's leaders and recognitions earned by Rudra Arts & Handicrafts." },
-      { property: "og:title", content: "Wall of Fame — Rudra Arts & Handicrafts" },
-      { property: "og:description", content: "Recognitions and proud moments of Rudra Arts." },
+      { title: "Wall of Fame - Shivray" },
+      { name: "description", content: "Moments of pride - presentations to India's leaders and recognitions earned by Shivray." },
+      { property: "og:title", content: "Wall of Fame - Shivray" },
+      { property: "og:description", content: "Recognitions and proud moments of Shivray." },
     ],
   }),
 });
@@ -34,7 +34,7 @@ const moments = [
 const awards = [
   "National Handicraft Excellence Award",
   "Maharashtra Cultural Heritage Recognition",
-  "Best Traditional Artisan — Pune Chamber of Commerce",
+  "Best Traditional Artisan - Pune Chamber of Commerce",
   "Featured in Pune Mirror & Maharashtra Times",
 ];
 
@@ -67,19 +67,35 @@ function WallOfFamePage() {
       </section>
 
       <section className="py-16 md:py-24 bg-card bg-heritage-pattern">
-        <div className="max-w-3xl mx-auto px-4 text-center">
-          <Award className="w-12 h-12 text-gold mx-auto mb-4" />
-          <h2 className="font-heading text-2xl md:text-3xl font-bold mb-8">Recognitions & Awards</h2>
-          <div className="space-y-4">
-            {awards.map((a) => (
-              <div key={a} className="flex items-center gap-3 bg-background rounded-lg p-4 shadow-heritage border border-border">
-                <Star className="w-5 h-5 text-gold shrink-0" />
-                <span className="text-sm font-medium">{a}</span>
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="rounded-2xl border border-gold/20 bg-background/90 backdrop-blur-sm shadow-heritage p-6 md:p-10">
+            <div className="text-center mb-8 md:mb-10">
+              <div className="w-16 h-16 mx-auto rounded-full bg-gold/15 border border-gold/30 flex items-center justify-center">
+                <Award className="w-8 h-8 text-gold" />
               </div>
-            ))}
+              <h2 className="font-heading text-2xl md:text-3xl font-bold mt-5">Recognitions & Awards</h2>
+              <p className="mt-2 text-sm md:text-base text-muted-foreground">
+                Honors that celebrate our dedication to heritage craftsmanship.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {awards.map((a) => (
+                <div
+                  key={a}
+                  className="group flex items-start gap-3 rounded-xl border border-border bg-card p-4 md:p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/40 hover:shadow-lg"
+                >
+                  <div className="mt-0.5 w-8 h-8 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center shrink-0">
+                    <Star className="w-4 h-4 text-gold" />
+                  </div>
+                  <span className="text-sm md:text-base font-medium leading-relaxed text-foreground">{a}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
     </div>
   );
 }
+

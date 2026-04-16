@@ -6,9 +6,9 @@ export const Route = createFileRoute("/contact")({
   component: ContactPage,
   head: () => ({
     meta: [
-      { title: "Contact Us — Rudra Arts & Handicrafts" },
-      { name: "description", content: "Get in touch with Rudra Arts & Handicrafts for inquiries, collaborations, or orders." },
-      { property: "og:title", content: "Contact Us — Rudra Arts & Handicrafts" },
+      { title: "Contact Us - Shivray" },
+      { name: "description", content: "Get in touch with Shivray for inquiries, collaborations, or orders." },
+      { property: "og:title", content: "Contact Us - Shivray" },
       { property: "og:description", content: "Reach out for inquiries, collaborations, or to place an order." },
     ],
   }),
@@ -101,8 +101,8 @@ function ContactPage() {
                   <Mail className="w-5 h-5 text-gold shrink-0" />
                   <div>
                     <h4 className="font-medium text-sm">Email</h4>
-                    <a href="mailto:rudra.arts30@gmail.com" className="text-sm text-muted-foreground hover:text-gold transition-colors">
-                      rudra.arts30@gmail.com
+                    <a href="mailto:shivray.arts30@gmail.com" className="text-sm text-muted-foreground hover:text-gold transition-colors">
+                      shivray.arts30@gmail.com
                     </a>
                   </div>
                 </div>
@@ -119,7 +119,7 @@ function ContactPage() {
 
               <div className="mt-8 grid grid-cols-2 gap-3">
                 <a
-                  href="mailto:rudra.arts30@gmail.com"
+                  href="mailto:shivray.arts30@gmail.com"
                   className="flex items-center justify-center gap-2 bg-gold text-gold-foreground py-3 rounded-md text-sm font-semibold hover:brightness-110 transition-all"
                 >
                   <Mail className="w-4 h-4" /> Email Us
@@ -140,3 +140,4 @@ function ContactPage() {
     </div>
   );
 }
+

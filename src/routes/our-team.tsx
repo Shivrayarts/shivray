@@ -6,9 +6,9 @@ export const Route = createFileRoute("/our-team")({
   component: OurTeamPage,
   head: () => ({
     meta: [
-      { title: "Our Team — Rudra Arts & Handicrafts" },
-      { name: "description", content: "Meet the skilled artisans and leaders behind Rudra Arts & Handicrafts." },
-      { property: "og:title", content: "Our Team — Rudra Arts & Handicrafts" },
+      { title: "Our Team - Shivray" },
+      { name: "description", content: "Meet the skilled artisans and leaders behind Shivray." },
+      { property: "og:title", content: "Our Team - Shivray" },
       { property: "og:description", content: "The artisans and craftsmen preserving India's heritage." },
     ],
   }),
@@ -60,3 +60,4 @@ function OurTeamPage() {
     </div>
   );
 }
+

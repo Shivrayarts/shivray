@@ -1,0 +1,310 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [4 0 R 6 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
+endobj
+5 0 obj
+<< /Length 3455 >>
+stream
+BT
+/F1 16 Tf
+1 0 0 1 50 790 Tm
+(Shivray Website - Client Requirement Checklist) Tj
+/F1 11 Tf
+1 0 0 1 50 775 Tm
+(Project type: Ecommerce + Admin Dashboard + Backend) Tj
+/F1 11 Tf
+1 0 0 1 50 760 Tm
+() Tj
+/F1 11 Tf
+1 0 0 1 50 745 Tm
+(Client Details) Tj
+/F1 11 Tf
+1 0 0 1 50 730 Tm
+([ ] Business name \(final legal name\)) Tj
+/F1 11 Tf
+1 0 0 1 50 715 Tm
+([ ] Primary contact person and role) Tj
+/F1 11 Tf
+1 0 0 1 50 700 Tm
+([ ] Contact email and phone for project communication) Tj
+/F1 11 Tf
+1 0 0 1 50 685 Tm
+([ ] Billing address and GST details \(if applicable\)) Tj
+/F1 11 Tf
+1 0 0 1 50 670 Tm
+() Tj
+/F1 11 Tf
+1 0 0 1 50 655 Tm
+(Branding and Identity) Tj
+/F1 11 Tf
+1 0 0 1 50 640 Tm
+([ ] Final brand name spelling and capitalization) Tj
+/F1 11 Tf
+1 0 0 1 50 625 Tm
+([ ] Logo files \(PNG/SVG, dark/light variants\)) Tj
+/F1 11 Tf
+1 0 0 1 50 610 Tm
+([ ] Brand colors \(hex codes\)) Tj
+/F1 11 Tf
+1 0 0 1 50 595 Tm
+([ ] Font preferences) Tj
+/F1 11 Tf
+1 0 0 1 50 580 Tm
+([ ] Tagline and short brand description) Tj
+/F1 11 Tf
+1 0 0 1 50 565 Tm
+() Tj
+/F1 11 Tf
+1 0 0 1 50 550 Tm
+(Website Content) Tj
+/F1 11 Tf
+1 0 0 1 50 535 Tm
+([ ] Home page headline and hero text) Tj
+/F1 11 Tf
+1 0 0 1 50 520 Tm
+([ ] About page final copy) Tj
+/F1 11 Tf
+1 0 0 1 50 505 Tm
+([ ] Product categories and product descriptions) Tj
+/F1 11 Tf
+1 0 0 1 50 490 Tm
+([ ] Product images \(high quality, consistent ratio\)) Tj
+/F1 11 Tf
+1 0 0 1 50 475 Tm
+([ ] Pricing rules \(fixed, discount, seasonal offers\)) Tj
+/F1 11 Tf
+1 0 0 1 50 460 Tm
+([ ] Contact details \(email, phone, address, map\)) Tj
+/F1 11 Tf
+1 0 0 1 50 445 Tm
+([ ] Social media links \(Instagram, YouTube, Facebook\)) Tj
+/F1 11 Tf
+1 0 0 1 50 430 Tm
+() Tj
+/F1 11 Tf
+1 0 0 1 50 415 Tm
+(Product and Catalog Requirements) Tj
+/F1 11 Tf
+1 0 0 1 50 400 Tm
+([ ] Required product fields \(name, SKU, price, stock, material, dimensions\)) Tj
+/F1 11 Tf
+1 0 0 1 50 385 Tm
+([ ] Category structure and sub-categories) Tj
+/F1 11 Tf
+1 0 0 1 50 370 Tm
+([ ] Variants needed \(size, color, finish\)) Tj
+/F1 11 Tf
+1 0 0 1 50 355 Tm
+([ ] Inventory tracking required? \(Yes/No\)) Tj
+/F1 11 Tf
+1 0 0 1 50 340 Tm
+([ ] Bulk upload needed? \(CSV/Excel\)) Tj
+/F1 11 Tf
+1 0 0 1 50 325 Tm
+() Tj
+/F1 11 Tf
+1 0 0 1 50 310 Tm
+(Cart, Order, and Checkout) Tj
+/F1 11 Tf
+1 0 0 1 50 295 Tm
+([ ] Checkout flow \(guest checkout or login required\)) Tj
+/F1 11 Tf
+1 0 0 1 50 280 Tm
+([ ] Shipping rules \(zones, rates, free shipping threshold\)) Tj
+/F1 11 Tf
+1 0 0 1 50 265 Tm
+([ ] Tax rules \(GST rates by product\)) Tj
+/F1 11 Tf
+1 0 0 1 50 250 Tm
+([ ] Payment methods \(UPI, cards, net banking, COD\)) Tj
+/F1 11 Tf
+1 0 0 1 50 235 Tm
+([ ] Order statuses needed \(pending, packed, shipped, delivered, cancelled\)) Tj
+/F1 11 Tf
+1 0 0 1 50 220 Tm
+([ ] Return/refund policy and SLA) Tj
+/F1 11 Tf
+1 0 0 1 50 205 Tm
+() Tj
+/F1 11 Tf
+1 0 0 1 50 190 Tm
+(Admin Dashboard Requirements) Tj
+/F1 11 Tf
+1 0 0 1 50 175 Tm
+([ ] Roles required \(Super Admin, Manager, Staff\)) Tj
+/F1 11 Tf
+1 0 0 1 50 160 Tm
+([ ] Permissions by role) Tj
+/F1 11 Tf
+1 0 0 1 50 145 Tm
+([ ] Product management features \(create/edit/delete\)) Tj
+/F1 11 Tf
+1 0 0 1 50 130 Tm
+([ ] Order management features \(status updates, notes\)) Tj
+/F1 11 Tf
+1 0 0 1 50 115 Tm
+([ ] Enquiry management and lead tracking) Tj
+/F1 11 Tf
+1 0 0 1 50 100 Tm
+([ ] Dashboard KPIs \(sales, orders, top products, enquiries\)) Tj
+/F1 11 Tf
+1 0 0 1 50 85 Tm
+([ ] Export requirements \(CSV/PDF\)) Tj
+/F1 11 Tf
+1 0 0 1 50 70 Tm
+() Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 2601 >>
+stream
+BT
+/F1 11 Tf
+1 0 0 1 50 790 Tm
+(Backend and Integrations) Tj
+/F1 11 Tf
+1 0 0 1 50 775 Tm
+([ ] Preferred backend stack \(if any\)) Tj
+/F1 11 Tf
+1 0 0 1 50 760 Tm
+([ ] Database preference \(PostgreSQL/MySQL\)) Tj
+/F1 11 Tf
+1 0 0 1 50 745 Tm
+([ ] Email provider for notifications \(SMTP/SendGrid\)) Tj
+/F1 11 Tf
+1 0 0 1 50 730 Tm
+([ ] SMS/WhatsApp integration required? \(Yes/No\)) Tj
+/F1 11 Tf
+1 0 0 1 50 715 Tm
+([ ] Shipping partner integration \(Shiprocket/others\)) Tj
+/F1 11 Tf
+1 0 0 1 50 700 Tm
+([ ] CRM/ERP integration required? \(Yes/No\)) Tj
+/F1 11 Tf
+1 0 0 1 50 685 Tm
+() Tj
+/F1 11 Tf
+1 0 0 1 50 670 Tm
+(Security and Compliance) Tj
+/F1 11 Tf
+1 0 0 1 50 655 Tm
+([ ] SSL and domain ownership details) Tj
+/F1 11 Tf
+1 0 0 1 50 640 Tm
+([ ] Privacy policy, terms, and cookie policy content) Tj
+/F1 11 Tf
+1 0 0 1 50 625 Tm
+([ ] User data retention requirements) Tj
+/F1 11 Tf
+1 0 0 1 50 610 Tm
+([ ] Backup and disaster recovery expectation) Tj
+/F1 11 Tf
+1 0 0 1 50 595 Tm
+([ ] Access control and audit log requirement) Tj
+/F1 11 Tf
+1 0 0 1 50 580 Tm
+() Tj
+/F1 11 Tf
+1 0 0 1 50 565 Tm
+(SEO and Marketing) Tj
+/F1 11 Tf
+1 0 0 1 50 550 Tm
+([ ] SEO keywords for each page category) Tj
+/F1 11 Tf
+1 0 0 1 50 535 Tm
+([ ] Meta title/description preferences) Tj
+/F1 11 Tf
+1 0 0 1 50 520 Tm
+([ ] Google Analytics / Tag Manager IDs) Tj
+/F1 11 Tf
+1 0 0 1 50 505 Tm
+([ ] Facebook Pixel / ad tracking IDs) Tj
+/F1 11 Tf
+1 0 0 1 50 490 Tm
+([ ] Sitemap and robots preferences) Tj
+/F1 11 Tf
+1 0 0 1 50 475 Tm
+() Tj
+/F1 11 Tf
+1 0 0 1 50 460 Tm
+(Deployment and Support) Tj
+/F1 11 Tf
+1 0 0 1 50 445 Tm
+([ ] Hosting preference \(Vercel, Cloudflare, AWS, etc.\)) Tj
+/F1 11 Tf
+1 0 0 1 50 430 Tm
+([ ] Domain and DNS access owner) Tj
+/F1 11 Tf
+1 0 0 1 50 415 Tm
+([ ] Go-live target date) Tj
+/F1 11 Tf
+1 0 0 1 50 400 Tm
+([ ] Post-launch support duration) Tj
+/F1 11 Tf
+1 0 0 1 50 385 Tm
+([ ] Team training needed for admin dashboard) Tj
+/F1 11 Tf
+1 0 0 1 50 370 Tm
+() Tj
+/F1 11 Tf
+1 0 0 1 50 355 Tm
+(Approvals) Tj
+/F1 11 Tf
+1 0 0 1 50 340 Tm
+([ ] Design sign-off authority) Tj
+/F1 11 Tf
+1 0 0 1 50 325 Tm
+([ ] Content sign-off authority) Tj
+/F1 11 Tf
+1 0 0 1 50 310 Tm
+([ ] Technical sign-off authority) Tj
+/F1 11 Tf
+1 0 0 1 50 295 Tm
+([ ] Final UAT checklist approval) Tj
+/F1 11 Tf
+1 0 0 1 50 280 Tm
+() Tj
+/F1 11 Tf
+1 0 0 1 50 265 Tm
+(Notes:) Tj
+/F1 11 Tf
+1 0 0 1 50 250 Tm
+(____________________________________________________________) Tj
+/F1 11 Tf
+1 0 0 1 50 235 Tm
+(____________________________________________________________) Tj
+/F1 11 Tf
+1 0 0 1 50 220 Tm
+(____________________________________________________________) Tj
+ET
+endstream
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000127 00000 n 
+0000000197 00000 n 
+0000000323 00000 n 
+0000003830 00000 n 
+0000003956 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R >>
+startxref
+6609
+%%EOF

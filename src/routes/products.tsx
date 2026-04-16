@@ -1,140 +1,162 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { useState } from "react";
 import { Search, Grid3X3, LayoutGrid } from "lucide-react";
-import productStatue1 from "@/assets/product-statue-1.jpg";
-import productStatue2 from "@/assets/product-statue-2.jpg";
-import productStatue3 from "@/assets/product-statue-3.jpg";
-import productWeapon1 from "@/assets/product-weapon-1.jpg";
-import productWeapon2 from "@/assets/product-weapon-2.jpg";
-import productWeapon3 from "@/assets/product-weapon-3.jpg";
-import productDhoop1 from "@/assets/product-dhoop-1.jpg";
-import productShield1 from "@/assets/product-shield-1.jpg";
-import productTalwar1 from "@/assets/product-talwar-1.jpg";
+import { categories } from "@/data/products";
+import { getProductsFromDbServer } from "@/lib/server/products.functions";
 
 export const Route = createFileRoute("/products")({
+  loader: () => getProductsFromDbServer(),
   component: ProductsPage,
   head: () => ({
     meta: [
-      { title: "Products — Rudra Arts & Handicrafts" },
-      { name: "description", content: "Browse our collection of handcrafted Maratha statues, weapons, shields, and heritage artifacts." },
-      { property: "og:title", content: "Products — Rudra Arts & Handicrafts" },
-      { property: "og:description", content: "Authentic handcrafted heritage artifacts and replicas." },
+      { title: "Products - Shivray" },
+      {
+        name: "description",
+        content:
+          "Browse our collection of handcrafted Maratha statues, weapons, shields, and heritage artifacts.",
+      },
+      { property: "og:title", content: "Products - Shivray" },
+      {
+        property: "og:description",
+        content: "Authentic handcrafted heritage artifacts and replicas.",
+      },
     ],
   }),
 });
 
-const allProducts = [
-  { name: "Shastradhari Maharaj - Coloured", price: "₹5,100", image: productStatue1, category: "Statues", tag: "Featured" },
-  { name: "Ashwarudh Maharaj", price: "₹12,850", image: productStatue2, category: "Statues", tag: "Featured" },
-  { name: "Roudra Shambhu Chatrapati", price: "₹5,100", image: productStatue3, category: "Statues", tag: "" },
-  { name: "Royal Khanjar with Sheath", price: "₹8,500", image: productWeapon1, category: "Weapons", tag: "Popular" },
-  { name: "Vita (Battle Axe)", price: "₹6,200", image: productWeapon2, category: "Weapons", tag: "" },
-  { name: "Ceremonial Gada", price: "₹9,800", image: productWeapon3, category: "Weapons", tag: "New" },
-  { name: "Brass Dhoop Stand", price: "₹2,200", image: productDhoop1, category: "Dhoop", tag: "New" },
-  { name: "Maratha War Shield", price: "₹7,500", image: productShield1, category: "Shields", tag: "" },
-  { name: "Talwar - Curved Sword", price: "₹11,000", image: productTalwar1, category: "Weapons", tag: "Featured" },
-];
-
-const categories = ["All", "Statues", "Weapons", "Shields", "Dhoop"];
-
 function ProductsPage() {
+  const location = useLocation();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [gridCols, setGridCols] = useState<3 | 4>(4);
+  const products = Route.useLoaderData();
+  const isDetailPage = location.pathname.startsWith("/products/");
 
-  const filtered = allProducts.filter((p) => {
-    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = category === "All" || p.category === category;
+  if (isDetailPage) {
+    return <Outlet />;
+  }
+
+  const filtered = products.filter((product) => {
+    const matchesSearch = product.name
+      .toLowerCase()
+      .includes(search.toLowerCase());
+    const matchesCategory = category === "All" || product.category === category;
     return matchesSearch && matchesCategory;
   });
 
   return (
     <div>
-      {/* Hero */}
-      <section className="bg-primary text-primary-foreground py-16 md:py-20 text-center">
-        <h1 className="font-heading text-4xl md:text-5xl font-bold">Our Products</h1>
-        <div className="w-24 h-1 bg-gold mx-auto mt-3" />
-        <p className="mt-4 font-display italic text-lg opacity-90">Discover handcrafted treasures that embody centuries of tradition</p>
+      <section className="bg-primary py-16 text-center text-primary-foreground md:py-20">
+        <h1 className="font-heading text-4xl font-bold md:text-5xl">Our Products</h1>
+        <div className="mx-auto mt-3 h-1 w-24 bg-gold" />
+        <p className="mt-4 text-lg font-display italic opacity-90">
+          Discover handcrafted treasures that embody centuries of tradition
+        </p>
       </section>
 
-      {/* Filters */}
       <section className="py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row gap-4 mb-8 items-center justify-between">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="mb-8 flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="relative w-full md:w-96">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search our collection..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-md border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold"
+                className="w-full rounded-md border border-border bg-background py-2.5 pl-10 pr-4 text-sm text-foreground focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/50"
               />
             </div>
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex flex-wrap items-center gap-3">
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setCategory(cat)}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                     category === cat
                       ? "bg-primary text-primary-foreground"
-                      : "bg-card text-foreground border border-border hover:border-gold/40"
+                      : "border border-border bg-card text-foreground hover:border-gold/40"
                   }`}
                 >
                   {cat}
                 </button>
               ))}
-              <div className="hidden md:flex items-center gap-1 ml-4 border border-border rounded-md">
-                <button onClick={() => setGridCols(3)} className={`p-2 ${gridCols === 3 ? "text-gold" : "text-muted-foreground"}`}>
-                  <LayoutGrid className="w-4 h-4" />
+              <div className="ml-4 hidden items-center gap-1 rounded-md border border-border md:flex">
+                <button
+                  onClick={() => setGridCols(3)}
+                  className={`p-2 ${
+                    gridCols === 3 ? "text-gold" : "text-muted-foreground"
+                  }`}
+                  aria-label="3 column grid"
+                >
+                  <LayoutGrid className="h-4 w-4" />
                 </button>
-                <button onClick={() => setGridCols(4)} className={`p-2 ${gridCols === 4 ? "text-gold" : "text-muted-foreground"}`}>
-                  <Grid3X3 className="w-4 h-4" />
+                <button
+                  onClick={() => setGridCols(4)}
+                  className={`p-2 ${
+                    gridCols === 4 ? "text-gold" : "text-muted-foreground"
+                  }`}
+                  aria-label="4 column grid"
+                >
+                  <Grid3X3 className="h-4 w-4" />
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Products Grid */}
-          <div className={`grid grid-cols-1 sm:grid-cols-2 ${gridCols === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"} gap-6`}>
+          <div
+            className={`grid grid-cols-1 gap-6 sm:grid-cols-2 ${
+              gridCols === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"
+            }`}
+          >
             {filtered.map((product) => (
-              <div
-                key={product.name}
-                className="group bg-card rounded-lg overflow-hidden shadow-heritage hover:shadow-xl transition-all duration-300 border border-border hover:border-gold/30"
+              <Link
+                key={product.id}
+                to="/products/$productId"
+                params={{ productId: product.id }}
+                className="group block h-full overflow-hidden rounded-lg border border-border bg-card shadow-heritage transition-all duration-300 hover:border-gold/30 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
               >
-                <div className="aspect-square overflow-hidden relative">
+                <div className="relative aspect-square overflow-hidden">
                   <img
                     src={product.image}
                     alt={product.name}
                     loading="lazy"
                     width={600}
                     height={600}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   {product.tag && (
-                    <span className="absolute top-3 right-3 bg-gold text-gold-foreground text-xs font-bold px-2.5 py-1 rounded-sm uppercase tracking-wider">
+                    <span className="absolute right-3 top-3 rounded-sm bg-gold px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-gold-foreground">
                       {product.tag}
                     </span>
                   )}
                 </div>
                 <div className="p-4">
-                  <span className="text-xs font-medium uppercase tracking-wider text-gold">{product.category}</span>
-                  <h3 className="font-heading text-sm font-semibold text-foreground mt-1 line-clamp-1">{product.name}</h3>
-                  <div className="flex items-center justify-between mt-3">
+                  <span className="text-xs font-medium uppercase tracking-wider text-gold">
+                    {product.category}
+                  </span>
+                  <h3 className="mt-1 line-clamp-1 font-heading text-sm font-semibold text-foreground">
+                    {product.name}
+                  </h3>
+                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                    {product.shortDescription}
+                  </p>
+                  <div className="mt-3 flex items-center justify-between">
                     <p className="text-lg font-bold text-primary">{product.price}</p>
-                    <button className="text-xs font-medium bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors font-heading uppercase tracking-wider">
+                    <span className="rounded-md bg-primary px-4 py-2 font-heading text-xs font-medium uppercase tracking-wider text-primary-foreground">
                       View
-                    </button>
+                    </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
 
           {filtered.length === 0 && (
-            <div className="text-center py-20">
-              <p className="text-muted-foreground text-lg">No products found matching your criteria.</p>
+            <div className="py-20 text-center">
+              <p className="text-lg text-muted-foreground">
+                No products found matching your criteria.
+              </p>
             </div>
           )}
         </div>
@@ -142,3 +164,4 @@ function ProductsPage() {
     </div>
   );
 }
+

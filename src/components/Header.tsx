@@ -1,6 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, X, ShoppingCart, Phone } from "lucide-react";
+import { useCart } from "@/hooks/use-cart";
 import logoImg from "@/assets/logo.jpg";
 
 const navLinks = [
@@ -16,6 +17,8 @@ const navLinks = [
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const { getTotalItems } = useCart();
+  const cartItemCount = getTotalItems();
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
@@ -28,8 +31,8 @@ export default function Header() {
               <Phone className="w-3 h-3" />
               +91 7028996666
             </a>
-            <a href="mailto:rudra.arts30@gmail.com" className="hover:text-gold transition-colors">
-              rudra.arts30@gmail.com
+            <a href="mailto:shivray.arts30@gmail.com" className="hover:text-gold transition-colors">
+              shivray.arts30@gmail.com
             </a>
           </div>
         </div>
@@ -39,12 +42,12 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           <Link to="/" className="flex items-center gap-3 shrink-0">
-            <img src={logoImg} alt="Rudra Arts & Handicrafts" className="h-12 w-12 md:h-14 md:w-14 rounded-full object-cover" />
+            <img src={logoImg} alt="Shivray" className="h-12 w-12 md:h-14 md:w-14 rounded-full object-cover" />
             <div className="hidden sm:block">
               <h1 className="font-heading text-lg md:text-xl font-bold text-primary leading-tight">
-                Rudra Arts
+                Shivray
               </h1>
-              <p className="text-[10px] md:text-xs text-muted-foreground tracking-widest uppercase">& Handicrafts</p>
+              <p className="text-[10px] md:text-xs text-muted-foreground tracking-widest uppercase">Authentic Heritage Craftsmanship</p>
             </div>
           </Link>
 
@@ -62,11 +65,22 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
+            <Link
+              to="/login"
+              className="ml-2 inline-flex items-center rounded-md border border-gold/50 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-gold transition-colors hover:bg-gold/10"
+            >
+              Login
+            </Link>
           </nav>
 
           <div className="flex items-center gap-3">
-            <Link to="/products" className="p-2 rounded-full hover:bg-muted transition-colors text-primary">
+            <Link to="/cart" className="relative p-2 rounded-full hover:bg-muted transition-colors text-primary">
               <ShoppingCart className="w-5 h-5" />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-gold text-gold-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {cartItemCount}
+                </span>
+              )}
             </Link>
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -96,6 +110,13 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
+            <Link
+              to="/login"
+              onClick={() => setMobileOpen(false)}
+              className="mt-2 px-4 py-3 rounded-md text-sm font-semibold tracking-wide uppercase border border-gold/50 text-gold hover:bg-gold/10 transition-colors"
+            >
+              Login
+            </Link>
           </nav>
         </div>
       )}

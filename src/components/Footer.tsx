@@ -10,10 +10,10 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3 mb-4">
-              <img src={logoImg} alt="Rudra Arts" className="h-12 w-12 rounded-full object-cover" />
+              <img src={logoImg} alt="Shivray" className="h-12 w-12 rounded-full object-cover" />
               <div>
-                <h3 className="font-heading text-lg font-bold text-gold">Rudra Arts</h3>
-                <p className="text-xs tracking-widest uppercase opacity-70">& Handicrafts</p>
+                <h3 className="font-heading text-lg font-bold text-gold">Shivray</h3>
+                <p className="text-xs tracking-widest uppercase opacity-70">Authentic Heritage Craftsmanship</p>
               </div>
             </div>
             <p className="text-sm opacity-80 leading-relaxed font-display italic">
@@ -81,9 +81,9 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="mailto:rudra.arts30@gmail.com" className="flex gap-3 text-sm opacity-80 hover:opacity-100 hover:text-gold transition-colors">
+                <a href="mailto:shivray.arts30@gmail.com" className="flex gap-3 text-sm opacity-80 hover:opacity-100 hover:text-gold transition-colors">
                   <Mail className="w-4 h-4 text-gold shrink-0" />
-                  rudra.arts30@gmail.com
+                  shivray.arts30@gmail.com
                 </a>
               </li>
             </ul>
@@ -93,10 +93,12 @@ export default function Footer() {
 
       <div className="border-t border-primary-foreground/10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-2">
-          <p className="text-xs opacity-60">© 2025 Rudra Arts & Handicrafts. All rights reserved.</p>
+          <p className="text-xs opacity-60">(c) 2025 Shivray. All rights reserved.</p>
           <p className="text-xs opacity-60">Crafted with pride in Pune, India</p>
         </div>
       </div>
     </footer>
   );
 }
+
+
