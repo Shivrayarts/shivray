@@ -28,7 +28,7 @@ type DbProductRow = {
   details: string;
   material: string;
   dimensions: string;
-  stock_quantity: number | string | null;
+  stock_quantity?: number | string | null;
   is_published: number;
 };
 
@@ -58,6 +58,10 @@ type UpdateProductInput = {
   dimensions: string;
   stockQuantity: number;
   isPublished: boolean;
+};
+
+type DeleteProductInput = {
+  id: string;
 };
 
 export type AdminProduct = Product & {
@@ -184,7 +188,6 @@ async function ensureAdminProductSchema() {
 export const getProductsFromDbServer = createServerFn({ method: "GET" })
   .handler(async (): Promise<Product[]> => {
     try {
-      await ensureAdminProductSchema();
       const pool = getMysqlPool();
       const [rows] = await pool.query<DbProductRow[]>(
         `SELECT
@@ -199,7 +202,6 @@ export const getProductsFromDbServer = createServerFn({ method: "GET" })
           details,
           material,
           dimensions,
-          stock_quantity,
           is_published
          FROM products
          WHERE is_published = 1
@@ -274,7 +276,6 @@ export const getProductByIdFromDbServer = createServerFn({ method: "GET" })
   .inputValidator((data: { id: string }) => data)
   .handler(async ({ data }): Promise<Product | null> => {
     try {
-      await ensureAdminProductSchema();
       const pool = getMysqlPool();
       const [rows] = await pool.query<DbProductRow[]>(
         `SELECT
@@ -289,7 +290,6 @@ export const getProductByIdFromDbServer = createServerFn({ method: "GET" })
           details,
           material,
           dimensions,
-          stock_quantity,
           is_published
          FROM products
          WHERE slug = ?
@@ -440,6 +440,36 @@ export const updateProductInDbServer = createServerFn({ method: "POST" })
       return {
         success: false,
         message: "Could not update product right now.",
+      };
+    }
+  });
+
+export const deleteProductFromDbServer = createServerFn({ method: "POST" })
+  .inputValidator((data: DeleteProductInput) => data)
+  .handler(async ({ data }) => {
+    try {
+      const pool = getMysqlPool();
+      const [deleteResult] = await pool.query<ResultSetHeader>(
+        "DELETE FROM products WHERE slug = ?",
+        [data.id],
+      );
+
+      if (deleteResult.affectedRows === 0) {
+        return {
+          success: false,
+          message: "This product could not be deleted from the database.",
+        };
+      }
+
+      return {
+        success: true,
+        message: "Product deleted successfully.",
+      };
+    } catch (error) {
+      console.error("deleteProductFromDbServer error:", error);
+      return {
+        success: false,
+        message: "Could not delete product right now.",
       };
     }
   });

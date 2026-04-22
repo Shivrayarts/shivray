@@ -65,12 +65,6 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              to="/login"
-              className="ml-2 inline-flex items-center rounded-md border border-gold/50 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-gold transition-colors hover:bg-gold/10"
-            >
-              Login
-            </Link>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -110,13 +104,6 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              to="/login"
-              onClick={() => setMobileOpen(false)}
-              className="mt-2 px-4 py-3 rounded-md text-sm font-semibold tracking-wide uppercase border border-gold/50 text-gold hover:bg-gold/10 transition-colors"
-            >
-              Login
-            </Link>
           </nav>
         </div>
       )}

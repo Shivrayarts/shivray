@@ -1,22 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import {
-  Boxes,
-  CirclePlus,
-  ImagePlus,
-  IndianRupee,
-  LogOut,
-  MessageSquare,
-  Pencil,
-  ShoppingBag,
-  TrendingUp,
-  TriangleAlert,
-} from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { CirclePlus, ImagePlus, LogOut, Pencil, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { isAdminAuthenticated, logoutAdmin } from "@/lib/admin-auth";
 import { productCategories, type Product } from "@/data/products";
 import { useServerFn } from "@tanstack/react-start";
 import {
   createProductInDbServer,
+  deleteProductFromDbServer,
   getAdminProductsFromDbServer,
   type AdminProduct,
   updateProductInDbServer,
@@ -27,29 +17,10 @@ export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
       { title: "Admin Dashboard - Shivray" },
-      { name: "description", content: "Manage products, orders, and customer inquiries for Shivray." },
+      { name: "description", content: "Manage products for Shivray." },
     ],
   }),
 });
-
-const recentOrders = [
-  { id: "#SR-2401", customer: "Aniket Patil", item: "Royal Khanjar", amount: "Rs 8,500", status: "Paid" },
-  { id: "#SR-2402", customer: "Pooja Deshmukh", item: "Shastradhari Maharaj", amount: "Rs 5,100", status: "Packed" },
-  { id: "#SR-2403", customer: "Rahul Jadhav", item: "Brass Dhoop Stand", amount: "Rs 2,200", status: "Pending" },
-  { id: "#SR-2404", customer: "Nitin Kulkarni", item: "Ashwarudh Maharaj", amount: "Rs 12,850", status: "Shipped" },
-] as const;
-
-const inquiries = [
-  { name: "Sonal Pawar", message: "Bulk order for cultural event artifacts.", time: "10 min ago" },
-  { name: "Rajesh More", message: "Custom sword engraving request.", time: "32 min ago" },
-  { name: "Meera Joshi", message: "Need delivery estimate for Pune.", time: "1 hour ago" },
-] as const;
-
-function statusClass(status: string) {
-  if (status === "Paid" || status === "Shipped") return "bg-emerald-100 text-emerald-700";
-  if (status === "Packed") return "bg-amber-100 text-amber-700";
-  return "bg-rose-100 text-rose-700";
-}
 
 type ProductFormState = {
   name: string;
@@ -110,26 +81,12 @@ function AdminDashboardPage() {
   const [saveMessage, setSaveMessage] = useState("");
   const [editMessage, setEditMessage] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
 
   const fetchAdminProducts = useServerFn(getAdminProductsFromDbServer);
   const createProduct = useServerFn(createProductInDbServer);
   const updateProduct = useServerFn(updateProductInDbServer);
-
-  const lowStockItems = useMemo(
-    () => products.filter((item) => item.isPublished && item.stockQuantity <= 5).slice(0, 3),
-    [products],
-  );
-
-  const dashboardStats = useMemo(() => {
-    const publishedProducts = products.filter((item) => item.isPublished).length;
-    const lowStockCount = products.filter((item) => item.isPublished && item.stockQuantity <= 5).length;
-    return [
-      { label: "Total Orders", value: "248", delta: "+12% this month", icon: ShoppingBag },
-      { label: "Revenue", value: "Rs 4,86,300", delta: "+8% this month", icon: IndianRupee },
-      { label: "Products", value: String(publishedProducts), delta: `${lowStockCount} low stock`, icon: Boxes },
-      { label: "Inquiries", value: "17", delta: "5 new today", icon: MessageSquare },
-    ] as const;
-  }, [products]);
+  const deleteProduct = useServerFn(deleteProductFromDbServer);
 
   useEffect(() => {
     const allowed = isAdminAuthenticated();
@@ -298,117 +255,51 @@ function AdminDashboardPage() {
     await refreshProducts();
     setEditMessage("Product updated successfully.");
   }
+  async function handleDeleteProduct(product: AdminProduct) {
+    if (!product.fromDb) {
+      setEditMessage("This is a static product and cannot be deleted from database.");
+      return;
+    }
+
+    const confirmed = window.confirm(`Delete "${product.name}" permanently?`);
+    if (!confirmed) return;
+
+    setDeletingProductId(product.id);
+    const result = await deleteProduct({
+      data: {
+        id: product.id,
+      },
+    });
+    setDeletingProductId(null);
+
+    if (!result.success) {
+      setEditMessage(result.message);
+      return;
+    }
+
+    if (editForm?.id === product.id) {
+      setEditForm(null);
+      setEditImageName("");
+    }
+
+    await refreshProducts();
+    setEditMessage("Product deleted successfully.");
+  }
 
   return (
     <div className="bg-muted/30 min-h-[calc(100vh-5rem)]">
       <section className="max-w-7xl mx-auto px-4 py-8 md:py-12">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <p className="text-sm uppercase tracking-wider text-gold font-semibold">Admin Panel</p>
-            <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground mt-1">Shivray Dashboard</h1>
-            <p className="text-muted-foreground mt-2">Track orders, products, and customer updates in one place.</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-primary-foreground hover:bg-primary/90 transition-colors">
-              <TrendingUp className="w-4 h-4" />
-              View Reports
-            </button>
-            <button
-              onClick={handleLogout}
-              className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2.5 text-sm font-semibold uppercase tracking-wide text-foreground hover:bg-muted transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
-          </div>
+        <div className="mb-6 flex items-center justify-end">
+          <button
+            onClick={handleLogout}
+            className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2.5 text-sm font-semibold uppercase tracking-wide text-foreground hover:bg-muted transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-8">
-          {dashboardStats.map((item) => (
-            <div key={item.label} className="rounded-xl border border-border bg-card p-5 shadow-sm">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{item.label}</p>
-                  <p className="mt-1 text-2xl font-heading font-bold text-foreground">{item.value}</p>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-gold/15 text-gold flex items-center justify-center">
-                  <item.icon className="w-5 h-5" />
-                </div>
-              </div>
-              <p className="text-xs text-emerald-700 font-medium mt-3">{item.delta}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
-          <div className="xl:col-span-2 rounded-xl border border-border bg-card p-5 md:p-6 shadow-sm">
-            <h2 className="font-heading text-xl font-semibold text-foreground">Recent Orders</h2>
-            <div className="overflow-x-auto mt-4">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-muted-foreground border-b border-border">
-                    <th className="py-2 font-medium">Order ID</th>
-                    <th className="py-2 font-medium">Customer</th>
-                    <th className="py-2 font-medium">Item</th>
-                    <th className="py-2 font-medium">Amount</th>
-                    <th className="py-2 font-medium">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentOrders.map((order) => (
-                    <tr key={order.id} className="border-b last:border-0 border-border/70">
-                      <td className="py-3 font-semibold">{order.id}</td>
-                      <td className="py-3">{order.customer}</td>
-                      <td className="py-3">{order.item}</td>
-                      <td className="py-3 font-medium">{order.amount}</td>
-                      <td className="py-3">
-                        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass(order.status)}`}>
-                          {order.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="rounded-xl border border-border bg-card p-5 md:p-6 shadow-sm">
-              <h2 className="font-heading text-xl font-semibold text-foreground">Low Stock Alert</h2>
-              <div className="space-y-3 mt-4">
-                {lowStockItems.length ? (
-                  lowStockItems.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5">
-                      <p className="text-sm font-medium text-foreground">{item.name}</p>
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700">
-                        <TriangleAlert className="w-3.5 h-3.5" />
-                        {item.stockQuantity} left
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground">No low-stock items right now.</p>
-                )}
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-border bg-card p-5 md:p-6 shadow-sm">
-              <h2 className="font-heading text-xl font-semibold text-foreground">Latest Inquiries</h2>
-              <div className="space-y-3 mt-4">
-                {inquiries.map((item) => (
-                  <div key={item.name} className="rounded-lg border border-border bg-background px-3 py-2.5">
-                    <p className="text-sm font-medium">{item.name}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{item.message}</p>
-                    <p className="text-[11px] text-gold mt-2">{item.time}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 rounded-xl border border-border bg-card p-5 md:p-6 shadow-sm">
+        <div className="rounded-xl border border-border bg-card p-5 md:p-6 shadow-sm">
           <div className="flex items-center gap-2">
             <CirclePlus className="w-5 h-5 text-gold" />
             <h2 className="font-heading text-xl font-semibold text-foreground">Add Product</h2>
@@ -588,14 +479,25 @@ function AdminDashboardPage() {
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => startEditing(item)}
-                    className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-xs font-semibold uppercase tracking-wide hover:bg-muted"
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                    Edit / Restock
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => startEditing(item)}
+                      className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-xs font-semibold uppercase tracking-wide hover:bg-muted"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      Edit / Restock
+                    </button>
+                    <button
+                      type="button"
+                      disabled={deletingProductId === item.id || !item.fromDb}
+                      onClick={() => handleDeleteProduct(item)}
+                      className="inline-flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      {deletingProductId === item.id ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
                 </div>
 
                 {editForm?.id === item.id ? (

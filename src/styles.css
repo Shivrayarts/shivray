@@ -100,18 +100,28 @@
 
 @layer base {
   html {
-    overflow-x: hidden;
+    max-width: 100%;
+    overflow-x: clip;
   }
 
   * {
+    box-sizing: border-box;
     border-color: var(--color-border);
   }
 
   body {
-    overflow-x: hidden;
+    max-width: 100%;
+    overflow-x: clip;
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-body);
+  }
+
+  img,
+  video,
+  canvas,
+  svg {
+    max-width: 100%;
   }
 
   h1, h2, h3, h4, h5, h6 {

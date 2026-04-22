@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, Trash2 } from "lucide-react";
-import { allProducts } from "@/data/products";
+import { useEffect, useState } from "react";
+import { allProducts, type Product } from "@/data/products";
+import { useServerFn } from "@tanstack/react-start";
 import { useCart } from "@/hooks/use-cart";
+import { getProductsFromDbServer } from "@/lib/server/products.functions";
 
 export const Route = createFileRoute("/cart")({
   component: CartPage,
@@ -19,10 +22,33 @@ export const Route = createFileRoute("/cart")({
 
 function CartPage() {
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
+  const fetchProducts = useServerFn(getProductsFromDbServer);
+  const [catalog, setCatalog] = useState<Product[]>(allProducts);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCatalog = async () => {
+      try {
+        const products = await fetchProducts();
+        if (isMounted && Array.isArray(products) && products.length > 0) {
+          setCatalog(products);
+        }
+      } catch {
+        // Keep static fallback if fetch fails.
+      }
+    };
+
+    void loadCatalog();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchProducts]);
 
   const items = cart
     .map((entry) => {
-      const product = allProducts.find((p) => p.id === entry.id);
+      const product = catalog.find((p) => p.id === entry.id);
       if (!product) return null;
       return { product, quantity: entry.quantity };
     })

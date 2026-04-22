@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WallOfFameRouteImport } from './routes/wall-of-fame'
 import { Route as ProductsRouteImport } from './routes/products'
 import { Route as OurTeamRouteImport } from './routes/our-team'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as BlogRouteImport } from './routes/blog'
@@ -35,11 +34,6 @@ const ProductsRoute = ProductsRouteImport.update({
 const OurTeamRoute = OurTeamRouteImport.update({
   id: '/our-team',
   path: '/our-team',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -91,7 +85,6 @@ export interface FileRoutesByFullPath {
   '/blog': typeof BlogRoute
   '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
-  '/login': typeof LoginRoute
   '/our-team': typeof OurTeamRoute
   '/products': typeof ProductsRouteWithChildren
   '/wall-of-fame': typeof WallOfFameRoute
@@ -105,7 +98,6 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogRoute
   '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
-  '/login': typeof LoginRoute
   '/our-team': typeof OurTeamRoute
   '/products': typeof ProductsRouteWithChildren
   '/wall-of-fame': typeof WallOfFameRoute
@@ -120,7 +112,6 @@ export interface FileRoutesById {
   '/blog': typeof BlogRoute
   '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
-  '/login': typeof LoginRoute
   '/our-team': typeof OurTeamRoute
   '/products': typeof ProductsRouteWithChildren
   '/wall-of-fame': typeof WallOfFameRoute
@@ -136,7 +127,6 @@ export interface FileRouteTypes {
     | '/blog'
     | '/cart'
     | '/contact'
-    | '/login'
     | '/our-team'
     | '/products'
     | '/wall-of-fame'
@@ -150,7 +140,6 @@ export interface FileRouteTypes {
     | '/blog'
     | '/cart'
     | '/contact'
-    | '/login'
     | '/our-team'
     | '/products'
     | '/wall-of-fame'
@@ -164,7 +153,6 @@ export interface FileRouteTypes {
     | '/blog'
     | '/cart'
     | '/contact'
-    | '/login'
     | '/our-team'
     | '/products'
     | '/wall-of-fame'
@@ -179,7 +167,6 @@ export interface RootRouteChildren {
   BlogRoute: typeof BlogRoute
   CartRoute: typeof CartRoute
   ContactRoute: typeof ContactRoute
-  LoginRoute: typeof LoginRoute
   OurTeamRoute: typeof OurTeamRoute
   ProductsRoute: typeof ProductsRouteWithChildren
   WallOfFameRoute: typeof WallOfFameRoute
@@ -206,13 +193,6 @@ declare module '@tanstack/react-router' {
       path: '/our-team'
       fullPath: '/our-team'
       preLoaderRoute: typeof OurTeamRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -294,7 +274,6 @@ const rootRouteChildren: RootRouteChildren = {
   BlogRoute: BlogRoute,
   CartRoute: CartRoute,
   ContactRoute: ContactRoute,
-  LoginRoute: LoginRoute,
   OurTeamRoute: OurTeamRoute,
   ProductsRoute: ProductsRouteWithChildren,
   WallOfFameRoute: WallOfFameRoute,

@@ -1,7 +1,10 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MobileTabBar from "@/components/MobileTabBar";
+import FloatingActions from "@/components/FloatingActions";
+import logoImg from "@/assets/logo.jpg";
 
 import appCss from "../styles.css?url";
 
@@ -79,14 +82,79 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  const [preloaderPhase, setPreloaderPhase] = useState<"show" | "exit" | "hidden">("show");
+
+  useEffect(() => {
+    const hideLoader = () => {
+      window.setTimeout(() => {
+        setPreloaderPhase("exit");
+        window.setTimeout(() => {
+          setPreloaderPhase("hidden");
+        }, 750);
+      }, 1150);
+    };
+
+    if (document.readyState === "complete") {
+      hideLoader();
+      return;
+    }
+
+    window.addEventListener("load", hideLoader);
+    return () => {
+      window.removeEventListener("load", hideLoader);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
+      <div
+        className={`fixed inset-0 z-[120] flex items-center justify-center transition-opacity duration-500 ${
+          preloaderPhase === "hidden" ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
+        }`}
+        aria-hidden={preloaderPhase === "hidden"}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(159,26,52,0.58)_0%,rgba(50,0,16,0.92)_58%,rgba(24,0,10,0.98)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent_15%,rgba(255,218,128,0.08)_50%,transparent_85%)] animate-[pulse_2.8s_ease-in-out_infinite]" />
+
+        <div className="absolute inset-0 overflow-hidden">
+          <div
+            className={`absolute inset-y-0 left-0 w-1/2 bg-[#230009] transition-transform duration-700 ease-in-out ${
+              preloaderPhase === "exit" ? "-translate-x-full" : "translate-x-0"
+            }`}
+          />
+          <div
+            className={`absolute inset-y-0 right-0 w-1/2 bg-[#230009] transition-transform duration-700 ease-in-out ${
+              preloaderPhase === "exit" ? "translate-x-full" : "translate-x-0"
+            }`}
+          />
+        </div>
+
+        <div
+          className={`relative z-10 flex flex-col items-center transition-all duration-500 ${
+            preloaderPhase === "exit" ? "opacity-0 scale-90" : "opacity-100 scale-100"
+          }`}
+        >
+          <div className="relative flex h-28 w-28 items-center justify-center">
+            <span className="absolute inset-0 rounded-full border-2 border-gold/30 border-t-gold animate-[spin_3.8s_linear_infinite]" />
+            <span className="absolute inset-3 rounded-full border border-gold/25 animate-pulse" />
+            <img
+              src={logoImg}
+              alt="Shivray"
+              className="h-20 w-20 rounded-full object-cover ring-2 ring-gold/50"
+            />
+          </div>
+          <p className="mt-4 font-heading text-xs uppercase tracking-[0.35em] text-gold/95">
+            Shivray
+          </p>
+        </div>
+      </div>
       <Header />
       <main className="mobile-webapp-main flex-1">
         <Outlet />
       </main>
       <Footer />
       <MobileTabBar />
+      <FloatingActions />
     </div>
   );
 }

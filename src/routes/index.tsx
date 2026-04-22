@@ -108,14 +108,14 @@ function HomePage() {
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
                 to="/products"
-                className="inline-flex min-w-64 items-center justify-center gap-2 rounded-md bg-[#e0a82d] px-8 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider text-[#291006] transition-all hover:brightness-110"
+                className="inline-flex w-full max-w-full items-center justify-center gap-2 rounded-md bg-[#e0a82d] px-8 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider text-[#291006] transition-all hover:brightness-110 sm:w-auto sm:min-w-64"
               >
                 Explore Products
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/contact"
-                className="inline-flex min-w-64 items-center justify-center rounded-md border border-[#d7a43f] bg-transparent px-8 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider text-[#f6d37d] transition-colors hover:bg-[#d7a43f]/10"
+                className="inline-flex w-full max-w-full items-center justify-center rounded-md border border-[#d7a43f] bg-transparent px-8 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider text-[#f6d37d] transition-colors hover:bg-[#d7a43f]/10 sm:w-auto sm:min-w-64"
               >
                 Get Custom Design
               </Link>
