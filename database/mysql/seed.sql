@@ -24,6 +24,7 @@ INSERT INTO products (
   details,
   material,
   dimensions,
+  stock_quantity,
   is_published
 )
 VALUES
@@ -38,6 +39,7 @@ VALUES
     'A premium hand-finished statue crafted for collectors and devotees who value historical authenticity and intricate artistry.',
     'Resin with premium color finish',
     'Approx. 12 in height',
+    12,
     1
   ),
   (
@@ -51,6 +53,7 @@ VALUES
     'An elegant collectible inspired by historic ceremonial daggers, balanced for visual appeal and detailed craftsmanship.',
     'Forged steel and decorative metalwork',
     'Approx. 16 in length',
+    4,
     1
   ),
   (
@@ -64,6 +67,7 @@ VALUES
     'A durable handcrafted dhoop stand combining devotional use with elegant heritage-inspired design.',
     'Solid brass',
     'Approx. 6 in height',
+    7,
     1
   )
 ON DUPLICATE KEY UPDATE
@@ -76,5 +80,6 @@ ON DUPLICATE KEY UPDATE
   details = VALUES(details),
   material = VALUES(material),
   dimensions = VALUES(dimensions),
+  stock_quantity = VALUES(stock_quantity),
   is_published = VALUES(is_published);
 

@@ -1,6 +1,7 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import MobileTabBar from "@/components/MobileTabBar";
 
 import appCss from "../styles.css?url";
 
@@ -32,7 +33,10 @@ export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { title: "Shivray" },
       { name: "description", content: "India's premier studio for authentic Maratha heritage craftsmanship - statues, weapons, and historical replicas." },
       { name: "author", content: "Shivray" },
@@ -78,10 +82,11 @@ function RootComponent() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1">
+      <main className="mobile-webapp-main flex-1">
         <Outlet />
       </main>
       <Footer />
+      <MobileTabBar />
     </div>
   );
 }

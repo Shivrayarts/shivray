@@ -99,11 +99,16 @@
 }
 
 @layer base {
+  html {
+    overflow-x: hidden;
+  }
+
   * {
     border-color: var(--color-border);
   }
 
   body {
+    overflow-x: hidden;
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-body);
@@ -111,6 +116,12 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
+  }
+}
+
+@media (max-width: 767px) {
+  .mobile-webapp-main {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
   }
 }
 
