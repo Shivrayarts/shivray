@@ -1,12 +1,14 @@
 import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import {
+  BookOpenText,
   ChevronDown,
   Heart,
   Search,
   ShoppingCart,
   SlidersHorizontal,
   Star,
+  Tag,
 } from "lucide-react";
 import { categories } from "@/data/products";
 import { getProductsFromDbServer } from "@/lib/server/products.functions";
@@ -412,11 +414,11 @@ function ProductsPage() {
                     <Link
                       to="/products/$productId"
                       params={{ productId: product.id }}
-                      className="block line-clamp-1 min-h-[1.8rem] text-[0.9rem] font-medium leading-7 text-[#111111]"
+                      className="block line-clamp-1 min-h-[1.8rem] text-[0.9rem] font-normal leading-7 text-[#111111]"
                     >
                       {product.name}
                     </Link>
-                    <p className="mt-0.5 line-clamp-2 min-h-[3rem] text-[0.9rem] font-medium leading-7 text-[#111111]">
+                    <p className="mt-0.5 line-clamp-2 min-h-[3rem] text-[0.9rem] font-normal leading-7 text-[#111111]">
                       {product.shortDescription}
                     </p>
                     <div className="mt-1 flex items-center gap-0.5 text-[#f5a300]">
@@ -429,7 +431,7 @@ function ProductsPage() {
                     </div>
                     <div className="mt-2.5">
                       <div className="inline-flex overflow-hidden rounded-[8px] border border-[#43a047]">
-                        <div className="bg-[#f5fff3] px-4 py-1 text-center text-[0.78rem] font-medium text-[#4a4a4a]">
+                        <div className="bg-[#f5fff3] px-4 py-1 text-center text-[0.78rem] font-normal text-[#4a4a4a]">
                           {sizeValue}
                         </div>
                         <div className="bg-[#43a047] px-4 py-1 text-center text-[0.78rem] font-semibold text-white">
@@ -439,7 +441,7 @@ function ProductsPage() {
                     </div>
                     <div className="mt-2.5 flex items-end justify-between gap-2">
                       <div>
-                        <p className="text-[0.95rem] font-semibold leading-none text-[#111111]">
+                        <p className="text-[0.95rem] font-normal leading-none text-[#111111]">
                           {formatRupees(priceValue)}
                         </p>
                         <p className="mt-1.5 text-[0.82rem] text-[#b5b5b5] line-through">
@@ -466,9 +468,9 @@ function ProductsPage() {
             {filtered.map((product) => (
               <div
                 key={product.id}
-                className="group overflow-hidden rounded-[22px] border border-[#eadbc8] bg-white shadow-[0_18px_45px_-38px_rgba(70,36,15,0.65)] transition hover:-translate-y-1 hover:border-[#d6a35c]"
+                className="group rounded-[2.35rem] bg-white p-3 shadow-[0_24px_60px_-34px_rgba(27,32,50,0.28)] ring-1 ring-black/5 transition hover:-translate-y-1"
               >
-                <div className="relative aspect-[0.82] overflow-hidden bg-[#f7efe5]">
+                <div className="overflow-hidden rounded-[2rem] bg-[#eef3f7]">
                   <Link to="/products/$productId" params={{ productId: product.id }}>
                     <img
                       src={product.image}
@@ -476,53 +478,54 @@ function ProductsPage() {
                       loading="lazy"
                       width={600}
                       height={700}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      className="aspect-[0.9] w-full object-cover transition duration-500 group-hover:scale-105"
                     />
                   </Link>
-                  {product.tag ? (
-                    <span className="absolute left-3 top-3 rounded-full bg-[#34180e] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#ffd68d]">
-                      {product.tag}
-                    </span>
-                  ) : null}
-                  <button
-                    type="button"
-                    onClick={() => toggleWishlist(product.id)}
-                    aria-label={isWishlisted(product.id) ? "Remove from wishlist" : "Add to wishlist"}
-                    className={`absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full border transition ${
-                      isWishlisted(product.id)
-                        ? "border-[#34180e] bg-[#34180e] text-white"
-                        : "border-white/70 bg-white/90 text-[#34180e]"
-                    }`}
-                  >
-                    <Heart className={`h-4 w-4 ${isWishlisted(product.id) ? "fill-current" : ""}`} />
-                  </button>
                 </div>
 
-                <div className="p-3 md:p-3.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">
-                    {product.category}
-                  </p>
+                <div className="px-3 pb-3 pt-5">
                   <Link
                     to="/products/$productId"
                     params={{ productId: product.id }}
-                    className="mt-1.5 block min-h-[3.35rem] line-clamp-2 font-heading text-[1.05rem] leading-[1.05] text-[#34180e] md:text-[1.2rem]"
+                    className="block min-h-[3.2rem] line-clamp-2 text-[1.9rem] font-normal leading-[0.98] tracking-[-0.045em] text-[#181818]"
                   >
                     {product.name}
                   </Link>
-                  <p className="mt-1.5 line-clamp-2 min-h-[2.75rem] text-[11px] leading-5 text-[#7e624b] md:text-xs">
+                  <p className="mt-2 text-[1rem] font-normal text-[#b3b3b3]">
+                    {product.category}
+                  </p>
+                  <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 text-[0.98rem]">
+                    <div className="flex items-center gap-2 text-[#b8b8b8]">
+                      <Tag className="h-4 w-4 stroke-[1.8]" />
+                      <span className="font-normal text-[#1c1c1c]">
+                        from {product.price}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[#b8b8b8]">
+                      <BookOpenText className="h-4 w-4 stroke-[1.8]" />
+                      <span className="font-normal text-[#1c1c1c]">{product.category}</span>
+                    </div>
+                  </div>
+
+                  <p className="mt-4 line-clamp-2 min-h-[3.1rem] text-[0.95rem] leading-6 text-[#747474]">
                     {product.shortDescription}
                   </p>
-                  <div className="mt-2 flex items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-[#8b4d1d]">{product.price}</p>
-                  </div>
-                  <div className="mt-2 flex justify-end">
+
+                  <div className="mt-6 flex items-center gap-3">
+                    <Link
+                      to="/products/$productId"
+                      params={{ productId: product.id }}
+                      className="flex-1 rounded-full bg-[#181818] px-4 py-3.5 text-center text-sm font-medium text-white transition hover:bg-black"
+                    >
+                      View details
+                    </Link>
                     <button
                       type="button"
-                      onClick={() => addToCart(product.id)}
-                      aria-label="Add to cart"
-                      className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#34180e] text-white transition hover:bg-[#221008]"
+                      onClick={() => toggleWishlist(product.id)}
+                      aria-label={isWishlisted(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                      className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-[#ececec] bg-white text-[#ff6b77] shadow-[0_10px_24px_-18px_rgba(0,0,0,0.35)] transition hover:-translate-y-0.5"
                     >
-                      <ShoppingCart className="h-4 w-4" />
+                      <Heart className={`h-5 w-5 ${isWishlisted(product.id) ? "fill-current" : ""}`} />
                     </button>
                   </div>
                 </div>

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
   LockKeyhole,
@@ -24,6 +24,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [googleMessage, setGoogleMessage] = useState("");
@@ -74,7 +75,7 @@ function LoginPage() {
               }),
             );
             setGoogleMessage(`Signed in as ${payload.email}`);
-            window.location.href = "/";
+            navigate({ to: "/" });
           } catch {
             setGoogleMessage("Google login could not be completed.");
           }
@@ -93,7 +94,7 @@ function LoginPage() {
     script.defer = true;
     script.onload = initializeGoogle;
     document.head.appendChild(script);
-  }, [googleClientId]);
+  }, [googleClientId, navigate]);
 
   function handleGoogleSignIn() {
     if (!googleClientId) {
