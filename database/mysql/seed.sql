@@ -83,3 +83,73 @@ ON DUPLICATE KEY UPDATE
   stock_quantity = VALUES(stock_quantity),
   is_published = VALUES(is_published);
 
+INSERT INTO catalogues (
+  slug,
+  title,
+  short_label,
+  description,
+  image_url,
+  item_count_label,
+  sort_order,
+  is_active
+)
+VALUES
+  (
+    'statues-catalogue',
+    'Statue Catalogue',
+    'Statues',
+    'Maharaj statues, wall pieces, premium display idols, and gifting options.',
+    '/assets/product-statue-1.jpg',
+    '170 products',
+    1,
+    1
+  ),
+  (
+    'weapons-catalogue',
+    'Weapon Catalogue',
+    'Weapons',
+    'Talwar, khanjar, warrior weapons, ceremonial pieces, and display sets.',
+    '/assets/product-weapon-1.jpg',
+    '52 products',
+    2,
+    1
+  ),
+  (
+    'shield-catalogue',
+    'Shield Catalogue',
+    'Shields',
+    'Decor shields, premium heritage shields, and combo display collections.',
+    '/assets/hero-banner-3.jpg',
+    '18 products',
+    3,
+    1
+  ),
+  (
+    'dhoop-catalogue',
+    'Dhoop & Decor Catalogue',
+    'Dhoop',
+    'Dhoop stands, devotional decor, brass pieces, and pooja accessories.',
+    '/assets/product-dhoop-1.jpg',
+    '34 products',
+    4,
+    1
+  ),
+  (
+    'full-catalogue',
+    'Full Catalogue',
+    'Full Range',
+    'Complete Shivray range in one place for browsing, enquiry, and bulk selection.',
+    '/assets/products-poster.jpg',
+    'All collections',
+    5,
+    1
+  )
+ON DUPLICATE KEY UPDATE
+  title = VALUES(title),
+  short_label = VALUES(short_label),
+  description = VALUES(description),
+  image_url = VALUES(image_url),
+  item_count_label = VALUES(item_count_label),
+  sort_order = VALUES(sort_order),
+  is_active = VALUES(is_active);
+

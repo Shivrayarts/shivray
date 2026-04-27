@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { ArrowUp } from "lucide-react";
+import { siteConfig } from "@/lib/site-config";
 
-const WHATSAPP_URL =
-  "https://wa.me/917028996666?text=Hi%20Shivray%2C%20I%20want%20to%20know%20more%20about%20your%20products.";
+const WHATSAPP_URL = `${siteConfig.whatsappHref}?text=Hi%20Shivray%2C%20I%20want%20to%20know%20more%20about%20your%20products.`;
 
 export default function FloatingActions() {
   const [showBackToTop, setShowBackToTop] = useState(false);

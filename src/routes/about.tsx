@@ -33,7 +33,7 @@ function AboutPage() {
 
       {/* MD Section */}
       <section className="py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="w-full px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="rounded-lg overflow-hidden shadow-heritage">
               <img src={aboutCraftsman} alt="Artisan at work" loading="lazy" width={800} height={600} className="w-full h-96 object-cover" />
@@ -55,7 +55,7 @@ function AboutPage() {
 
       {/* Mission */}
       <section className="py-16 md:py-24 bg-card bg-heritage-pattern">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="w-full px-4">
           <div className="text-center mb-12">
             <h2 className="font-heading text-3xl md:text-4xl font-bold">Our Mission</h2>
             <div className="w-24 h-1 bg-gold mx-auto mt-3" />

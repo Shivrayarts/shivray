@@ -1,104 +1,106 @@
 import { Link } from "@tanstack/react-router";
-import { MapPin, Phone, Mail, Facebook, Instagram, Youtube } from "lucide-react";
+import { Facebook, Instagram, Mail, MapPin, Phone, Youtube } from "lucide-react";
 import logoImg from "@/assets/logo.jpg";
+import { siteConfig } from "@/lib/site-config";
+
+const footerLinks = [
+  { to: "/", label: "Home" },
+  { to: "/products", label: "Product" },
+  { to: "/required-catalogue", label: "Required Catalogue" },
+  { to: "/contact", label: "Contact" },
+  { to: "/login", label: "Login" },
+] as const;
 
 export default function Footer() {
   return (
-    <footer className="bg-primary text-primary-foreground">
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-          {/* Brand */}
-          <div className="lg:col-span-1">
-            <div className="flex items-center gap-3 mb-4">
-              <img src={logoImg} alt="Shivray" className="h-12 w-12 rounded-full object-cover" />
-              <div>
-                <h3 className="font-heading text-lg font-bold text-gold">Shivray</h3>
-                <p className="text-xs tracking-widest uppercase opacity-70">Authentic Heritage Craftsmanship</p>
-              </div>
-            </div>
-            <p className="text-sm opacity-80 leading-relaxed font-display italic">
-              India's premier studio for authentic statues of Chhatrapati Shivaji Maharaj and Maratha weapons. Specializing in miniatures, statues, and historical replicas.
-            </p>
-            <div className="flex gap-3 mt-6">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-primary-foreground/10 hover:bg-gold hover:text-gold-foreground transition-colors">
-                <Facebook className="w-4 h-4" />
-              </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-primary-foreground/10 hover:bg-gold hover:text-gold-foreground transition-colors">
-                <Instagram className="w-4 h-4" />
-              </a>
-              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-primary-foreground/10 hover:bg-gold hover:text-gold-foreground transition-colors">
-                <Youtube className="w-4 h-4" />
-              </a>
+    <footer className="border-t border-[#e8d7c1] bg-[#2b130c] text-[#f8ead7]">
+      <div className="layout-shell grid gap-8 px-4 py-10 md:grid-cols-[1fr_0.8fr_1fr] md:px-6">
+        <div>
+          <div className="flex items-center gap-3">
+            <img
+              src={logoImg}
+              alt="Shivray"
+              className="h-12 w-12 rounded-full border border-[#d6a35c]/40 object-cover"
+            />
+            <div>
+              <p className="font-heading text-2xl text-[#ffd68d]">Shivray</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#d1b08b]">
+                Mobile first public pages
+              </p>
             </div>
           </div>
-
-          {/* Quick Links */}
-          <div>
-            <h4 className="font-heading text-sm font-bold uppercase tracking-widest text-gold mb-4">Quick Links</h4>
-            <ul className="space-y-2">
-              {[
-                { to: "/", label: "Home" },
-                { to: "/about", label: "About Us" },
-                { to: "/products", label: "Products" },
-                { to: "/blog", label: "Blog" },
-                { to: "/contact", label: "Contact" },
-              ].map((l) => (
-                <li key={l.to}>
-                  <Link to={l.to as "/"} className="text-sm opacity-80 hover:opacity-100 hover:text-gold transition-colors">
-                    {l.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Categories */}
-          <div>
-            <h4 className="font-heading text-sm font-bold uppercase tracking-widest text-gold mb-4">Categories</h4>
-            <ul className="space-y-2">
-              {["Maharaj Statues", "Warrior Weapons", "Dhoop Collection", "Shields & Armor", "Historical Replicas", "Gift Items"].map((c) => (
-                <li key={c}>
-                  <Link to="/products" className="text-sm opacity-80 hover:opacity-100 hover:text-gold transition-colors">
-                    {c}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h4 className="font-heading text-sm font-bold uppercase tracking-widest text-gold mb-4">Contact Us</h4>
-            <ul className="space-y-4">
-              <li className="flex gap-3 text-sm">
-                <MapPin className="w-4 h-4 text-gold shrink-0 mt-0.5" />
-                <span className="opacity-80">Famous Chowk, Kirti Nagar Ln No. 1, New Sangavi, Pune, Maharashtra 411027</span>
-              </li>
-              <li>
-                <a href="tel:+917028996666" className="flex gap-3 text-sm opacity-80 hover:opacity-100 hover:text-gold transition-colors">
-                  <Phone className="w-4 h-4 text-gold shrink-0" />
-                  +91 7028996666
-                </a>
-              </li>
-              <li>
-                <a href="mailto:shivray.arts30@gmail.com" className="flex gap-3 text-sm opacity-80 hover:opacity-100 hover:text-gold transition-colors">
-                  <Mail className="w-4 h-4 text-gold shrink-0" />
-                  shivray.arts30@gmail.com
-                </a>
-              </li>
-            </ul>
+          <p className="mt-4 max-w-md text-sm leading-6 text-[#e7d6c2]">
+            Crafted to feel fast, premium, and easy to browse on phones, with direct paths
+            to products, catalogue requests, contact, and login.
+          </p>
+          <div className="mt-5 flex items-center gap-3">
+            <a
+              href={siteConfig.socialLinks.facebook}
+              aria-label="Facebook"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#d6a35c]/40 text-[#ffd68d] transition hover:bg-[#3a1b10]"
+            >
+              <Facebook className="h-4 w-4" />
+            </a>
+            <a
+              href={siteConfig.socialLinks.instagram}
+              aria-label="Instagram"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#d6a35c]/40 text-[#ffd68d] transition hover:bg-[#3a1b10]"
+            >
+              <Instagram className="h-4 w-4" />
+            </a>
+            <a
+              href={siteConfig.socialLinks.youtube}
+              aria-label="YouTube"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#d6a35c]/40 text-[#ffd68d] transition hover:bg-[#3a1b10]"
+            >
+              <Youtube className="h-4 w-4" />
+            </a>
           </div>
         </div>
-      </div>
 
-      <div className="border-t border-primary-foreground/10">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-2">
-          <p className="text-xs opacity-60">(c) 2025 Shivray. All rights reserved.</p>
-          <p className="text-xs opacity-60">Crafted with pride in Pune, India</p>
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffd68d]">
+            Quick Links
+          </p>
+          <div className="mt-4 grid gap-2">
+            {footerLinks.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="text-sm text-[#f4e7d8] transition hover:text-[#ffd68d]"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffd68d]">
+            Contact
+          </p>
+          <div className="mt-4 grid gap-4 text-sm text-[#f4e7d8]">
+            <div className="flex gap-3">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#ffd68d]" />
+              <span>{siteConfig.address}</span>
+            </div>
+            <a
+              href={`tel:${siteConfig.phoneHref}`}
+              className="flex gap-3 transition hover:text-[#ffd68d]"
+            >
+              <Phone className="h-4 w-4 shrink-0 text-[#ffd68d]" />
+              <span>{siteConfig.phoneDisplay}</span>
+            </a>
+            <a
+              href={`mailto:${siteConfig.email}`}
+              className="flex gap-3 transition hover:text-[#ffd68d]"
+            >
+              <Mail className="h-4 w-4 shrink-0 text-[#ffd68d]" />
+              <span>{siteConfig.email}</span>
+            </a>
+          </div>
         </div>
       </div>
     </footer>
   );
 }
-
-

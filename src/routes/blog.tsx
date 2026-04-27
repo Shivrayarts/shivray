@@ -51,7 +51,7 @@ function BlogPage() {
 
       {/* Articles */}
       <section className="py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="w-full px-4">
           <h2 className="font-heading text-2xl md:text-3xl font-bold text-center mb-10">Latest Stories</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {articles.map((article) => (
@@ -75,7 +75,7 @@ function BlogPage() {
 
       {/* Videos */}
       <section className="py-16 md:py-24 bg-card bg-heritage-pattern">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="w-full px-4">
           <h2 className="font-heading text-2xl md:text-3xl font-bold text-center mb-10">Featured Videos</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {videos.map((video) => (

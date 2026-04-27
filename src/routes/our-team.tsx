@@ -30,7 +30,7 @@ function OurTeamPage() {
       </section>
 
       <section className="py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="w-full px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {team.map((member) => (
               <div key={member.name} className="bg-card rounded-lg overflow-hidden shadow-heritage border border-border group text-center">

@@ -1,80 +1,257 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { ArrowRight, Shield, Sword, Crown, ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  ArrowRight,
+  BookOpenText,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  Heart,
+  ShieldCheck,
+  ShoppingCart,
+  Star,
+} from "lucide-react";
+import { getProductsFromDbServer } from "@/lib/server/products.functions";
+import { getCatalogueTypesFromDbServer } from "@/lib/server/catalogues.functions";
+import { useCart } from "@/hooks/use-cart";
+import { useWishlist } from "@/hooks/use-wishlist";
+import { siteConfig } from "@/lib/site-config";
 import heroBanner1 from "@/assets/products-poster.jpg";
 import heroBanner2 from "@/assets/hero-banner-2.jpg";
 import heroBanner3 from "@/assets/hero-banner-3.jpg";
+import productDhoop1 from "@/assets/product-dhoop-1.jpg";
 import productStatue1 from "@/assets/product-statue-1.jpg";
 import productStatue2 from "@/assets/product-statue-2.jpg";
 import productWeapon1 from "@/assets/product-weapon-1.jpg";
-import productDhoop1 from "@/assets/product-dhoop-1.jpg";
-import aboutCraftsman from "@/assets/about-craftsman.jpg";
 
 export const Route = createFileRoute("/")({
+  loader: async () => ({
+    products: await getProductsFromDbServer(),
+    catalogueTypes: await getCatalogueTypesFromDbServer(),
+  }),
   component: HomePage,
   head: () => ({
     meta: [
-      { title: "Shivray - Authentic Maratha Heritage Craftsmanship" },
-      { name: "description", content: "India's premier studio for authentic statues, Maratha weapons, and historical replicas. Handcrafted with precision and cultural pride." },
-      { property: "og:title", content: "Shivray - Authentic Maratha Heritage" },
-      { property: "og:description", content: "Handcrafted statues, weapons, and historical replicas preserving India's warrior legacy." },
+      { title: "Shivray - Mobile First Heritage Store" },
+      {
+        name: "description",
+        content:
+          "Discover handcrafted Maratha statues, weapons, and heritage decor in a fast, mobile-first shopping experience.",
+      },
+      { property: "og:title", content: "Shivray - Mobile First Heritage Store" },
+      {
+        property: "og:description",
+        content:
+          "Browse collections, request catalogue access, and enquire instantly from a mobile-first Shivray storefront.",
+      },
     ],
   }),
 });
 
-const featuredProducts = [
-  { id: "shastradhari-maharaj-coloured", name: "Shastradhari Maharaj", price: "Rs 5,100", image: productStatue1, category: "Statues" },
-  { id: "ashwarudh-maharaj", name: "Ashwarudh Maharaj", price: "Rs 12,850", image: productStatue2, category: "Statues" },
-  { id: "royal-khanjar-with-sheath", name: "Royal Khanjar", price: "Rs 8,500", image: productWeapon1, category: "Weapons" },
-  { id: "brass-dhoop-stand", name: "Brass Dhoop Stand", price: "Rs 2,200", image: productDhoop1, category: "Dhoop" },
-];
+const quickLinks = [
+  {
+    title: "Shop Products",
+    description: "Explore all collections",
+    to: "/products",
+    image: heroBanner1,
+  },
+  {
+    title: "Required Catalogue",
+    description: "Request our latest catalogue",
+    to: "/required-catalogue",
+    image: heroBanner2,
+  },
+  {
+    title: "Contact Team",
+    description: "Talk to us on call or WhatsApp",
+    to: "/contact",
+    image: heroBanner3,
+  },
+] as const;
+
+const spotlightProducts = [
+  {
+    id: "shastradhari-maharaj-coloured",
+    title: "Shastradhari Maharaj",
+    price: "Rs. 5,100",
+    image: productStatue1,
+    badge: "Popular",
+  },
+  {
+    id: "ashwarudh-maharaj",
+    title: "Ashwarudh Maharaj",
+    price: "Rs. 12,850",
+    image: productStatue2,
+    badge: "Premium",
+  },
+  {
+    id: "royal-khanjar-with-sheath",
+    title: "Royal Khanjar",
+    price: "Rs. 8,500",
+    image: productWeapon1,
+    badge: "Best Seller",
+  },
+  {
+    id: "brass-dhoop-stand",
+    title: "Brass Dhoop Stand",
+    price: "Rs. 2,200",
+    image: productDhoop1,
+    badge: "New Arrival",
+  },
+] as const;
+
+const features = [
+  {
+    icon: ShieldCheck,
+    title: "Trusted Craftsmanship",
+    copy: "Hand-finished products inspired by heritage, made for display, gifting, and devotion.",
+  },
+  {
+    icon: Clock3,
+    title: "Fast Enquiry Flow",
+    copy: "Designed for mobile users who want quick browsing, quick contact, and quick buying decisions.",
+  },
+  {
+    icon: BookOpenText,
+    title: "Catalogue Support",
+    copy: "Customers can request a full catalogue and get tailored recommendations for their budget.",
+  },
+] as const;
+
+const catalogueHighlights = [
+  "Latest catalogue for mobile users",
+  "Fast WhatsApp enquiry support",
+  "Custom recommendations by budget",
+] as const;
 
 const heroSlides = [
   {
-    image: heroBanner1,
-    line1: "Crafting Heritage",
-    line2: "Into Art",
-    subtitle:
-      "Sign boards, metal art, LED signage and CNC designs handcrafted with the spirit of Maratha tradition and modern precision.",
-  },
-  {
-    image: heroBanner2,
-    line1: "Warrior Legacy",
-    line2: "Reimagined",
-    subtitle:
-      "Authentic Maratha-inspired aesthetics fused with modern craftsmanship for premium spaces and proud collections.",
-  },
-  {
-    image: heroBanner3,
-    line1: "Timeless Culture",
-    line2: "Modern Vision",
-    subtitle:
+    eyebrow: "Premium Craftsmanship Since 2015",
+    titleTop: "Timeless Culture",
+    titleBottom: "Modern Vision",
+    copy:
       "From heritage artifacts to custom statement pieces, each creation carries tradition, precision, and visual impact.",
+    image: heroBanner3,
   },
-];
+  {
+    eyebrow: "Made For Proud Spaces",
+    titleTop: "Warrior Legacy",
+    titleBottom: "Handcrafted Detail",
+    copy:
+      "Bring home statues, shields, and decor pieces shaped with heritage-inspired artistry and a premium finish.",
+    image: heroBanner1,
+  },
+  {
+    eyebrow: "Signature Heritage Collection",
+    titleTop: "Royal Presence",
+    titleBottom: "Bold Display",
+    copy:
+      "Explore statement pieces designed for gifting, home decor, devotion, and unforgettable first impressions.",
+    image: heroBanner2,
+  },
+] as const;
+
+function formatIndianPrice(value: string | number) {
+  if (typeof value === "number") {
+    return `₹${value.toLocaleString("en-IN")}`;
+  }
+
+  const cleaned = value.replace(/[^\d.]/g, "");
+  const amount = Number(cleaned);
+  if (Number.isFinite(amount) && amount > 0) {
+    return `₹${amount.toLocaleString("en-IN")}`;
+  }
+
+  return value.replace(/^Rs\.?\s*/i, "₹").replace(/^INR\s*/i, "₹");
+}
+
+function parsePriceValue(value: string | number) {
+  if (typeof value === "number") return value;
+  return Number(value.replace(/[^\d.]/g, "")) || 0;
+}
+
+function formatRupees(value: number) {
+  return `₹ ${value.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function getMobileDiscount(index: number) {
+  return [4, 2, 6, 5][index % 4];
+}
+
+function getMobileBadge(productTag: string, index: number) {
+  const normalizedTag = productTag.trim().toLowerCase();
+  if (normalizedTag) {
+    if (normalizedTag === "featured") return "hot";
+    if (normalizedTag === "popular") return "hot";
+    if (normalizedTag === "new arrival") return "new";
+    return normalizedTag;
+  }
+
+  return index % 2 === 0 ? "hot" : "new";
+}
+
+function getBadgeTone(label: string) {
+  return label === "new" ? "bg-[#ff9800]" : "bg-[#e3162d]";
+}
 
 function HomePage() {
+  const { products, catalogueTypes } = Route.useLoaderData();
+  const { addToCart } = useCart();
+  const { isWishlisted, toggleWishlist } = useWishlist();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [categorySlide, setCategorySlide] = useState(0);
+  const categoriesRef = useRef<HTMLDivElement | null>(null);
+  const categoryCollections = catalogueTypes.slice(0, 4);
+  const spotlightProductCards = spotlightProducts.map((product) => {
+    const matchedProduct = products.find((item) => item.id === product.id);
+
+    return {
+      id: product.id,
+      name: matchedProduct?.name ?? product.title,
+      price: matchedProduct?.price ?? product.price,
+      image: matchedProduct?.image ?? product.image,
+      shortDescription: matchedProduct?.shortDescription ?? product.badge,
+      category: matchedProduct?.category ?? "Statues",
+      tag: matchedProduct?.tag ?? product.badge,
+      dimensions: matchedProduct?.dimensions ?? "6 in",
+    };
+  });
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    const timer = window.setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 5000);
 
-    return () => clearInterval(timer);
+    return () => window.clearInterval(timer);
   }, []);
 
-  const activeSlide = heroSlides[currentSlide];
+  const handleCategoriesScroll = () => {
+    const node = categoriesRef.current;
+    if (!node || window.innerWidth >= 768) {
+      return;
+    }
+
+    const firstCard = node.querySelector<HTMLElement>("[data-category-card]");
+    if (!firstCard) {
+      return;
+    }
+
+    const cardWidth = firstCard.offsetWidth + 16;
+    const nextSlide = Math.round(node.scrollLeft / cardWidth);
+    setCategorySlide(Math.max(0, Math.min(nextSlide, categoryCollections.length - 1)));
+  };
 
   return (
-    <div>
-      {/* Hero Banner */}
-      <section className="relative isolate min-h-[72vh] overflow-hidden md:min-h-[86vh]">
+    <div className="bg-[#f7f1e7]">
+      <section className="relative isolate overflow-hidden bg-[#2b0b08] text-white">
         {heroSlides.map((slide, index) => (
           <img
-            key={slide.image}
+            key={slide.titleTop}
             src={slide.image}
-            alt="Shivray Arts banner"
+            alt={slide.titleTop}
             className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
               index === currentSlide ? "opacity-100" : "opacity-0"
             }`}
@@ -82,40 +259,45 @@ function HomePage() {
             height={1080}
           />
         ))}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(124,8,28,0.58)_0%,rgba(54,0,13,0.84)_60%,rgba(29,0,9,0.95)_100%)]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#3b0017]/30 via-transparent to-[#26000f]/70" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(28,4,4,0.58)_0%,rgba(57,7,11,0.86)_38%,rgba(42,5,8,0.92)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(244,168,58,0.12),transparent_34%),radial-gradient(circle_at_top,rgba(255,255,255,0.05),transparent_42%)]" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-[linear-gradient(90deg,rgba(150,86,33,0.38),transparent)] md:w-28" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-[linear-gradient(270deg,rgba(150,86,33,0.38),transparent)] md:w-28" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[#a66a28]/70" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-[33%] h-px bg-[#a66a28]/55" />
+        <div className="pointer-events-none absolute left-[18%] top-0 h-[42%] w-px bg-[#a66a28]/70" />
+        <div className="pointer-events-none absolute right-[19%] top-0 h-[42%] w-px bg-[#a66a28]/70" />
+        <div className="pointer-events-none absolute bottom-0 left-0 h-[34%] w-[18%] rounded-tr-[90px] border-r border-t border-[#a66a28]/65" />
+        <div className="pointer-events-none absolute left-0 top-0 h-[38%] w-[18%] rounded-br-[90px] border-b border-r border-[#a66a28]/65" />
+        <div className="pointer-events-none absolute bottom-0 right-0 h-[34%] w-[18%] rounded-tl-[90px] border-l border-t border-[#a66a28]/65" />
+        <div className="pointer-events-none absolute right-0 top-0 h-[38%] w-[18%] rounded-bl-[90px] border-b border-l border-[#a66a28]/65" />
 
-        <div className="pointer-events-none absolute left-0 top-0 h-48 w-48 rounded-br-[110px] border-b border-r border-[#c08b3a]/45 bg-[radial-gradient(circle_at_top_left,rgba(212,162,68,0.32)_0%,rgba(212,162,68,0)_65%)] md:h-72 md:w-72" />
-        <div className="pointer-events-none absolute right-0 top-0 h-48 w-48 rounded-bl-[110px] border-b border-l border-[#c08b3a]/45 bg-[radial-gradient(circle_at_top_right,rgba(212,162,68,0.32)_0%,rgba(212,162,68,0)_65%)] md:h-72 md:w-72" />
-        <div className="pointer-events-none absolute bottom-0 left-0 h-40 w-40 rounded-tr-[90px] border-r border-t border-[#c08b3a]/35 bg-[radial-gradient(circle_at_bottom_left,rgba(212,162,68,0.24)_0%,rgba(212,162,68,0)_65%)] md:h-56 md:w-56" />
-        <div className="pointer-events-none absolute bottom-0 right-0 h-40 w-40 rounded-tl-[90px] border-l border-t border-[#c08b3a]/35 bg-[radial-gradient(circle_at_bottom_right,rgba(212,162,68,0.24)_0%,rgba(212,162,68,0)_65%)] md:h-56 md:w-56" />
-
-        <div className="relative z-10 mx-auto flex min-h-[72vh] w-full max-w-6xl items-center justify-center px-4 py-20 text-center md:min-h-[86vh]">
-          <div className="max-w-4xl">
-            <p className="font-heading text-xs font-semibold uppercase tracking-[0.42em] text-[#e0a82d] md:text-sm">
-              Premium Craftsmanship Since 2015
+        <div className="layout-shell relative flex min-h-[560px] items-center justify-center px-5 py-16 text-center md:min-h-[720px] md:px-8 md:py-24">
+          <div className="mx-auto max-w-5xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.42em] text-[#e3a92b] md:text-sm">
+              {heroSlides[currentSlide].eyebrow}
             </p>
-            <h1 className="mt-6 font-heading text-5xl font-semibold leading-[0.95] text-[#f4eee5] md:text-7xl lg:text-8xl">
-              {activeSlide.line1}
+            <h1 className="mt-6 font-heading text-5xl font-semibold leading-[0.92] text-[#fbf2e2] sm:text-6xl md:text-8xl">
+              {heroSlides[currentSlide].titleTop}
             </h1>
-            <h2 className="mt-2 font-heading text-5xl font-semibold leading-[0.95] text-[#e0a82d] md:text-7xl lg:text-8xl">
-              {activeSlide.line2}
+            <h2 className="mt-2 font-heading text-5xl font-semibold leading-[0.92] text-[#e1a126] sm:text-6xl md:text-8xl">
+              {heroSlides[currentSlide].titleBottom}
             </h2>
-            <p className="mx-auto mt-7 max-w-3xl text-base leading-relaxed text-[#efe4d5]/90 md:text-2xl">
-              {activeSlide.subtitle}
+            <p className="mx-auto mt-7 max-w-4xl text-lg leading-9 text-[#f6e6d4] md:text-[1.05rem]">
+              {heroSlides[currentSlide].copy}
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
                 to="/products"
-                className="inline-flex w-full max-w-full items-center justify-center gap-2 rounded-md bg-[#e0a82d] px-8 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider text-[#291006] transition-all hover:brightness-110 sm:w-auto sm:min-w-64"
+                className="inline-flex min-w-[20rem] items-center justify-center gap-3 rounded-xl bg-[#e1a126] px-8 py-4 font-heading text-sm font-semibold uppercase tracking-[0.16em] text-[#331208] transition hover:brightness-105"
               >
                 Explore Products
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-5 w-5" />
               </Link>
               <Link
                 to="/contact"
-                className="inline-flex w-full max-w-full items-center justify-center rounded-md border border-[#d7a43f] bg-transparent px-8 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider text-[#f6d37d] transition-colors hover:bg-[#d7a43f]/10 sm:w-auto sm:min-w-64"
+                className="inline-flex min-w-[20rem] items-center justify-center rounded-xl border border-[#d6a43c] bg-[#5a0a15]/20 px-8 py-4 font-heading text-sm font-semibold uppercase tracking-[0.16em] text-[#f6d37d] transition hover:bg-[#5a0a15]/35"
               >
                 Get Custom Design
               </Link>
@@ -124,168 +306,560 @@ function HomePage() {
         </div>
 
         <button
+          type="button"
           onClick={() =>
             setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)
           }
-          className="absolute left-3 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-[#d7a43f]/40 bg-[#2a0010]/40 p-2 text-[#f6d37d] transition-colors hover:bg-[#2a0010]/70 md:block"
           aria-label="Previous slide"
+          className="absolute left-2 top-1/2 z-10 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-[#a66a28] bg-[#4b0912]/45 text-[#e3a92b] transition hover:bg-[#4b0912]/70 md:left-8 md:h-14 md:w-14"
         >
-          <ChevronLeft className="h-5 w-5" />
+          <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
         </button>
         <button
+          type="button"
           onClick={() => setCurrentSlide((prev) => (prev + 1) % heroSlides.length)}
-          className="absolute right-3 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-[#d7a43f]/40 bg-[#2a0010]/40 p-2 text-[#f6d37d] transition-colors hover:bg-[#2a0010]/70 md:block"
           aria-label="Next slide"
+          className="absolute right-2 top-1/2 z-10 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-[#a66a28] bg-[#4b0912]/45 text-[#e3a92b] transition hover:bg-[#4b0912]/70 md:right-8 md:h-14 md:w-14"
         >
-          <ChevronRight className="h-5 w-5" />
+          <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
         </button>
 
-        <div className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2">
+        <div className="absolute bottom-7 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3">
           {heroSlides.map((slide, index) => (
             <button
-              key={slide.image}
+              key={slide.titleTop}
+              type="button"
               onClick={() => setCurrentSlide(index)}
-              className={`h-2.5 rounded-full transition-all ${
-                index === currentSlide ? "w-8 bg-[#e0a82d]" : "w-2.5 bg-[#e7c67a]/45"
-              }`}
               aria-label={`Go to slide ${index + 1}`}
+              className={`h-3 rounded-full transition-all ${
+                index === currentSlide ? "w-10 bg-[#e1a126]" : "w-3 bg-[#d7bc90]/60"
+              }`}
             />
           ))}
         </div>
+
       </section>
 
-      {/* Categories */}
-      <section className="py-16 md:py-24 bg-heritage-pattern">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground">Our Collections</h2>
-            <div className="w-24 h-1 bg-gold mx-auto mt-3" />
-            <p className="mt-4 text-muted-foreground font-display italic text-lg">Discover handcrafted treasures embodying centuries of tradition</p>
+      <section className="px-4 py-10 md:px-6 md:py-14">
+        <div className="layout-shell rounded-[34px] bg-[#fffdf8] px-4 py-6 md:px-8 md:py-8">
+          <div className="text-center">
+            <h2 className="font-body text-3xl font-semibold text-[#1d150f] md:text-4xl">
+              Popular Categories
+            </h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { icon: Crown, title: "Maharaj Statues", desc: "Handcrafted sculptures capturing iconic warriors and legends" },
-              { icon: Sword, title: "Warrior Weapons", desc: "Faithful recreations of traditional Maratha arms" },
-              { icon: Shield, title: "Shields & Artifacts", desc: "Meticulously crafted replicas from our glorious history" },
-            ].map((cat) => (
+
+          <div
+            ref={categoriesRef}
+            onScroll={handleCategoriesScroll}
+            className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-4 md:gap-x-6 md:gap-y-8 md:overflow-visible md:pb-0"
+          >
+            {categoryCollections.map((collection) => (
               <Link
-                key={cat.title}
+                key={collection.id}
                 to="/products"
-                className="group bg-card rounded-lg p-8 text-center shadow-heritage hover:shadow-xl transition-all duration-300 border border-border hover:border-gold/40"
+                search={{}}
+                data-category-card
+                className="group min-w-[78%] snap-center rounded-[2.3rem] bg-white p-3 text-left shadow-[0_24px_55px_-32px_rgba(80,40,20,0.38)] ring-1 ring-black/5 transition hover:-translate-y-1 sm:min-w-[calc(50%-0.5rem)] md:min-w-0"
               >
-                <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-gold/20 transition-colors">
-                  <cat.icon className="w-7 h-7 text-primary group-hover:text-gold transition-colors" />
-                </div>
-                <h3 className="font-heading text-lg font-semibold text-foreground">{cat.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{cat.desc}</p>
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-gold group-hover:gap-2 transition-all">
-                  Explore <ArrowRight className="w-4 h-4" />
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Products */}
-      <section className="py-16 md:py-24 bg-card">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground">Featured Products</h2>
-            <div className="w-24 h-1 bg-gold mx-auto mt-3" />
-            <p className="mt-4 text-muted-foreground font-display italic text-lg">Reliving History Through Every Creation</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.map((product) => (
-              <Link
-                key={product.name}
-                to="/products/$productId"
-                params={{ productId: product.id }}
-                className="group block h-full overflow-hidden rounded-lg border border-border bg-background shadow-heritage transition-all duration-300 hover:border-gold/30 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
-              >
-                <div className="aspect-square overflow-hidden">
+                <div className="relative overflow-hidden rounded-[2rem] bg-[#b65a73]">
                   <img
-                    src={product.image}
-                    alt={product.name}
-                    loading="lazy"
-                    width={600}
-                    height={600}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    src={collection.image}
+                    alt={collection.title}
+                    className="aspect-[0.92] w-full object-cover opacity-90 saturate-[0.7] transition duration-500 group-hover:scale-105"
+                    width={420}
+                    height={420}
                   />
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,226,152,0.16),rgba(132,33,58,0.28))]" />
                 </div>
-                <div className="p-4">
-                  <span className="text-xs font-medium uppercase tracking-wider text-gold">{product.category}</span>
-                  <h3 className="font-heading text-sm font-semibold text-foreground mt-1">{product.name}</h3>
-                  <p className="text-lg font-bold text-primary mt-2">{product.price}</p>
+                <div className="px-2 pb-2 pt-5">
+                  <h3 className="font-body text-[2rem] font-semibold leading-none tracking-[-0.04em] text-[#1c140f] md:text-[2.1rem]">
+                    {collection.shortLabel}
+                  </h3>
+                  <p className="mt-2 text-[1.02rem] text-[#a09a93]">{collection.itemCountLabel}</p>
+                  <p className="mt-4 line-clamp-2 text-sm leading-6 text-[#635d57]">
+                    {collection.description}
+                  </p>
                 </div>
               </Link>
             ))}
           </div>
-          <div className="text-center mt-10">
-            <Link
-              to="/products"
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-3 rounded-md font-heading text-sm font-semibold uppercase tracking-wider hover:bg-primary/90 transition-colors"
-            >
-              View All Products <ArrowRight className="w-4 h-4" />
-            </Link>
+
+          <div className="mt-7 flex items-center justify-center gap-3">
+            {categoryCollections.map((collection, index) => (
+              <span
+                key={collection.id}
+                className={`rounded-full ${
+                  index === categorySlide
+                    ? "h-4 w-4 border border-[#1d150f] bg-white shadow-[inset_0_0_0_4px_#1d150f]"
+                    : "h-2.5 w-2.5 bg-[#a9a29c]"
+                }`}
+              />
+            ))}
+          </div>
+
+          <p className="mt-3 text-center text-sm text-[#8a837d]">
+            Swipe to explore more categories
+          </p>
+        </div>
+      </section>
+
+      <section className="px-4 pb-8 md:px-6 md:pb-12">
+        <div className="layout-shell overflow-hidden rounded-[30px] border border-[#ead8c4] bg-white shadow-[0_22px_60px_-35px_rgba(80,40,20,0.38)]">
+          <div className="grid gap-0 md:grid-cols-[1.15fr_0.85fr]">
+            <div className="bg-[linear-gradient(135deg,#fffdfa_0%,#f8efe3_100%)] px-5 py-6 md:px-8 md:py-8">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
+                Required Catalogue
+              </p>
+              <h2 className="mt-2 font-heading text-3xl leading-tight text-[#34180e] md:text-4xl">
+                Ask for the latest catalogue in the same flow as the reference site.
+              </h2>
+              <p className="mt-4 max-w-xl text-sm leading-7 text-[#6c4b33]">
+                Keep catalogue discovery visible on the home page so mobile visitors can browse
+                products first and enquire immediately without searching for the next step.
+              </p>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                {catalogueHighlights.map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-[22px] border border-[#eadbc8] bg-white px-4 py-4 text-sm font-medium text-[#4e301f]"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {catalogueTypes.slice(0, 4).map((type) => (
+                  <Link
+                    key={type.id}
+                    to="/required-catalogue"
+                    className="rounded-[22px] border border-[#eadbc8] bg-white px-4 py-4 text-left transition hover:-translate-y-0.5 hover:border-[#d6a35c] hover:bg-[#fffaf4]"
+                  >
+                    <p className="text-sm font-semibold text-[#34180e]">{type.title}</p>
+                    <p className="mt-2 text-xs leading-5 text-[#7e624b]">{type.description}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-[#fcf7f1] px-5 py-6 md:px-8 md:py-8">
+              <div className="rounded-[26px] border border-[#ecdac6] bg-white p-5 shadow-[0_18px_45px_-35px_rgba(80,40,20,0.5)]">
+                <div className="inline-flex rounded-2xl bg-[#fff1d9] p-3 text-[#b17024]">
+                  <BookOpenText className="h-6 w-6" />
+                </div>
+                <h3 className="mt-4 font-heading text-2xl text-[#34180e]">Catalogue & Enquiry</h3>
+                <div className="mt-4 space-y-3 text-sm leading-6 text-[#6c4b33]">
+                  <p>{siteConfig.address}</p>
+                  <p>{siteConfig.phoneDisplay}</p>
+                </div>
+
+                <div className="mt-6 flex flex-col gap-3">
+                  <Link
+                    to="/required-catalogue"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-[#34180e] px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-[#221008]"
+                  >
+                    Open Catalogue Form
+                  </Link>
+                  <a
+                    href={`${siteConfig.whatsappHref}?text=Hi%20Shivray%2C%20please%20share%20your%20latest%20catalogue.`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center rounded-full border border-[#d0b08b] px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#34180e] transition hover:bg-[#fff6ea]"
+                  >
+                    WhatsApp Catalogue
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Story */}
-      <section className="py-16 md:py-24 bg-heritage-pattern">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground">The Story Behind Shivray</h2>
-            <div className="w-24 h-1 bg-gold mx-auto mt-3" />
-            <p className="mt-4 text-muted-foreground font-display italic text-lg">A Journey Through Time: Building Innovation, Preserving Tradition</p>
+      <section className="px-4 pb-8 md:px-6 md:pb-14">
+        <div className="layout-shell">
+          <div className="flex items-end justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
+              Best Selling Products
+            </p>
+            <h2 className="mt-2 font-heading text-3xl text-[#34180e]">
+              Best Selling Products Of The Week
+            </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="rounded-lg overflow-hidden shadow-heritage">
-              <img src={aboutCraftsman} alt="Artisan at work" loading="lazy" width={800} height={600} className="w-full h-80 object-cover" />
-            </div>
-            <div className="space-y-6">
-              {[
-                { title: "The Beginning", text: "Rooted in deep cultural passion, Shivray began its journey to revive the legacy of traditional weaponry - fusing timeless craftsmanship with a modern outlook." },
-                { title: "The Evolution", text: "With time, our vision expanded. We now craft cultural artifacts and regal creations that reflect both artistic integrity and historical authenticity." },
-                { title: "Our Mission", text: "We aim to preserve and promote this cultural heritage globally, offering handcrafted excellence while embracing evolving aesthetics." },
-              ].map((item, i) => (
-                <div key={i} className="flex gap-4">
-                  <div className="w-10 h-10 shrink-0 rounded-full bg-gold/20 flex items-center justify-center font-heading text-sm font-bold text-gold">
-                    {i + 1}
+          <Link
+            to="/products"
+            className="hidden text-sm font-semibold text-[#8b4d1d] md:inline-flex"
+          >
+            View all
+          </Link>
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-3 md:hidden">
+            {spotlightProductCards.map((product, index) => {
+              const priceValue = parsePriceValue(product.price);
+              const discount = getMobileDiscount(index);
+              const originalPrice = Math.round((priceValue * 100) / (100 - discount));
+              const badgeLabel = getMobileBadge(product.tag, index);
+              const dimensionMatch = product.dimensions.match(/(\d+)/);
+              const sizeValue = dimensionMatch?.[1] ? `${dimensionMatch[1]} in` : product.category;
+
+              return (
+                <div
+                  key={product.id}
+                  className="overflow-hidden bg-white px-1 pb-1 pt-2 shadow-[0_12px_30px_-24px_rgba(0,0,0,0.35)]"
+                >
+                  <div className="relative flex min-h-[11.4rem] items-start justify-center bg-white px-2 pb-1 pt-1">
+                    <Link to="/products/$productId" params={{ productId: product.id }}>
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        width={600}
+                        height={700}
+                        className="mx-auto aspect-[0.9] w-[73%] object-contain"
+                      />
+                    </Link>
+                    <span
+                      className={`absolute left-1 top-1 px-2.5 py-1 text-[0.8rem] font-semibold lowercase leading-none text-white ${getBadgeTone(
+                        badgeLabel,
+                      )}`}
+                    >
+                      {badgeLabel}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => toggleWishlist(product.id)}
+                      aria-label={isWishlisted(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                      className="absolute right-1 top-1 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#e9e9e9] bg-white text-[#3d3d3d] shadow-[0_8px_18px_-14px_rgba(0,0,0,0.65)]"
+                    >
+                      <Heart
+                        className={`h-3.5 w-3.5 ${isWishlisted(product.id) ? "fill-current" : ""}`}
+                      />
+                    </button>
                   </div>
-                  <div>
-                    <h3 className="font-heading text-lg font-semibold text-foreground">{item.title}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{item.text}</p>
+
+                  <div className="px-2 pb-3 pt-1">
+                    <Link
+                      to="/products/$productId"
+                      params={{ productId: product.id }}
+                      className="block line-clamp-1 min-h-[1.8rem] text-[0.9rem] font-medium leading-7 text-[#111111]"
+                    >
+                      {product.name}
+                    </Link>
+                    <p className="mt-0.5 line-clamp-2 min-h-[3rem] text-[0.9rem] font-medium leading-7 text-[#111111]">
+                      {product.shortDescription}
+                    </p>
+                    <div className="mt-1 flex items-center gap-0.5 text-[#f5a300]">
+                      {Array.from({ length: 5 }).map((_, starIndex) => (
+                        <Star
+                          key={`${product.id}-star-${starIndex}`}
+                          className="h-3 w-3 fill-current"
+                        />
+                      ))}
+                    </div>
+                    <div className="mt-2.5">
+                      <div className="inline-flex overflow-hidden rounded-[8px] border border-[#43a047]">
+                        <div className="bg-[#f5fff3] px-4 py-1 text-center text-[0.78rem] font-medium text-[#4a4a4a]">
+                          {sizeValue}
+                        </div>
+                        <div className="bg-[#43a047] px-4 py-1 text-center text-[0.78rem] font-semibold text-white">
+                          {discount}%
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-2.5 flex items-end justify-between gap-2">
+                      <div>
+                        <p className="text-[0.95rem] font-semibold leading-none text-[#111111]">
+                          {formatRupees(priceValue)}
+                        </p>
+                        <p className="mt-1.5 text-[0.82rem] text-[#b5b5b5] line-through">
+                          {formatRupees(originalPrice)}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => addToCart(product.id)}
+                        aria-label="Add to cart"
+                        className="inline-flex h-10 items-center justify-center rounded-[8px] bg-[#ffbf1f] px-3.5 text-[0.9rem] font-semibold text-[#151515] shadow-[0_12px_22px_-18px_rgba(255,191,31,0.95)]"
+                      >
+                        <ShoppingCart className="mr-1 h-3.5 w-3.5" />
+                        Add
+                      </button>
+                    </div>
                   </div>
                 </div>
-              ))}
-              <Link
-                to="/about"
-                className="inline-flex items-center gap-2 text-gold font-medium hover:gap-3 transition-all font-heading text-sm uppercase tracking-wider"
+              );
+            })}
+          </div>
+
+          <div className="hidden grid-cols-2 gap-3 md:grid md:gap-4 lg:grid-cols-4">
+            {spotlightProductCards.map((product) => (
+              <div
+                key={product.id}
+                className="group overflow-hidden rounded-[22px] border border-[#eadbc8] bg-white shadow-[0_18px_45px_-38px_rgba(70,36,15,0.65)] transition hover:-translate-y-1 hover:border-[#d6a35c]"
               >
-                Read More <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
+                <div className="relative aspect-[0.82] overflow-hidden bg-[#f7efe5]">
+                  <Link to="/products/$productId" params={{ productId: product.id }}>
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      width={600}
+                      height={700}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                  </Link>
+                  {product.tag ? (
+                    <span className="absolute left-3 top-3 rounded-full bg-[#34180e] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#ffd68d]">
+                      {product.tag}
+                    </span>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => toggleWishlist(product.id)}
+                    aria-label={isWishlisted(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                    className={`absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full border transition ${
+                      isWishlisted(product.id)
+                        ? "border-[#34180e] bg-[#34180e] text-white"
+                        : "border-white/70 bg-white/90 text-[#34180e]"
+                    }`}
+                  >
+                    <Heart className={`h-4 w-4 ${isWishlisted(product.id) ? "fill-current" : ""}`} />
+                  </button>
+                </div>
+
+                <div className="p-3 md:p-3.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">
+                    {product.category}
+                  </p>
+                  <Link
+                    to="/products/$productId"
+                    params={{ productId: product.id }}
+                    className="mt-1.5 block min-h-[3.35rem] line-clamp-2 font-heading text-[1.05rem] leading-[1.05] text-[#34180e] md:text-[1.2rem]"
+                  >
+                    {product.name}
+                  </Link>
+                  <p className="mt-1.5 line-clamp-2 min-h-[2.75rem] text-[11px] leading-5 text-[#7e624b] md:text-xs">
+                    {product.shortDescription}
+                  </p>
+                  <div className="mt-2 flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-[#8b4d1d]">{formatIndianPrice(product.price)}</p>
+                  </div>
+                  <div className="mt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => addToCart(product.id)}
+                      aria-label="Add to cart"
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#34180e] text-white transition hover:bg-[#221008]"
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-16 md:py-24 bg-primary text-primary-foreground text-center">
-        <div className="max-w-3xl mx-auto px-4">
-          <h2 className="font-heading text-3xl md:text-4xl font-bold">Preserve Heritage, Own History</h2>
-          <p className="mt-4 font-display italic text-lg opacity-90">
-            Each piece reflects the soul of Indian heritage - carefully curated with precision, pride, and timeless skills passed through generations.
-          </p>
-          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/products" className="inline-flex items-center justify-center gap-2 bg-gold text-gold-foreground px-8 py-3.5 rounded-md font-heading text-sm font-semibold uppercase tracking-wider hover:brightness-110 transition-all">
-              Shop Now <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link to="/contact" className="inline-flex items-center justify-center gap-2 border-2 border-primary-foreground/30 text-primary-foreground px-8 py-3.5 rounded-md font-heading text-sm font-semibold uppercase tracking-wider hover:bg-primary-foreground/10 transition-colors">
-              Contact Us
-            </Link>
+      <section className="px-4 pb-8 md:px-6 md:pb-14">
+        <div className="layout-shell">
+          <div className="flex items-end justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
+              Full Product Range
+            </p>
+            <h2 className="mt-2 font-heading text-3xl text-[#34180e]">
+              Browse all products directly on home
+            </h2>
           </div>
+          <Link
+            to="/products"
+            className="hidden text-sm font-semibold text-[#8b4d1d] md:inline-flex"
+          >
+            Open product page
+          </Link>
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-3 md:hidden">
+            {products.map((product, index) => {
+              const priceValue = parsePriceValue(product.price);
+              const discount = getMobileDiscount(index);
+              const originalPrice = Math.round((priceValue * 100) / (100 - discount));
+              const badgeLabel = getMobileBadge(product.tag, index);
+              const dimensionMatch = product.dimensions.match(/(\d+)/);
+              const sizeValue = dimensionMatch?.[1] ? `${dimensionMatch[1]} in` : product.category;
+
+              return (
+                <div
+                  key={product.id}
+                  className="overflow-hidden bg-white px-1 pb-1 pt-2 shadow-[0_12px_30px_-24px_rgba(0,0,0,0.35)]"
+                >
+                  <div className="relative flex min-h-[11.4rem] items-start justify-center bg-white px-2 pb-1 pt-1">
+                    <Link to="/products/$productId" params={{ productId: product.id }}>
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        width={600}
+                        height={700}
+                        className="mx-auto aspect-[0.9] w-[73%] object-contain"
+                      />
+                    </Link>
+                    <span
+                      className={`absolute left-1 top-1 px-2.5 py-1 text-[0.8rem] font-semibold lowercase leading-none text-white ${getBadgeTone(
+                        badgeLabel,
+                      )}`}
+                    >
+                      {badgeLabel}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => toggleWishlist(product.id)}
+                      aria-label={isWishlisted(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                      className="absolute right-1 top-1 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#e9e9e9] bg-white text-[#3d3d3d] shadow-[0_8px_18px_-14px_rgba(0,0,0,0.65)]"
+                    >
+                      <Heart
+                        className={`h-3.5 w-3.5 ${isWishlisted(product.id) ? "fill-current" : ""}`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="px-2 pb-3 pt-1">
+                    <Link
+                      to="/products/$productId"
+                      params={{ productId: product.id }}
+                      className="block line-clamp-1 min-h-[1.8rem] text-[0.9rem] font-medium leading-7 text-[#111111]"
+                    >
+                      {product.name}
+                    </Link>
+                    <p className="mt-0.5 line-clamp-2 min-h-[3rem] text-[0.9rem] font-medium leading-7 text-[#111111]">
+                      {product.shortDescription}
+                    </p>
+                    <div className="mt-1 flex items-center gap-0.5 text-[#f5a300]">
+                      {Array.from({ length: 5 }).map((_, starIndex) => (
+                        <Star
+                          key={`${product.id}-star-${starIndex}`}
+                          className="h-3 w-3 fill-current"
+                        />
+                      ))}
+                    </div>
+                    <div className="mt-2.5">
+                      <div className="inline-flex overflow-hidden rounded-[8px] border border-[#43a047]">
+                        <div className="bg-[#f5fff3] px-4 py-1 text-center text-[0.78rem] font-medium text-[#4a4a4a]">
+                          {sizeValue}
+                        </div>
+                        <div className="bg-[#43a047] px-4 py-1 text-center text-[0.78rem] font-semibold text-white">
+                          {discount}%
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-2.5 flex items-end justify-between gap-2">
+                      <div>
+                        <p className="text-[0.95rem] font-semibold leading-none text-[#111111]">
+                          {formatRupees(priceValue)}
+                        </p>
+                        <p className="mt-1.5 text-[0.82rem] text-[#b5b5b5] line-through">
+                          {formatRupees(originalPrice)}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => addToCart(product.id)}
+                        aria-label="Add to cart"
+                        className="inline-flex h-10 items-center justify-center rounded-[8px] bg-[#ffbf1f] px-3.5 text-[0.9rem] font-semibold text-[#151515] shadow-[0_12px_22px_-18px_rgba(255,191,31,0.95)]"
+                      >
+                        <ShoppingCart className="mr-1 h-3.5 w-3.5" />
+                        Add
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="hidden grid-cols-2 gap-3 md:grid md:gap-4 lg:grid-cols-4">
+            {products.map((product) => (
+              <div
+                key={product.id}
+                className="group overflow-hidden rounded-[22px] border border-[#eadbc8] bg-white shadow-[0_18px_45px_-38px_rgba(70,36,15,0.65)] transition hover:-translate-y-1 hover:border-[#d6a35c]"
+              >
+                <div className="relative aspect-[0.82] overflow-hidden bg-[#f7efe5]">
+                  <Link to="/products/$productId" params={{ productId: product.id }}>
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      width={600}
+                      height={700}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                  </Link>
+                  {product.tag ? (
+                    <span className="absolute left-3 top-3 rounded-full bg-[#34180e] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#ffd68d]">
+                      {product.tag}
+                    </span>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => toggleWishlist(product.id)}
+                    aria-label={isWishlisted(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                    className={`absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full border transition ${
+                      isWishlisted(product.id)
+                        ? "border-[#34180e] bg-[#34180e] text-white"
+                        : "border-white/70 bg-white/90 text-[#34180e]"
+                    }`}
+                  >
+                    <Heart className={`h-4 w-4 ${isWishlisted(product.id) ? "fill-current" : ""}`} />
+                  </button>
+                </div>
+
+                <div className="p-3 md:p-3.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">
+                    {product.category}
+                  </p>
+                  <Link
+                    to="/products/$productId"
+                    params={{ productId: product.id }}
+                    className="mt-1.5 block min-h-[3.35rem] line-clamp-2 font-heading text-[1.05rem] leading-[1.05] text-[#34180e] md:text-[1.2rem]"
+                  >
+                    {product.name}
+                  </Link>
+                  <p className="mt-1.5 line-clamp-2 min-h-[2.75rem] text-[11px] leading-5 text-[#7e624b] md:text-xs">
+                    {product.shortDescription}
+                  </p>
+                  <div className="mt-2 flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-[#8b4d1d]">{product.price}</p>
+                  </div>
+                  <div className="mt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => addToCart(product.id)}
+                      aria-label="Add to cart"
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#34180e] text-white transition hover:bg-[#221008]"
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#f2e7d7] py-10 md:py-14">
+        <div className="layout-shell grid gap-5 px-4 md:grid-cols-3 md:px-6">
+          {features.map((item) => (
+            <div
+              key={item.title}
+              className="rounded-[28px] border border-[#e1cdb5] bg-white p-5 shadow-[0_20px_45px_-35px_rgba(58,27,9,0.55)]"
+            >
+              <div className="inline-flex rounded-2xl bg-[#fff1d9] p-3 text-[#b17024]">
+                <item.icon className="h-5 w-5" />
+              </div>
+              <h3 className="mt-4 font-heading text-2xl text-[#34180e]">{item.title}</h3>
+              <p className="mt-3 text-sm leading-6 text-[#6c4b33]">{item.copy}</p>
+            </div>
+          ))}
         </div>
       </section>
     </div>

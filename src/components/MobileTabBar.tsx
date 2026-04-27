@@ -1,49 +1,38 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, ShoppingBag, BookOpen, Phone, ShoppingCart } from "lucide-react";
-import { useCart } from "@/hooks/use-cart";
+import { Heart, ShoppingCart, Store, UserRound } from "lucide-react";
 
 const tabs = [
-  { to: "/", label: "Home", icon: Home },
-  { to: "/products", label: "Products", icon: ShoppingBag },
-  { to: "/blog", label: "Blog", icon: BookOpen },
-  { to: "/contact", label: "Contact", icon: Phone },
+  { to: "/products", label: "Shop", icon: Store },
+  { to: "/login", label: "Account", icon: UserRound },
+  { to: "/wishlist", label: "Wishlist", icon: Heart },
   { to: "/cart", label: "Cart", icon: ShoppingCart },
 ] as const;
 
 export default function MobileTabBar() {
   const location = useLocation();
-  const { getTotalItems } = useCart();
-  const cartCount = getTotalItems();
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background/95 backdrop-blur-md md:hidden"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-[#ece7df] bg-white shadow-[0_-10px_24px_-20px_rgba(0,0,0,0.3)] md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="Mobile navigation"
     >
-      <div className="mx-auto grid max-w-xl grid-cols-5 px-1 py-1.5">
+      <div className="grid w-full grid-cols-4 px-3 py-2">
         {tabs.map((tab) => {
           const Icon = tab.icon;
-          const isActive = location.pathname === tab.to;
+          const isActive =
+            location.pathname === tab.to ||
+            (tab.to === "/products" && location.pathname.startsWith("/products/"));
 
           return (
             <Link
               key={tab.to}
               to={tab.to}
-              className={`relative flex flex-col items-center justify-center rounded-lg py-2 text-[11px] font-medium transition-colors ${
-                isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+              className={`flex flex-col items-center justify-center px-1 py-2 text-[0.9rem] transition ${
+                isActive ? "text-[#111111]" : "text-[#1c1c1c]"
               }`}
             >
-              <span className="relative">
-                <Icon className="mb-1 h-4 w-4" />
-                {tab.to === "/cart" && cartCount > 0 && (
-                  <span className="absolute -right-2 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-gold-foreground">
-                    {cartCount > 9 ? "9+" : cartCount}
-                  </span>
-                )}
-              </span>
+              <Icon className="mb-1 h-5 w-5" />
               <span>{tab.label}</span>
             </Link>
           );

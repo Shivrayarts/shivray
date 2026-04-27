@@ -9,9 +9,12 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as WallOfFameRouteImport } from './routes/wall-of-fame'
+import { Route as RequiredCatalogueRouteImport } from './routes/required-catalogue'
 import { Route as ProductsRouteImport } from './routes/products'
 import { Route as OurTeamRouteImport } from './routes/our-team'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as BlogRouteImport } from './routes/blog'
@@ -21,9 +24,19 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsProductIdRouteImport } from './routes/products.$productId'
 
+const WishlistRoute = WishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WallOfFameRoute = WallOfFameRouteImport.update({
   id: '/wall-of-fame',
   path: '/wall-of-fame',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequiredCatalogueRoute = RequiredCatalogueRouteImport.update({
+  id: '/required-catalogue',
+  path: '/required-catalogue',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductsRoute = ProductsRouteImport.update({
@@ -34,6 +47,11 @@ const ProductsRoute = ProductsRouteImport.update({
 const OurTeamRoute = OurTeamRouteImport.update({
   id: '/our-team',
   path: '/our-team',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -85,9 +103,12 @@ export interface FileRoutesByFullPath {
   '/blog': typeof BlogRoute
   '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
+  '/login': typeof LoginRoute
   '/our-team': typeof OurTeamRoute
   '/products': typeof ProductsRouteWithChildren
+  '/required-catalogue': typeof RequiredCatalogueRoute
   '/wall-of-fame': typeof WallOfFameRoute
+  '/wishlist': typeof WishlistRoute
   '/products/$productId': typeof ProductsProductIdRoute
 }
 export interface FileRoutesByTo {
@@ -98,9 +119,12 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogRoute
   '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
+  '/login': typeof LoginRoute
   '/our-team': typeof OurTeamRoute
   '/products': typeof ProductsRouteWithChildren
+  '/required-catalogue': typeof RequiredCatalogueRoute
   '/wall-of-fame': typeof WallOfFameRoute
+  '/wishlist': typeof WishlistRoute
   '/products/$productId': typeof ProductsProductIdRoute
 }
 export interface FileRoutesById {
@@ -112,9 +136,12 @@ export interface FileRoutesById {
   '/blog': typeof BlogRoute
   '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
+  '/login': typeof LoginRoute
   '/our-team': typeof OurTeamRoute
   '/products': typeof ProductsRouteWithChildren
+  '/required-catalogue': typeof RequiredCatalogueRoute
   '/wall-of-fame': typeof WallOfFameRoute
+  '/wishlist': typeof WishlistRoute
   '/products/$productId': typeof ProductsProductIdRoute
 }
 export interface FileRouteTypes {
@@ -127,9 +154,12 @@ export interface FileRouteTypes {
     | '/blog'
     | '/cart'
     | '/contact'
+    | '/login'
     | '/our-team'
     | '/products'
+    | '/required-catalogue'
     | '/wall-of-fame'
+    | '/wishlist'
     | '/products/$productId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -140,9 +170,12 @@ export interface FileRouteTypes {
     | '/blog'
     | '/cart'
     | '/contact'
+    | '/login'
     | '/our-team'
     | '/products'
+    | '/required-catalogue'
     | '/wall-of-fame'
+    | '/wishlist'
     | '/products/$productId'
   id:
     | '__root__'
@@ -153,9 +186,12 @@ export interface FileRouteTypes {
     | '/blog'
     | '/cart'
     | '/contact'
+    | '/login'
     | '/our-team'
     | '/products'
+    | '/required-catalogue'
     | '/wall-of-fame'
+    | '/wishlist'
     | '/products/$productId'
   fileRoutesById: FileRoutesById
 }
@@ -167,18 +203,35 @@ export interface RootRouteChildren {
   BlogRoute: typeof BlogRoute
   CartRoute: typeof CartRoute
   ContactRoute: typeof ContactRoute
+  LoginRoute: typeof LoginRoute
   OurTeamRoute: typeof OurTeamRoute
   ProductsRoute: typeof ProductsRouteWithChildren
+  RequiredCatalogueRoute: typeof RequiredCatalogueRoute
   WallOfFameRoute: typeof WallOfFameRoute
+  WishlistRoute: typeof WishlistRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wishlist': {
+      id: '/wishlist'
+      path: '/wishlist'
+      fullPath: '/wishlist'
+      preLoaderRoute: typeof WishlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/wall-of-fame': {
       id: '/wall-of-fame'
       path: '/wall-of-fame'
       fullPath: '/wall-of-fame'
       preLoaderRoute: typeof WallOfFameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/required-catalogue': {
+      id: '/required-catalogue'
+      path: '/required-catalogue'
+      fullPath: '/required-catalogue'
+      preLoaderRoute: typeof RequiredCatalogueRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/products': {
@@ -193,6 +246,13 @@ declare module '@tanstack/react-router' {
       path: '/our-team'
       fullPath: '/our-team'
       preLoaderRoute: typeof OurTeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -274,9 +334,12 @@ const rootRouteChildren: RootRouteChildren = {
   BlogRoute: BlogRoute,
   CartRoute: CartRoute,
   ContactRoute: ContactRoute,
+  LoginRoute: LoginRoute,
   OurTeamRoute: OurTeamRoute,
   ProductsRoute: ProductsRouteWithChildren,
+  RequiredCatalogueRoute: RequiredCatalogueRoute,
   WallOfFameRoute: WallOfFameRoute,
+  WishlistRoute: WishlistRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
