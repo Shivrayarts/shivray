@@ -198,6 +198,19 @@ function getBadgeTone(label: string) {
   return label === "new" ? "bg-[#ff9800]" : "bg-[#e3162d]";
 }
 
+function getProductSizeLabel(product: {
+  dimensions?: string | null;
+  category?: string | null;
+}) {
+  const dimensionsText = product.dimensions ?? "";
+  const dimensionMatch = dimensionsText.match(/(\d+)/);
+  if (dimensionMatch?.[1]) {
+    return `${dimensionMatch[1]} in`;
+  }
+
+  return product.category?.trim() || "Product";
+}
+
 function HomePage() {
   const { products, catalogueTypes } = Route.useLoaderData();
   const { addToCart } = useCart();
@@ -404,8 +417,8 @@ function HomePage() {
         </div>
       </section>
 
-      <section className="px-4 pb-8 md:px-6 md:pb-12">
-        <div className="layout-shell overflow-hidden rounded-[30px] border border-[#ead8c4] bg-white shadow-[0_22px_60px_-35px_rgba(80,40,20,0.38)]">
+      {/* <section className="px-4 pb-8 md:px-6 md:pb-12">
+        <div className="w-full overflow-hidden rounded-[30px] border border-[#ead8c4] bg-white shadow-[0_22px_60px_-35px_rgba(80,40,20,0.38)]">
           <div className="grid gap-0 md:grid-cols-[1.15fr_0.85fr]">
             <div className="bg-[linear-gradient(135deg,#fffdfa_0%,#f8efe3_100%)] px-5 py-6 md:px-8 md:py-8">
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
@@ -475,7 +488,7 @@ function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       <section className="px-4 pb-8 md:px-6 md:pb-14">
         <div className="layout-shell">
@@ -502,8 +515,7 @@ function HomePage() {
               const discount = getMobileDiscount(index);
               const originalPrice = Math.round((priceValue * 100) / (100 - discount));
               const badgeLabel = getMobileBadge(product.tag, index);
-              const dimensionMatch = product.dimensions.match(/(\d+)/);
-              const sizeValue = dimensionMatch?.[1] ? `${dimensionMatch[1]} in` : product.category;
+              const sizeValue = getProductSizeLabel(product);
 
               return (
                 <div
@@ -688,8 +700,7 @@ function HomePage() {
               const discount = getMobileDiscount(index);
               const originalPrice = Math.round((priceValue * 100) / (100 - discount));
               const badgeLabel = getMobileBadge(product.tag, index);
-              const dimensionMatch = product.dimensions.match(/(\d+)/);
-              const sizeValue = dimensionMatch?.[1] ? `${dimensionMatch[1]} in` : product.category;
+              const sizeValue = getProductSizeLabel(product);
 
               return (
                 <div

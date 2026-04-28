@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Target, Flame, History, Award } from "lucide-react";
 import aboutCraftsman from "@/assets/about-craftsman.jpg";
-import logoImg from "@/assets/logo.jpg";
+import logoImg from "@/assets/logo-dark.jpg";
 
 export const Route = createFileRoute("/about")({
   component: AboutPage,

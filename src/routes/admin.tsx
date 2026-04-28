@@ -21,7 +21,7 @@ import { useEffect, useMemo, useState } from "react";
 import { isAdminAuthenticated, logoutAdmin } from "@/lib/admin-auth";
 import { productCategories, type Product } from "@/data/products";
 import { useServerFn } from "@tanstack/react-start";
-import logoImage from "@/assets/logo.jpg";
+import logoImage from "@/assets/logo-dark.jpg";
 import {
   getAdminDashboardDataServer,
   type AdminDashboardData,

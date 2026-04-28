@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BookOpenText,
   ChevronDown,
@@ -21,6 +21,9 @@ import productWeapon1 from "@/assets/product-weapon-1.jpg";
 
 export const Route = createFileRoute("/products")({
   loader: () => getProductsFromDbServer(),
+  validateSearch: (search: Record<string, unknown>) => ({
+    q: typeof search.q === "string" ? search.q : "",
+  }),
   component: ProductsPage,
   head: () => ({
     meta: [
@@ -70,7 +73,8 @@ function getBadgeTone(label: string) {
 
 function ProductsPage() {
   const location = useLocation();
-  const [search, setSearch] = useState("");
+  const routeSearch = Route.useSearch();
+  const [search, setSearch] = useState(routeSearch.q);
   const [category, setCategory] = useState<(typeof categories)[number]>("All");
   const [sortBy, setSortBy] = useState("featured");
   const [categorySlide, setCategorySlide] = useState(0);
@@ -80,6 +84,10 @@ function ProductsPage() {
   const { addToCart } = useCart();
   const { isWishlisted, toggleWishlist } = useWishlist();
   const isDetailPage = location.pathname.startsWith("/products/");
+
+  useEffect(() => {
+    setSearch(routeSearch.q);
+  }, [routeSearch.q]);
 
   const categoryCards = useMemo(
     () => [
@@ -112,8 +120,21 @@ function ProductsPage() {
   );
 
   const filtered = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
     const matchedProducts = products.filter((product) => {
-      const matchesSearch = product.name.toLowerCase().includes(search.trim().toLowerCase());
+      const searchHaystack = [
+        product.name,
+        product.category,
+        product.tag,
+        product.shortDescription,
+        product.details,
+        product.material,
+        product.dimensions,
+      ]
+        .join(" ")
+        .toLowerCase();
+      const matchesSearch =
+        normalizedSearch.length === 0 || searchHaystack.includes(normalizedSearch);
       const matchesCategory = category === "All" || product.category === category;
       return matchesSearch && matchesCategory;
     });

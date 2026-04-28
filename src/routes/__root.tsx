@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MobileTabBar from "@/components/MobileTabBar";
 import FloatingActions from "@/components/FloatingActions";
-import logoImg from "@/assets/logo.jpg";
+import logoImg from "@/assets/logo-dark.jpg";
 
 import appCss from "../styles.css?url";
 
