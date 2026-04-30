@@ -15,6 +15,7 @@ import productWeapon3 from "@/assets/product-weapon-3.jpg";
 import productDhoop1 from "@/assets/product-dhoop-1.jpg";
 import productShield1 from "@/assets/product-shield-1.jpg";
 import productTalwar1 from "@/assets/product-talwar-1.jpg";
+import { normalizeDisplayCase } from "@/lib/utils";
 
 type DbProductRow = {
   id: number;
@@ -109,8 +110,9 @@ function slugify(name: string) {
 }
 
 function normalizeCategory(value: string): Product["category"] {
+  const normalized = value.trim().toLowerCase();
   return (
-    productCategories.find((category) => category === value) ?? "Statues"
+    productCategories.find((category) => category.toLowerCase() === normalized) ?? "Statues"
   );
 }
 
@@ -133,18 +135,18 @@ function resolveImageUrl(row: Pick<DbProductRow, "image_url" | "slug">) {
 function mapDbRowToProduct(row: DbProductRow): Product {
   return {
     id: row.slug,
-    name: row.name,
+    name: normalizeDisplayCase(row.name, "title"),
     price:
       typeof row.price === "number"
         ? formatInrPrice(row.price)
         : formatInrPrice(Number(row.price)),
     image: resolveImageUrl(row),
     category: normalizeCategory(row.category),
-    tag: row.tag ?? "",
-    shortDescription: row.short_description,
-    details: row.details,
-    material: row.material,
-    dimensions: row.dimensions,
+    tag: normalizeDisplayCase(row.tag ?? "", "title"),
+    shortDescription: normalizeDisplayCase(row.short_description),
+    details: normalizeDisplayCase(row.details),
+    material: normalizeDisplayCase(row.material),
+    dimensions: normalizeDisplayCase(row.dimensions),
   };
 }
 

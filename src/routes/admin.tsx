@@ -17,7 +17,7 @@ import {
   UserCircle2,
   Users,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useState } from "react";
 import { isAdminAuthenticated, logoutAdmin } from "@/lib/admin-auth";
 import { productCategories, type Product } from "@/data/products";
 import { useServerFn } from "@tanstack/react-start";
@@ -215,10 +215,14 @@ function AdminDashboardPage() {
     setDashboardData(latest);
   }
 
+  const refreshAdminData = useEffectEvent(() => {
+    void Promise.all([refreshProducts(), refreshCatalogues(), refreshDashboardData()]);
+  });
+
   useEffect(() => {
     if (!isAllowed) return;
-    void Promise.all([refreshProducts(), refreshCatalogues(), refreshDashboardData()]);
-  }, [isAllowed]);
+    refreshAdminData();
+  }, [isAllowed, refreshAdminData]);
 
   const filteredProducts = useMemo(() => {
     const term = adminSearch.trim().toLowerCase();
