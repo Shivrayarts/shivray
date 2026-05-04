@@ -73,7 +73,7 @@ function CartPage() {
               <p className="text-muted-foreground">Your cart is currently empty.</p>
               <Link
                 to="/products"
-                className="mt-4 inline-flex rounded-md bg-primary px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-primary-foreground"
+                className="mt-4 inline-flex rounded-md bg-primary px-5 py-2.5 text-sm font-semibold  tracking-wider text-primary-foreground"
               >
                 Browse Products
               </Link>
@@ -92,7 +92,7 @@ function CartPage() {
                     loading="lazy"
                   />
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-gold">
+                    <p className="text-xs  tracking-wide text-gold">
                       {product.category}
                     </p>
                     <Link
@@ -138,13 +138,13 @@ function CartPage() {
               <div className="flex flex-wrap gap-3 pt-2">
                 <button
                   onClick={clearCart}
-                  className="rounded-md border border-border px-4 py-2 text-sm font-semibold uppercase tracking-wider hover:bg-muted"
+                  className="rounded-md border border-border px-4 py-2 text-sm font-semibold  tracking-wider hover:bg-muted"
                 >
                   Clear Cart
                 </button>
                 <Link
                   to="/contact"
-                  className="rounded-md bg-primary px-5 py-2 text-sm font-semibold uppercase tracking-wider text-primary-foreground"
+                  className="rounded-md bg-primary px-5 py-2 text-sm font-semibold  tracking-wider text-primary-foreground"
                 >
                   Enquire / Order
                 </Link>

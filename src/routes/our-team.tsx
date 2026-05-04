@@ -39,7 +39,7 @@ function OurTeamPage() {
                 </div>
                 <div className="p-6">
                   <h3 className="font-heading text-lg font-semibold">{member.name}</h3>
-                  <span className="text-xs font-medium uppercase tracking-wider text-gold">{member.role}</span>
+                  <span className="text-xs font-medium  tracking-wider text-gold">{member.role}</span>
                   <p className="text-sm text-muted-foreground mt-2">{member.desc}</p>
                 </div>
               </div>

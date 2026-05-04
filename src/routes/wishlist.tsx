@@ -71,7 +71,7 @@ function WishlistPage() {
               <p className="text-muted-foreground">You have not liked any products yet.</p>
               <Link
                 to="/products"
-                className="mt-4 inline-flex rounded-md bg-primary px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-primary-foreground"
+                className="mt-4 inline-flex rounded-md bg-primary px-5 py-2.5 text-sm font-semibold  tracking-wider text-primary-foreground"
               >
                 Browse Products
               </Link>
@@ -90,7 +90,7 @@ function WishlistPage() {
                     loading="lazy"
                   />
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-gold">{product.category}</p>
+                    <p className="text-xs  tracking-wide text-gold">{product.category}</p>
                     <Link
                       to="/products/$productId"
                       params={{ productId: product.id }}
@@ -104,7 +104,7 @@ function WishlistPage() {
                   <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end">
                     <button
                       onClick={() => addToCart(product.id)}
-                      className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold uppercase tracking-wider text-primary-foreground"
+                      className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold  tracking-wider text-primary-foreground"
                     >
                       <ShoppingCart className="h-4 w-4" />
                       Add to Cart
@@ -123,13 +123,13 @@ function WishlistPage() {
               <div className="flex flex-wrap gap-3 pt-2">
                 <button
                   onClick={clearWishlist}
-                  className="rounded-md border border-border px-4 py-2 text-sm font-semibold uppercase tracking-wider hover:bg-muted"
+                  className="rounded-md border border-border px-4 py-2 text-sm font-semibold  tracking-wider hover:bg-muted"
                 >
                   Clear Wishlist
                 </button>
                 <Link
                   to="/products"
-                  className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2 text-sm font-semibold uppercase tracking-wider text-primary-foreground"
+                  className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2 text-sm font-semibold  tracking-wider text-primary-foreground"
                 >
                   <Heart className="h-4 w-4 fill-current" />
                   Continue Browsing

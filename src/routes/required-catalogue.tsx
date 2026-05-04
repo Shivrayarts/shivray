@@ -76,7 +76,7 @@ function RequiredCataloguePage() {
     <div className="bg-[#f7f1e7] pb-8 md:pb-12">
       <section className="bg-[#2b130c] px-4 pb-8 pt-6 text-white md:px-6 md:pb-12 md:pt-10">
         <div className="layout-shell">
-          <span className="inline-flex rounded-full border border-[#f2bb64]/30 bg-[#f2bb64]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffd68d]">
+          <span className="inline-flex rounded-full border border-[#f2bb64]/30 bg-[#f2bb64]/10 px-3 py-1 text-[11px] font-semibold  tracking-[0.28em] text-[#ffd68d]">
             Required Catalogue
           </span>
           <h1 className="mt-4 font-heading text-4xl leading-none text-[#fff5e6] md:text-6xl">
@@ -150,7 +150,7 @@ function RequiredCataloguePage() {
       <section className="px-4 pt-6 md:px-6">
         <div className="layout-shell grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
+          <p className="text-[11px] font-semibold  tracking-[0.28em] text-[#a86c2b]">
             Why request it
           </p>
           <div className="mt-5 space-y-4">
@@ -185,7 +185,7 @@ function RequiredCataloguePage() {
           </div>
 
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
+          <p className="text-[11px] font-semibold  tracking-[0.28em] text-[#a86c2b]">
             Request Form
           </p>
           <h2 className="mt-2 font-heading text-3xl text-[#34180e]">
@@ -289,14 +289,14 @@ function RequiredCataloguePage() {
                 href={whatsappLink}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-[#221008]"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold  tracking-[0.18em] text-white transition hover:bg-[#221008]"
               >
                 <MessageCircle className="h-4 w-4" />
                 Request on WhatsApp
               </a>
               <a
                 href={`tel:${siteConfig.phoneHref}`}
-                className="inline-flex items-center justify-center rounded-full border border-[#d8b48b] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#34180e] transition hover:bg-[#fff7ec]"
+                className="inline-flex items-center justify-center rounded-full border border-[#d8b48b] px-5 py-3 text-sm font-semibold  tracking-[0.18em] text-[#34180e] transition hover:bg-[#fff7ec]"
               >
                 Call Now
               </a>

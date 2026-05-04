@@ -39,7 +39,7 @@ function AboutPage() {
               <img src={aboutCraftsman} alt="Artisan at work" loading="lazy" width={800} height={600} className="w-full h-96 object-cover" />
             </div>
             <div>
-              <span className="text-gold font-heading text-sm uppercase tracking-widest">Managing Director</span>
+              <span className="text-gold font-heading text-sm  tracking-widest">Managing Director</span>
               <h2 className="font-heading text-3xl font-bold text-foreground mt-2">Satyajeet Arun Vaidya</h2>
               <div className="w-16 h-1 bg-gold mt-3" />
               <p className="mt-6 text-muted-foreground leading-relaxed">
@@ -106,7 +106,7 @@ function AboutPage() {
         <div className="max-w-3xl mx-auto px-4">
           <h2 className="font-heading text-3xl font-bold">Explore Our Collections</h2>
           <p className="mt-4 font-display italic opacity-90">Discover pieces that speak of valor, legacy, and artistry</p>
-          <Link to="/products" className="mt-8 inline-flex items-center gap-2 bg-gold text-gold-foreground px-8 py-3.5 rounded-md font-heading text-sm font-semibold uppercase tracking-wider hover:brightness-110 transition-all">
+          <Link to="/products" className="mt-8 inline-flex items-center gap-2 bg-gold text-gold-foreground px-8 py-3.5 rounded-md font-heading text-sm font-semibold  tracking-wider hover:brightness-110 transition-all">
             Shop Now <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

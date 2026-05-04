@@ -60,7 +60,7 @@ function BlogPage() {
                   <img src={article.image} alt={article.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
                 <div className="p-6">
-                  <span className="text-xs font-medium uppercase tracking-wider text-gold bg-gold/10 px-2 py-1 rounded">{article.tag}</span>
+                  <span className="text-xs font-medium  tracking-wider text-gold bg-gold/10 px-2 py-1 rounded">{article.tag}</span>
                   <h3 className="font-heading text-lg font-semibold mt-3">{article.title}</h3>
                   <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{article.excerpt}</p>
                   <button className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-gold hover:gap-2 transition-all">

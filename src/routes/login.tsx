@@ -171,7 +171,7 @@ function LoginPage() {
     <div className="bg-[#f7f1e7] pb-8 md:pb-12">
       <section className="bg-[#2b130c] px-4 pb-8 pt-6 text-white md:px-6 md:pb-12 md:pt-10">
         <div className="layout-shell">
-          <span className="inline-flex rounded-full border border-[#f2bb64]/30 bg-[#f2bb64]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffd68d]">
+          <span className="inline-flex rounded-full border border-[#f2bb64]/30 bg-[#f2bb64]/10 px-3 py-1 text-[11px] font-semibold  tracking-[0.28em] text-[#ffd68d]">
             Login Page
           </span>
           <h1 className="mt-4 font-heading text-4xl leading-none text-[#fff5e6] md:text-6xl">
@@ -187,7 +187,7 @@ function LoginPage() {
       <section className="px-4 pt-6 md:px-6">
         <div className="layout-shell grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
+          <p className="text-[11px] font-semibold  tracking-[0.28em] text-[#a86c2b]">
             Benefits
           </p>
           <div className="mt-5 space-y-4">
@@ -245,7 +245,7 @@ function LoginPage() {
                 <LockKeyhole className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
+                <p className="text-[11px] font-semibold  tracking-[0.28em] text-[#a86c2b]">
                   Sign In
                 </p>
                 <h2 className="mt-1 font-heading text-3xl text-[#34180e]">
@@ -292,7 +292,7 @@ function LoginPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex w-full items-center justify-center rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-[#221008] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex w-full items-center justify-center rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold  tracking-[0.18em] text-white transition hover:bg-[#221008] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isSubmitting ? "Logging In..." : "Login"}
               </button>

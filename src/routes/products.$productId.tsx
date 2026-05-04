@@ -93,7 +93,7 @@ function ProductDetailPage() {
             <ArrowLeft className="h-4 w-4" />
             Back to Products
           </Link>
-          <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2bb64]">
+          <p className="mt-5 text-[11px] font-semibold  tracking-[0.28em] text-[#f2bb64]">
             {product.category}
           </p>
           <h1 className="mt-2 font-heading text-4xl leading-none text-[#fff5e6] md:text-6xl">
@@ -136,7 +136,7 @@ function ProductDetailPage() {
 
           <div className="rounded-[32px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
           <div className="flex items-center justify-between gap-3">
-            <span className="rounded-full bg-[#fcf1dc] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#b17024]">
+            <span className="rounded-full bg-[#fcf1dc] px-3 py-1 text-[11px] font-semibold  tracking-[0.22em] text-[#b17024]">
               {product.tag || "Featured piece"}
             </span>
             <p className="text-2xl font-semibold text-[#8b4d1d]">{product.price}</p>
@@ -153,13 +153,13 @@ function ProductDetailPage() {
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             <div className="rounded-[24px] bg-[#fcf8f2] p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">
+              <p className="text-[11px] font-semibold  tracking-[0.24em] text-[#a86c2b]">
                 Material
               </p>
               <p className="mt-2 text-sm text-[#34180e]">{product.material}</p>
             </div>
             <div className="rounded-[24px] bg-[#fcf8f2] p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">
+              <p className="text-[11px] font-semibold  tracking-[0.24em] text-[#a86c2b]">
                 Dimensions
               </p>
               <p className="mt-2 text-sm text-[#34180e]">{product.dimensions}</p>
@@ -173,7 +173,7 @@ function ProductDetailPage() {
                 addToCart(product.id);
                 setAddedCount((value) => value + 1);
               }}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-[#221008]"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold  tracking-[0.18em] text-white transition hover:bg-[#221008]"
             >
               <ShoppingCart className="h-4 w-4" />
               Add to Cart
@@ -181,7 +181,7 @@ function ProductDetailPage() {
             <button
               type="button"
               onClick={() => toggleWishlist(product.id)}
-              className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] transition ${
+              className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold  tracking-[0.18em] transition ${
                 isWishlisted(product.id)
                   ? "bg-[#34180e] text-white"
                   : "border border-[#d8b48b] text-[#34180e] hover:bg-[#fff7ec]"
@@ -194,7 +194,7 @@ function ProductDetailPage() {
               href={whatsappLink}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-[#d8b48b] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#34180e] transition hover:bg-[#fff7ec]"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-[#d8b48b] px-5 py-3 text-sm font-semibold  tracking-[0.18em] text-[#34180e] transition hover:bg-[#fff7ec]"
             >
               <MessageCircle className="h-4 w-4" />
               Enquire Now
@@ -227,7 +227,7 @@ function ProductDetailPage() {
           <div className="layout-shell">
             <div className="flex items-end justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
+              <p className="text-[11px] font-semibold  tracking-[0.28em] text-[#a86c2b]">
                 Similar Picks
               </p>
               <h2 className="mt-1 font-heading text-3xl text-[#34180e]">
@@ -253,7 +253,7 @@ function ProductDetailPage() {
                   />
                 </div>
                 <div className="p-4">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">
+                  <p className="text-[10px] font-semibold  tracking-[0.24em] text-[#a86c2b]">
                     {item.category}
                   </p>
                   <p className="mt-2 line-clamp-2 font-heading text-lg leading-5 text-[#34180e]">

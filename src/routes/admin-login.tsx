@@ -99,7 +99,7 @@ function AdminLoginPage() {
 
             <button
               type="submit"
-              className="w-full rounded-md bg-primary text-primary-foreground py-2.5 text-sm font-semibold uppercase tracking-wide hover:bg-primary/90 transition-colors"
+              className="w-full rounded-md bg-primary text-primary-foreground py-2.5 text-sm font-semibold  tracking-wide hover:bg-primary/90 transition-colors"
             >
               Login as Admin
             </button>

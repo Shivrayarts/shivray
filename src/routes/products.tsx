@@ -183,7 +183,7 @@ function ProductsPage() {
     <div className="bg-[#f5f5f5] pb-6 md:bg-[#f7f1e7] md:pb-10">
       <section className="hidden bg-[#2b130c] px-4 pb-8 pt-6 text-white md:block md:px-6 md:pb-12 md:pt-10">
         <div className="layout-shell">
-          <span className="inline-flex rounded-full border border-[#f2bb64]/30 bg-[#f2bb64]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffd68d]">
+          <span className="inline-flex rounded-full border border-[#f2bb64]/30 bg-[#f2bb64]/10 px-3 py-1 text-[11px] font-semibold  tracking-[0.28em] text-[#ffd68d]">
             Product Catalogue
           </span>
           <h1 className="mt-4 max-w-3xl font-heading text-4xl leading-none text-[#fff5e6] md:text-6xl">
@@ -205,7 +205,7 @@ function ProductsPage() {
                 className="rounded-[24px] border border-white/10 bg-white/8 px-4 py-4"
               >
                 <p className="font-heading text-2xl text-[#ffd68d]">{item.value}</p>
-                <p className="mt-1 text-[11px] uppercase tracking-[0.22em] text-white/70">
+                <p className="mt-1 text-[11px]  tracking-[0.22em] text-white/70">
                   {item.label}
                 </p>
               </div>
@@ -316,7 +316,7 @@ function ProductsPage() {
                     key={cat}
                     type="button"
                     onClick={() => setCategory(cat)}
-                    className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition ${
+                    className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold  tracking-[0.18em] transition ${
                       category === cat
                         ? "bg-[#34180e] text-white"
                         : "border border-[#eadbc8] bg-white text-[#6c4b33]"
@@ -346,7 +346,7 @@ function ProductsPage() {
             </div>
 
             <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              <div className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#f7efe5] px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#8b4d1d]">
+              <div className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#f7efe5] px-3 py-2 text-xs font-semibold  tracking-[0.2em] text-[#8b4d1d]">
                 <SlidersHorizontal className="h-3.5 w-3.5" />
                 Filters
               </div>
@@ -355,7 +355,7 @@ function ProductsPage() {
                   key={cat}
                   type="button"
                   onClick={() => setCategory(cat)}
-                  className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition ${
+                  className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold  tracking-[0.18em] transition ${
                     category === cat
                       ? "bg-[#34180e] text-white"
                       : "border border-[#eadbc8] bg-white text-[#6c4b33] hover:border-[#d6a35c] hover:bg-[#fff7ec]"
@@ -373,7 +373,7 @@ function ProductsPage() {
         <div className="layout-shell">
           <div className="mb-4 hidden items-center justify-between gap-3 md:flex">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
+              <p className="text-[11px] font-semibold  tracking-[0.28em] text-[#a86c2b]">
                 Results
               </p>
               <h2 className="mt-1 font-heading text-2xl text-[#34180e]">
@@ -382,7 +382,7 @@ function ProductsPage() {
             </div>
             <Link
               to="/required-catalogue"
-              className="hidden rounded-full border border-[#d8b48b] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#34180e] md:inline-flex"
+              className="hidden rounded-full border border-[#d8b48b] px-4 py-2 text-xs font-semibold  tracking-[0.18em] text-[#34180e] md:inline-flex"
             >
               Get full catalogue
             </Link>

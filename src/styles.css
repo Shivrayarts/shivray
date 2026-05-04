@@ -51,7 +51,7 @@
   --color-maroon-foreground: var(--maroon-foreground);
   --color-cream: var(--cream);
   --color-cream-foreground: var(--cream-foreground);
-  --font-heading: 'Cinzel', serif;
+  --font-heading: 'Cormorant Garamond', serif;
   --font-body: 'Poppins', sans-serif;
   --font-display: 'Cormorant Garamond', serif;
 }

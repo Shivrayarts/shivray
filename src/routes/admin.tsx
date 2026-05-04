@@ -1350,7 +1350,7 @@ function AdminDashboardPage() {
                   <div className="mt-5 overflow-x-auto">
                     <table className="min-w-[760px] w-full border-separate border-spacing-0">
                       <thead>
-                        <tr className="text-left text-xs uppercase tracking-[0.18em] text-[#7e7e88]">
+                        <tr className="text-left text-xs  tracking-[0.18em] text-[#7e7e88]">
                           <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Order</th>
                           <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Customer</th>
                           <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Amount</th>
@@ -1479,7 +1479,7 @@ function AdminDashboardPage() {
                     <div className="md:col-span-2">
                       <button
                         type="submit"
-                        className="inline-flex w-full items-center justify-center rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:brightness-105"
+                        className="inline-flex w-full items-center justify-center rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold  tracking-[0.16em] text-white transition hover:brightness-105"
                       >
                         Add Catalogue
                       </button>
@@ -1513,7 +1513,7 @@ function AdminDashboardPage() {
                   <div className="mt-5 overflow-x-auto">
                     <table className="min-w-[860px] w-full border-separate border-spacing-0">
                       <thead>
-                        <tr className="text-left text-xs uppercase tracking-[0.18em] text-[#7e7e88]">
+                        <tr className="text-left text-xs  tracking-[0.18em] text-[#7e7e88]">
                           <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Preview</th>
                           <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Catalogue</th>
                           <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Count</th>
@@ -1702,7 +1702,7 @@ function AdminDashboardPage() {
                       <button
                         type="submit"
                         disabled={isCatalogueUpdating}
-                        className="rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:brightness-105 disabled:opacity-60"
+                        className="rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold  tracking-[0.16em] text-white transition hover:brightness-105 disabled:opacity-60"
                       >
                         {isCatalogueUpdating ? "Saving..." : "Save Catalogue"}
                       </button>
@@ -1713,7 +1713,7 @@ function AdminDashboardPage() {
                           setEditCatalogueImageName("");
                           setCatalogueEditMessage("");
                         }}
-                        className="rounded-xl border border-[#e1dbd2] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#4c4a52] transition hover:bg-[#f8f6f2]"
+                        className="rounded-xl border border-[#e1dbd2] px-5 py-3 text-sm font-semibold  tracking-[0.16em] text-[#4c4a52] transition hover:bg-[#f8f6f2]"
                       >
                         Cancel
                       </button>
@@ -1828,7 +1828,7 @@ function AdminDashboardPage() {
                     <div className="md:col-span-2">
                       <button
                         type="submit"
-                        className="inline-flex w-full items-center justify-center rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:brightness-105"
+                        className="inline-flex w-full items-center justify-center rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold  tracking-[0.16em] text-white transition hover:brightness-105"
                       >
                         Add Banner
                       </button>
@@ -1860,7 +1860,7 @@ function AdminDashboardPage() {
                   <div className="mt-5 overflow-x-auto">
                     <table className="min-w-[860px] w-full border-separate border-spacing-0">
                       <thead>
-                        <tr className="text-left text-xs uppercase tracking-[0.18em] text-[#7e7e88]">
+                        <tr className="text-left text-xs  tracking-[0.18em] text-[#7e7e88]">
                           <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Preview</th>
                           <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Headline</th>
                           <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Order</th>
@@ -2012,7 +2012,7 @@ function AdminDashboardPage() {
                       <button
                         type="submit"
                         disabled={isBannerUpdating}
-                        className="rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:brightness-105 disabled:opacity-60"
+                        className="rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold  tracking-[0.16em] text-white transition hover:brightness-105 disabled:opacity-60"
                       >
                         {isBannerUpdating ? "Saving..." : "Save Banner"}
                       </button>
@@ -2023,7 +2023,7 @@ function AdminDashboardPage() {
                           setEditBannerImageName("");
                           setBannerEditMessage("");
                         }}
-                        className="rounded-xl border border-[#e1dbd2] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#4c4a52] transition hover:bg-[#f8f6f2]"
+                        className="rounded-xl border border-[#e1dbd2] px-5 py-3 text-sm font-semibold  tracking-[0.16em] text-[#4c4a52] transition hover:bg-[#f8f6f2]"
                       >
                         Cancel
                       </button>
@@ -2082,7 +2082,7 @@ function AdminDashboardPage() {
                     <div>
                       <button
                         type="submit"
-                        className="inline-flex w-full items-center justify-center rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:brightness-105"
+                        className="inline-flex w-full items-center justify-center rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold  tracking-[0.16em] text-white transition hover:brightness-105"
                       >
                         Add Video
                       </button>
@@ -2112,7 +2112,7 @@ function AdminDashboardPage() {
                   <div className="mt-5 overflow-x-auto">
                     <table className="min-w-[860px] w-full border-separate border-spacing-0">
                       <thead>
-                        <tr className="text-left text-xs uppercase tracking-[0.18em] text-[#7e7e88]">
+                        <tr className="text-left text-xs  tracking-[0.18em] text-[#7e7e88]">
                           <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Title</th>
                           <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">URL</th>
                           <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Order</th>
@@ -2238,7 +2238,7 @@ function AdminDashboardPage() {
                       <button
                         type="submit"
                         disabled={isVideoUpdating}
-                        className="rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:brightness-105 disabled:opacity-60"
+                        className="rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold  tracking-[0.16em] text-white transition hover:brightness-105 disabled:opacity-60"
                       >
                         {isVideoUpdating ? "Saving..." : "Save Video"}
                       </button>
@@ -2306,7 +2306,7 @@ function AdminDashboardPage() {
                     <div className="md:col-span-2">
                       <button
                         type="submit"
-                        className="inline-flex w-full items-center justify-center rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:brightness-105"
+                        className="inline-flex w-full items-center justify-center rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold  tracking-[0.16em] text-white transition hover:brightness-105"
                       >
                         Add Review
                       </button>
@@ -2336,7 +2336,7 @@ function AdminDashboardPage() {
                   <div className="mt-5 overflow-x-auto">
                     <table className="min-w-[860px] w-full border-separate border-spacing-0">
                       <thead>
-                        <tr className="text-left text-xs uppercase tracking-[0.18em] text-[#7e7e88]">
+                        <tr className="text-left text-xs  tracking-[0.18em] text-[#7e7e88]">
                           <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Customer</th>
                           <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Review</th>
                           <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Rating</th>
@@ -2473,7 +2473,7 @@ function AdminDashboardPage() {
                       <button
                         type="submit"
                         disabled={isReviewUpdating}
-                        className="rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:brightness-105 disabled:opacity-60"
+                        className="rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold  tracking-[0.16em] text-white transition hover:brightness-105 disabled:opacity-60"
                       >
                         {isReviewUpdating ? "Saving..." : "Save Review"}
                       </button>
@@ -2501,7 +2501,7 @@ function AdminDashboardPage() {
               <div className="mt-5 overflow-x-auto">
                 <table className="min-w-[900px] w-full border-separate border-spacing-0">
                   <thead>
-                    <tr className="text-left text-xs uppercase tracking-[0.18em] text-[#7e7e88]">
+                    <tr className="text-left text-xs  tracking-[0.18em] text-[#7e7e88]">
                       <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Order</th>
                       <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Customer</th>
                       <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Phone</th>
@@ -2567,7 +2567,7 @@ function AdminDashboardPage() {
               <div className="mt-5 overflow-x-auto">
                 <table className="min-w-[760px] w-full border-separate border-spacing-0">
                   <thead>
-                    <tr className="text-left text-xs uppercase tracking-[0.18em] text-[#7e7e88]">
+                    <tr className="text-left text-xs  tracking-[0.18em] text-[#7e7e88]">
                       <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">ID</th>
                       <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Customer</th>
                       <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Email</th>
@@ -2764,7 +2764,7 @@ function AdminDashboardPage() {
                 <div className="md:col-span-2">
                   <button
                     type="submit"
-                    className="inline-flex w-full items-center justify-center rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:brightness-105"
+                    className="inline-flex w-full items-center justify-center rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold  tracking-[0.16em] text-white transition hover:brightness-105"
                   >
                     Add Product
                   </button>
@@ -2796,7 +2796,7 @@ function AdminDashboardPage() {
               <div className="mt-5 overflow-x-auto">
                 <table className="min-w-[860px] w-full border-separate border-spacing-0">
                   <thead>
-                    <tr className="text-left text-xs uppercase tracking-[0.18em] text-[#7e7e88]">
+                    <tr className="text-left text-xs  tracking-[0.18em] text-[#7e7e88]">
                       <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">ID</th>
                       <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Product</th>
                       <th className="border-b border-[#ece6de] px-4 py-4 font-semibold">Category</th>
@@ -3047,7 +3047,7 @@ function AdminDashboardPage() {
                   <button
                     type="submit"
                     disabled={isUpdating}
-                    className="rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:brightness-105 disabled:opacity-60"
+                    className="rounded-xl bg-[#6f56de] px-5 py-3 text-sm font-semibold  tracking-[0.16em] text-white transition hover:brightness-105 disabled:opacity-60"
                   >
                     {isUpdating ? "Saving..." : "Save Changes"}
                   </button>
@@ -3058,7 +3058,7 @@ function AdminDashboardPage() {
                       setEditImageName("");
                       setEditMessage("");
                     }}
-                    className="rounded-xl border border-[#e1dbd2] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#4c4a52] transition hover:bg-[#f8f6f2]"
+                    className="rounded-xl border border-[#e1dbd2] px-5 py-3 text-sm font-semibold  tracking-[0.16em] text-[#4c4a52] transition hover:bg-[#f8f6f2]"
                   >
                     Cancel
                   </button>
