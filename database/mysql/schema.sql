@@ -60,6 +60,53 @@ CREATE TABLE IF NOT EXISTS catalogues (
   KEY idx_catalogues_sort (sort_order)
 ) ENGINE=InnoDB;
 
+CREATE TABLE IF NOT EXISTS hero_banners (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  slug VARCHAR(191) NOT NULL,
+  eyebrow VARCHAR(191) NOT NULL,
+  title_top VARCHAR(191) NOT NULL,
+  title_bottom VARCHAR(191) NOT NULL,
+  copy_text TEXT NOT NULL,
+  image_url MEDIUMTEXT NOT NULL,
+  sort_order INT UNSIGNED NOT NULL DEFAULT 0,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_hero_banners_slug (slug),
+  KEY idx_hero_banners_active (is_active),
+  KEY idx_hero_banners_sort (sort_order)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS homepage_reviews (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  author_name VARCHAR(191) NOT NULL,
+  review_text TEXT NOT NULL,
+  rating TINYINT UNSIGNED NOT NULL DEFAULT 5,
+  location VARCHAR(120) DEFAULT NULL,
+  sort_order INT UNSIGNED NOT NULL DEFAULT 0,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_homepage_reviews_active (is_active),
+  KEY idx_homepage_reviews_sort (sort_order)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS homepage_videos (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  title VARCHAR(191) NOT NULL,
+  description TEXT NOT NULL,
+  video_url MEDIUMTEXT NOT NULL,
+  sort_order INT UNSIGNED NOT NULL DEFAULT 0,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_homepage_videos_active (is_active),
+  KEY idx_homepage_videos_sort (sort_order)
+) ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS orders (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   order_no VARCHAR(30) NOT NULL,

@@ -6,6 +6,12 @@ type VerifyAdminInput = {
   password: string;
 };
 
+type SyncCustomerInput = {
+  email: string;
+  fullName?: string;
+  password?: string;
+};
+
 type VerifyAdminResult = {
   success: boolean;
   message: string;
@@ -50,6 +56,15 @@ export type AdminDashboardData = {
   customers: AdminDashboardCustomer[];
   inquiries: AdminDashboardInquiry[];
 };
+
+function deriveCustomerName(email: string) {
+  const localPart = email.split("@")[0] ?? "Customer";
+  return localPart
+    .split(/[._-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
 
 export const verifyAdminLoginServer = createServerFn({ method: "POST" })
   .inputValidator((data: VerifyAdminInput) => data)
@@ -212,4 +227,88 @@ export const getAdminDashboardDataServer = createServerFn({ method: "GET" }).han
     }
   },
 );
+
+export const syncCustomerLoginServer = createServerFn({ method: "POST" })
+  .inputValidator((data: SyncCustomerInput) => data)
+  .handler(async ({ data }) => {
+    try {
+      const email = data.email.trim().toLowerCase();
+      const fullName = (data.fullName?.trim() || deriveCustomerName(email) || "Customer").slice(
+        0,
+        120,
+      );
+      const password = data.password?.trim();
+
+      if (!email) {
+        return { success: false, message: "Email is required." };
+      }
+
+      const pool = getMysqlPool();
+      const [existingRows] = await pool.query<
+        Array<{ id: number; password_hash: string; role: "admin" | "customer" }>
+      >(
+        `SELECT id, password_hash, role
+         FROM users
+         WHERE email = ?
+         LIMIT 1`,
+        [email],
+      );
+
+      const existing = existingRows[0];
+
+      if (!existing) {
+        await pool.query(
+          `INSERT INTO users (full_name, email, password_hash, role, is_active)
+           VALUES (?, ?, SHA2(?, 256), 'customer', 1)`,
+          [fullName, email, password || `${email}:google-login`],
+        );
+
+        return { success: true, message: "Customer session saved." };
+      }
+
+      if (existing.role !== "customer") {
+        return { success: false, message: "This email is reserved for admin access." };
+      }
+
+      if (password) {
+        const [passwordRows] = await pool.query<Array<{ matched: number }>>(
+          `SELECT COUNT(*) AS matched
+           FROM users
+           WHERE id = ?
+             AND password_hash = SHA2(?, 256)
+           LIMIT 1`,
+          [existing.id, password],
+        );
+
+        const matches = Number(passwordRows[0]?.matched ?? 0) > 0;
+        if (!matches) {
+          return { success: false, message: "Invalid customer password." };
+        }
+
+        await pool.query(
+          `UPDATE users
+           SET full_name = ?, is_active = 1
+           WHERE id = ?`,
+          [fullName, existing.id],
+        );
+
+        return { success: true, message: "Customer login successful." };
+      }
+
+      await pool.query(
+        `UPDATE users
+         SET full_name = ?, is_active = 1
+         WHERE id = ?`,
+        [fullName, existing.id],
+      );
+
+      return { success: true, message: "Customer session saved." };
+    } catch (error) {
+      console.error("syncCustomerLoginServer error:", error);
+      return {
+        success: false,
+        message: "Could not save customer login right now.",
+      };
+    }
+  });
 

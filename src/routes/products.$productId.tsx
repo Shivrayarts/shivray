@@ -13,6 +13,7 @@ import {
   getProductsFromDbServer,
 } from "@/lib/server/products.functions";
 import { siteConfig } from "@/lib/site-config";
+import { normalizeDisplayCase } from "@/lib/utils";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
 
@@ -58,7 +59,7 @@ function ProductDetailPage() {
   );
 
   const whatsappLink = `${siteConfig.whatsappHref}?text=${encodeURIComponent(
-    `Hi Shivray, I want details for ${product.name}. Please share price and availability.`,
+    `Hi Shivray, I want details for ${normalizeDisplayCase(product.name)}. Please share price and availability.`,
   )}`;
   const galleryImages = [product.image, ...relatedProducts.map((item) => item.image)].slice(0, 4);
 
@@ -83,7 +84,7 @@ function ProductDetailPage() {
               Catalog
             </Link>
             <ChevronRight className="h-4 w-4 text-[#d8b48b]" />
-            <span className="text-white">{product.name}</span>
+            <span className="text-white">{normalizeDisplayCase(product.name)}</span>
           </div>
           <Link
             to="/products"
@@ -96,7 +97,7 @@ function ProductDetailPage() {
             {product.category}
           </p>
           <h1 className="mt-2 font-heading text-4xl leading-none text-[#fff5e6] md:text-6xl">
-            {product.name}
+            {normalizeDisplayCase(product.name)}
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-[#f4e7d8] md:text-base">
             {product.shortDescription}
@@ -109,7 +110,7 @@ function ProductDetailPage() {
           <div className="overflow-hidden rounded-[32px] border border-[#eadbc8] bg-white shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)]">
           <img
             src={product.image}
-            alt={product.name}
+            alt={normalizeDisplayCase(product.name)}
             className="h-full w-full object-cover"
             width={900}
             height={900}
@@ -124,7 +125,7 @@ function ProductDetailPage() {
               >
                 <img
                   src={image}
-                  alt={`${product.name} preview ${index + 1}`}
+                  alt={`${normalizeDisplayCase(product.name)} preview ${index + 1}`}
                   className="h-18 w-full object-cover"
                   loading="lazy"
                 />

@@ -8,6 +8,8 @@ import {
   Smartphone,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { syncCustomerLoginServer } from "@/lib/server/admin.functions";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -28,7 +30,10 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [googleMessage, setGoogleMessage] = useState("");
+  const [loginMessage, setLoginMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const syncCustomerLogin = useServerFn(syncCustomerLoginServer);
 
   useEffect(() => {
     if (!googleClientId || typeof window === "undefined") {
@@ -58,7 +63,7 @@ function LoginPage() {
 
       google.accounts.id.initialize({
         client_id: googleClientId,
-        callback: (response) => {
+        callback: async (response) => {
           if (!response.credential) {
             setGoogleMessage("Google login did not return a valid account.");
             return;
@@ -66,6 +71,18 @@ function LoginPage() {
 
           try {
             const payload = JSON.parse(atob(response.credential.split(".")[1] ?? ""));
+            const result = await syncCustomerLogin({
+              data: {
+                fullName: payload.name,
+                email: payload.email,
+              },
+            });
+
+            if (!result.success) {
+              setGoogleMessage(result.message);
+              return;
+            }
+
             window.localStorage.setItem(
               "shivray_customer_session",
               JSON.stringify({
@@ -118,6 +135,36 @@ function LoginPage() {
     }
 
     google.accounts.id.prompt();
+  }
+
+  async function handleCustomerSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setLoginMessage("");
+
+    const result = await syncCustomerLogin({
+      data: {
+        email,
+        password,
+      },
+    });
+
+    setIsSubmitting(false);
+
+    if (!result.success) {
+      setLoginMessage(result.message);
+      return;
+    }
+
+    window.localStorage.setItem(
+      "shivray_customer_session",
+      JSON.stringify({
+        name: email.split("@")[0],
+        email,
+      }),
+    );
+    setLoginMessage("Customer login successful.");
+    navigate({ to: "/" });
   }
 
   return (
@@ -207,7 +254,7 @@ function LoginPage() {
               </div>
             </div>
 
-            <form className="mt-6 space-y-4" onSubmit={(event) => event.preventDefault()}>
+            <form className="mt-6 space-y-4" onSubmit={handleCustomerSubmit}>
               <div>
                 <label htmlFor="login-email" className="text-sm font-medium text-[#34180e]">
                   Email
@@ -244,9 +291,10 @@ function LoginPage() {
 
               <button
                 type="submit"
-                className="inline-flex w-full items-center justify-center rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-[#221008]"
+                disabled={isSubmitting}
+                className="inline-flex w-full items-center justify-center rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-[#221008] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Login
+                {isSubmitting ? "Logging In..." : "Login"}
               </button>
 
               <button
@@ -257,6 +305,10 @@ function LoginPage() {
                 Continue with Google
               </button>
             </form>
+
+            {loginMessage ? (
+              <p className="mt-3 text-sm font-medium text-[#7a4d20]">{loginMessage}</p>
+            ) : null}
 
             {googleMessage ? (
               <p className="mt-3 text-sm font-medium text-[#7a4d20]">{googleMessage}</p>

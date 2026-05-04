@@ -135,7 +135,7 @@ function resolveImageUrl(row: Pick<DbProductRow, "image_url" | "slug">) {
 function mapDbRowToProduct(row: DbProductRow): Product {
   return {
     id: row.slug,
-    name: normalizeDisplayCase(row.name, "title"),
+    name: normalizeDisplayCase(row.name, "sentence"),
     price:
       typeof row.price === "number"
         ? formatInrPrice(row.price)

@@ -5,6 +5,7 @@ import { allProducts, type Product } from "@/data/products";
 import { useServerFn } from "@tanstack/react-start";
 import { useCart } from "@/hooks/use-cart";
 import { getProductsFromDbServer } from "@/lib/server/products.functions";
+import { normalizeDisplayCase } from "@/lib/utils";
 
 export const Route = createFileRoute("/cart")({
   component: CartPage,
@@ -86,7 +87,7 @@ function CartPage() {
                 >
                   <img
                     src={product.image}
-                    alt={product.name}
+                    alt={normalizeDisplayCase(product.name)}
                     className="h-24 w-24 rounded-md object-cover"
                     loading="lazy"
                   />
@@ -99,7 +100,7 @@ function CartPage() {
                       params={{ productId: product.id }}
                       className="mt-1 block font-heading text-base font-semibold text-foreground hover:text-primary"
                     >
-                      {product.name}
+                      {normalizeDisplayCase(product.name)}
                     </Link>
                     <p className="mt-1 text-sm font-bold text-primary">{product.price}</p>
                   </div>
@@ -108,7 +109,7 @@ function CartPage() {
                       <button
                         onClick={() => updateQuantity(product.id, quantity - 1)}
                         className="rounded p-1 hover:bg-muted"
-                        aria-label={`Decrease quantity of ${product.name}`}
+                        aria-label={`Decrease quantity of ${normalizeDisplayCase(product.name)}`}
                       >
                         <Minus className="h-4 w-4" />
                       </button>
@@ -118,7 +119,7 @@ function CartPage() {
                       <button
                         onClick={() => updateQuantity(product.id, quantity + 1)}
                         className="rounded p-1 hover:bg-muted"
-                        aria-label={`Increase quantity of ${product.name}`}
+                        aria-label={`Increase quantity of ${normalizeDisplayCase(product.name)}`}
                       >
                         <Plus className="h-4 w-4" />
                       </button>

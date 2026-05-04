@@ -31,7 +31,7 @@ export const productCategories = [
 export const allProducts: Product[] = [
   {
     id: "shastradhari-maharaj-coloured",
-    name: "Shastradhari Maharaj - Coloured",
+    name: "Shastradhari maharaj - coloured",
     price: "Rs. 5,100",
     image: productStatue1,
     category: "Statues",
@@ -44,7 +44,7 @@ export const allProducts: Product[] = [
   },
   {
     id: "ashwarudh-maharaj",
-    name: "Ashwarudh Maharaj",
+    name: "Ashwarudh maharaj",
     price: "Rs. 12,850",
     image: productStatue2,
     category: "Statues",
@@ -57,7 +57,7 @@ export const allProducts: Product[] = [
   },
   {
     id: "roudra-shambhu-chatrapati",
-    name: "Roudra Shambhu Chatrapati",
+    name: "Roudra shambhu chatrapati",
     price: "Rs. 5,100",
     image: productStatue3,
     category: "Statues",
@@ -70,7 +70,7 @@ export const allProducts: Product[] = [
   },
   {
     id: "royal-khanjar-with-sheath",
-    name: "Royal Khanjar with Sheath",
+    name: "Royal khanjar with sheath",
     price: "Rs. 8,500",
     image: productWeapon1,
     category: "Weapons",
@@ -83,7 +83,7 @@ export const allProducts: Product[] = [
   },
   {
     id: "vita-battle-axe",
-    name: "Vita (Battle Axe)",
+    name: "Vita (battle axe)",
     price: "Rs. 6,200",
     image: productWeapon2,
     category: "Weapons",
@@ -96,7 +96,7 @@ export const allProducts: Product[] = [
   },
   {
     id: "ceremonial-gada",
-    name: "Ceremonial Gada",
+    name: "Ceremonial gada",
     price: "Rs. 9,800",
     image: productWeapon3,
     category: "Weapons",
@@ -109,7 +109,7 @@ export const allProducts: Product[] = [
   },
   {
     id: "brass-dhoop-stand",
-    name: "Brass Dhoop Stand",
+    name: "Brass dhoop stand",
     price: "Rs. 2,200",
     image: productDhoop1,
     category: "Dhoop",
@@ -122,7 +122,7 @@ export const allProducts: Product[] = [
   },
   {
     id: "maratha-war-shield",
-    name: "Maratha War Shield",
+    name: "Maratha war shield",
     price: "Rs. 7,500",
     image: productShield1,
     category: "Shields",
@@ -135,7 +135,7 @@ export const allProducts: Product[] = [
   },
   {
     id: "talwar-curved-sword",
-    name: "Talwar - Curved Sword",
+    name: "Talwar - curved sword",
     price: "Rs. 11,000",
     image: productTalwar1,
     category: "Weapons",

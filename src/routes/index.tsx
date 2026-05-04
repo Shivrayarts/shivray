@@ -7,15 +7,15 @@ import {
   ChevronRight,
   Clock3,
   Heart,
+  PlayCircle,
   ShieldCheck,
+  Star,
 } from "lucide-react";
 import { getProductsFromDbServer } from "@/lib/server/products.functions";
 import { getCatalogueTypesFromDbServer } from "@/lib/server/catalogues.functions";
+import { getHomePageContentServer } from "@/lib/server/home-content.functions";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { normalizeDisplayCase } from "@/lib/utils";
-import heroBanner1 from "@/assets/products-poster.jpg";
-import heroBanner2 from "@/assets/hero-banner-2.jpg";
-import heroBanner3 from "@/assets/hero-banner-3.jpg";
 import productDhoop1 from "@/assets/product-dhoop-1.jpg";
 import productStatue1 from "@/assets/product-statue-1.jpg";
 import productShowcase1 from "@/assets/product-1.png";
@@ -25,6 +25,7 @@ export const Route = createFileRoute("/")({
   loader: async () => ({
     products: await getProductsFromDbServer(),
     catalogueTypes: await getCatalogueTypesFromDbServer(),
+    homeContent: await getHomePageContentServer(),
   }),
   component: HomePage,
   head: () => ({
@@ -90,39 +91,17 @@ const features = [
   },
 ] as const;
 
-const heroSlides = [
-  {
-    eyebrow: "Premium Craftsmanship Since 2015",
-    titleTop: "Timeless Culture",
-    titleBottom: "Modern Vision",
-    copy:
-      "From heritage artifacts to custom statement pieces, each creation carries tradition, precision, and visual impact.",
-    image: heroBanner3,
-  },
-  {
-    eyebrow: "Made For Proud Spaces",
-    titleTop: "Warrior Legacy",
-    titleBottom: "Handcrafted Detail",
-    copy:
-      "Bring home statues, shields, and decor pieces shaped with heritage-inspired artistry and a premium finish.",
-    image: heroBanner1,
-  },
-  {
-    eyebrow: "Signature Heritage Collection",
-    titleTop: "Royal Presence",
-    titleBottom: "Bold Display",
-    copy:
-      "Explore statement pieces designed for gifting, home decor, devotion, and unforgettable first impressions.",
-    image: heroBanner2,
-  },
-] as const;
-
 function HomePage() {
-  const { products, catalogueTypes } = Route.useLoaderData();
+  const { products, catalogueTypes, homeContent } = Route.useLoaderData();
   const { isWishlisted, toggleWishlist } = useWishlist();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [categorySlide, setCategorySlide] = useState(0);
+  const [currentReview, setCurrentReview] = useState(0);
+  const [currentVideo, setCurrentVideo] = useState(0);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
+  const heroSlides = homeContent.banners.length ? homeContent.banners : [];
+  const reviews = homeContent.reviews;
+  const videos = homeContent.videos;
   const categoryCollections = catalogueTypes.slice(0, 4);
   const spotlightProductCards = spotlightProducts.map((product) => {
     const matchedProduct = products.find((item) => item.id === product.id);
@@ -138,12 +117,65 @@ function HomePage() {
   const homeCatalogueProducts = products;
 
   useEffect(() => {
+    if (!heroSlides.length) return;
     const timer = window.setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 5000);
 
     return () => window.clearInterval(timer);
-  }, []);
+  }, [heroSlides.length]);
+
+  useEffect(() => {
+    if (!heroSlides.length) {
+      setCurrentSlide(0);
+      return;
+    }
+
+    setCurrentSlide((prev) => (prev >= heroSlides.length ? 0 : prev));
+  }, [heroSlides.length]);
+
+  useEffect(() => {
+    if (!reviews.length) return;
+    const timer = window.setInterval(() => {
+      setCurrentReview((prev) => (prev + 1) % reviews.length);
+    }, 4500);
+
+    return () => window.clearInterval(timer);
+  }, [reviews.length]);
+
+  useEffect(() => {
+    if (!videos.length) return;
+    const timer = window.setInterval(() => {
+      setCurrentVideo((prev) => (prev + 1) % videos.length);
+    }, 6000);
+
+    return () => window.clearInterval(timer);
+  }, [videos.length]);
+
+  const activeReview = reviews[currentReview];
+  const activeVideo = videos[currentVideo];
+  const activeHeroSlide = heroSlides[currentSlide];
+
+  function getReviewAgeLabel(index: number) {
+    return `${56 + index} days ago`;
+  }
+
+  function getVideoEmbedUrl(url: string) {
+    const trimmed = url.trim();
+    if (!trimmed) return "";
+
+    if (trimmed.includes("youtube.com/watch?v=")) {
+      const videoId = trimmed.split("v=")[1]?.split("&")[0];
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : trimmed;
+    }
+
+    if (trimmed.includes("youtu.be/")) {
+      const videoId = trimmed.split("youtu.be/")[1]?.split("?")[0];
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : trimmed;
+    }
+
+    return trimmed;
+  }
 
   const handleCategoriesScroll = () => {
     const node = categoriesRef.current;
@@ -199,7 +231,7 @@ function HomePage() {
           params={{ productId: product.id }}
           className="mt-2 block min-h-[3.5rem] font-heading text-[1.35rem] leading-[0.96] tracking-[-0.03em] text-[#6f2d06] md:min-h-[4.2rem] md:text-[1.9rem] md:leading-[0.94] md:tracking-[-0.04em]"
         >
-          <span className="line-clamp-2">{normalizeDisplayCase(product.name, "title")}</span>
+          <span className="line-clamp-2">{normalizeDisplayCase(product.name, "sentence")}</span>
         </Link>
         <p className="mt-4 text-[1.5rem] font-semibold text-[#b46a16]">{product.price}</p>
       </div>
@@ -211,7 +243,7 @@ function HomePage() {
       <section className="relative isolate overflow-hidden bg-[#2b0b08] text-white">
         {heroSlides.map((slide, index) => (
           <img
-            key={slide.titleTop}
+            key={slide.id}
             src={slide.image}
             alt={slide.titleTop}
             className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
@@ -236,30 +268,49 @@ function HomePage() {
 
         <div className="layout-shell relative flex min-h-[560px] items-center justify-center px-5 py-16 text-center md:min-h-[720px] md:px-8 md:py-24">
           <div className="mx-auto max-w-5xl">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.42em] text-[#e3a92b] md:text-sm">
-              {heroSlides[currentSlide].eyebrow}
-            </p>
-            <h1 className="mt-6 font-heading text-5xl font-semibold leading-[0.92] text-[#fbf2e2] sm:text-6xl md:text-8xl">
-              {heroSlides[currentSlide].titleTop}
-            </h1>
-            <h2 className="mt-2 font-heading text-5xl font-semibold leading-[0.92] text-[#e1a126] sm:text-6xl md:text-8xl">
-              {heroSlides[currentSlide].titleBottom}
-            </h2>
-            <p className="mx-auto mt-7 max-w-4xl text-lg leading-9 text-[#f6e6d4] md:text-[1.05rem]">
-              {heroSlides[currentSlide].copy}
-            </p>
+            {activeHeroSlide ? (
+              <>
+                <p className="text-sm font-semibold text-[#e3a92b] md:text-base">
+                  {activeHeroSlide.eyebrow}
+                </p>
+                <h1 className="mt-6 font-heading text-5xl font-semibold leading-[0.92] text-[#fbf2e2] sm:text-6xl md:text-8xl">
+                  {activeHeroSlide.titleTop}
+                </h1>
+                <h2 className="mt-2 font-heading text-5xl font-semibold leading-[0.92] text-[#e1a126] sm:text-6xl md:text-8xl">
+                  {activeHeroSlide.titleBottom}
+                </h2>
+                <p className="mx-auto mt-7 max-w-4xl text-lg leading-9 text-[#f6e6d4] md:text-[1.05rem]">
+                  {activeHeroSlide.copy}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-semibold text-[#e3a92b] md:text-base">
+                  Premium craftsmanship
+                </p>
+                <h1 className="mt-6 font-heading text-5xl font-semibold leading-[0.92] text-[#fbf2e2] sm:text-6xl md:text-8xl">
+                  Heritage Pieces
+                </h1>
+                <h2 className="mt-2 font-heading text-5xl font-semibold leading-[0.92] text-[#e1a126] sm:text-6xl md:text-8xl">
+                  Crafted for Display
+                </h2>
+                <p className="mx-auto mt-7 max-w-4xl text-lg leading-9 text-[#f6e6d4] md:text-[1.05rem]">
+                  Add or activate a banner from the admin panel to update the home hero slider.
+                </p>
+              </>
+            )}
 
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
                 to="/products"
-                className="inline-flex min-w-[20rem] items-center justify-center gap-3 rounded-xl bg-[#e1a126] px-8 py-4 font-heading text-sm font-semibold uppercase tracking-[0.16em] text-[#331208] transition hover:brightness-105"
+                className="inline-flex min-w-[20rem] items-center justify-center gap-3 rounded-xl bg-[#e1a126] px-8 py-4 font-heading text-sm font-semibold text-[#331208] transition hover:brightness-105"
               >
                 Explore Products
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <Link
                 to="/contact"
-                className="inline-flex min-w-[20rem] items-center justify-center rounded-xl border border-[#d6a43c] bg-[#5a0a15]/20 px-8 py-4 font-heading text-sm font-semibold uppercase tracking-[0.16em] text-[#f6d37d] transition hover:bg-[#5a0a15]/35"
+                className="inline-flex min-w-[20rem] items-center justify-center rounded-xl border border-[#d6a43c] bg-[#5a0a15]/20 px-8 py-4 font-heading text-sm font-semibold text-[#f6d37d] transition hover:bg-[#5a0a15]/35"
               >
                 Get Custom Design
               </Link>
@@ -289,7 +340,7 @@ function HomePage() {
         <div className="absolute bottom-7 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3">
           {heroSlides.map((slide, index) => (
             <button
-              key={slide.titleTop}
+              key={slide.id}
               type="button"
               onClick={() => setCurrentSlide(index)}
               aria-label={`Go to slide ${index + 1}`}
@@ -368,11 +419,11 @@ function HomePage() {
         <div className="layout-shell">
           <div className="flex items-end justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
-                Best Selling Products
+              <p className="text-sm font-semibold text-[#a86c2b]">
+                Best selling products
               </p>
               <h2 className="mt-2 font-heading text-3xl text-[#34180e]">
-                Best Selling Products Of The Week
+                Best Selling Products of the Week
               </h2>
             </div>
             <Link
@@ -393,11 +444,11 @@ function HomePage() {
         <div className="layout-shell">
           <div className="flex items-end justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
-                Full Product Range
+              <p className="text-sm font-semibold text-[#a86c2b]">
+                Full product range
               </p>
               <h2 className="mt-2 font-heading text-3xl text-[#34180e]">
-                Browse all products directly on home
+                Browse All Products on the Home Page
               </h2>
             </div>
             <Link
@@ -413,6 +464,184 @@ function HomePage() {
           </div>
         </div>
       </section>
+
+      {videos.length ? (
+        <section className="px-4 pb-8 md:px-6 md:pb-14">
+          <div className="layout-shell bg-[linear-gradient(180deg,#fffaf1_0%,#f6ead8_100%)] px-0 py-5 md:py-8">
+            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-[#a86c2b]">
+                  Featured videos
+                </p>
+                <h2 className="mt-2 font-heading text-3xl text-[#34180e]">
+                  Stories and Workshop Moments in Motion
+                </h2>
+              </div>
+              <div className="hidden items-center gap-3 md:flex">
+                <button
+                  type="button"
+                  onClick={() => setCurrentVideo((prev) => (prev - 1 + videos.length) % videos.length)}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#d8bf9d] bg-white text-[#8b4d1d]"
+                  aria-label="Previous video"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrentVideo((prev) => (prev + 1) % videos.length)}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#d8bf9d] bg-white text-[#8b4d1d]"
+                  aria-label="Next video"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {activeVideo ? (
+              <div className="mt-6 grid gap-6 xl:grid-cols-[1.45fr_0.75fr] xl:items-stretch">
+                <div className="overflow-hidden rounded-[28px] bg-[#2a140e] shadow-[0_24px_50px_-35px_rgba(0,0,0,0.55)]">
+                  {getVideoEmbedUrl(activeVideo.videoUrl).includes("youtube.com/embed/") ? (
+                    <iframe
+                      src={getVideoEmbedUrl(activeVideo.videoUrl)}
+                      title={activeVideo.title}
+                      className="aspect-video w-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video
+                      src={activeVideo.videoUrl}
+                      controls
+                      className="aspect-video w-full bg-black"
+                    />
+                  )}
+                </div>
+
+                <div className="rounded-[28px] bg-white/80 p-6 shadow-[0_24px_55px_-40px_rgba(80,40,20,0.55)]">
+                  <div className="inline-flex rounded-2xl bg-[#fff1d9] p-3 text-[#b17024]">
+                    <PlayCircle className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-5 font-heading text-3xl text-[#34180e]">
+                    {activeVideo.title}
+                  </h3>
+                  <p className="mt-4 text-sm leading-7 text-[#6c4b33]">
+                    {activeVideo.description}
+                  </p>
+                  <a
+                    href={activeVideo.videoUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#4b2414]"
+                  >
+                    Watch full video
+                    <ArrowRight className="h-4 w-4" />
+                  </a>
+
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    {videos.map((video, index) => (
+                      <button
+                        key={video.id}
+                        type="button"
+                        onClick={() => setCurrentVideo(index)}
+                        className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+                          index === currentVideo
+                            ? "bg-[#34180e] text-white"
+                            : "bg-[#f8efe4] text-[#8b4d1d]"
+                        }`}
+                      >
+                        Video {index + 1}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
+
+      {reviews.length ? (
+        <section className="px-4 pb-8 md:px-6 md:pb-14">
+          <div className="layout-shell bg-[#fffdf8] px-0 py-8">
+            <div className="text-center">
+              <p className="text-sm font-semibold text-[#a86c2b]">
+                Customer reviews
+              </p>
+              <h2 className="mt-2 font-heading text-3xl text-[#34180e]">
+                What Customers Are Saying
+              </h2>
+              <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-[#7a614d]">
+                Hear directly from our valued customers through a clean, swipe-friendly review slider.
+              </p>
+            </div>
+
+            {activeReview ? (
+              <div className="mx-auto mt-8 max-w-3xl">
+                <div className="rounded-[26px] bg-white p-6 text-left shadow-[0_20px_45px_-38px_rgba(79,40,16,0.45)] md:p-8">
+                  <p className="text-[1.6rem] font-semibold leading-none text-[#1f1711] md:text-[1.8rem]">
+                    {activeReview.authorName}
+                  </p>
+                  <p className="mt-2 text-sm text-[#8c8177]">
+                    {getReviewAgeLabel(currentReview)}
+                  </p>
+                  <div className="mt-3 flex items-center gap-3">
+                    <div className="flex items-center gap-1 text-[#f4bc12]">
+                      {Array.from({ length: 5 }).map((_, starIndex) => (
+                        <Star
+                          key={`${activeReview.id}-single-${starIndex}`}
+                          className={`h-4 w-4 ${starIndex < activeReview.rating ? "fill-current" : ""}`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-lg text-[#6d6259]">4.5/5</span>
+                  </div>
+                  <p className="mt-5 text-[1.05rem] leading-8 text-[#4c433d] md:text-[1.12rem]">
+                    {activeReview.reviewText}
+                  </p>
+                  <p className="mt-5 text-sm font-medium text-[#9b7c61]">
+                    {activeReview.location}
+                  </p>
+                </div>
+
+                <div className="mt-6 flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentReview((prev) => (prev - 1 + reviews.length) % reviews.length)}
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#8b4d1d] shadow-[0_12px_28px_-20px_rgba(79,40,16,0.55)]"
+                    aria-label="Previous review"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentReview((prev) => (prev + 1) % reviews.length)}
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#8b4d1d] shadow-[0_12px_28px_-20px_rgba(79,40,16,0.55)]"
+                    aria-label="Next review"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            <div className="mt-6 flex items-center justify-center gap-3">
+              {reviews.map((review, index) => (
+                <button
+                  key={review.id}
+                  type="button"
+                  onClick={() => setCurrentReview(index)}
+                  aria-label={`Go to review ${index + 1}`}
+                  className={`rounded-full transition-all ${
+                    index === currentReview
+                      ? "h-3 w-10 bg-[#8b4d1d]"
+                      : "h-3 w-3 bg-[#d9c0a1]"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="bg-[#f2e7d7] py-10 md:py-14">
         <div className="layout-shell grid gap-5 px-4 md:grid-cols-3 md:px-6">

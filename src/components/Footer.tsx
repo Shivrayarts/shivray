@@ -1,104 +1,268 @@
 import { Link } from "@tanstack/react-router";
-import { Facebook, Instagram, Mail, MapPin, Phone, Youtube } from "lucide-react";
+import { useState } from "react";
+import {
+  ChevronDown,
+  Facebook,
+  Instagram,
+  Mail,
+  MapPin,
+  Phone,
+  Plus,
+  Youtube,
+} from "lucide-react";
 import logoImg from "@/assets/logo-dark.jpg";
 import { siteConfig } from "@/lib/site-config";
 
-const footerLinks = [
-  { to: "/", label: "Home" },
-  { to: "/products", label: "Product" },
-  { to: "/required-catalogue", label: "Required Catalogue" },
-  { to: "/contact", label: "Contact" },
-  { to: "/login", label: "Login" },
+const shoppingLinks = [
+  { to: "/products", label: "Shipping and Delivery" },
+  { to: "/required-catalogue", label: "Catalogue Request" },
+  { to: "/wishlist", label: "Wishlist" },
+  { to: "/cart", label: "Cart" },
 ] as const;
 
+const informationLinks = [
+  { to: "/about", label: "About Us" },
+  { to: "/contact", label: "Contact" },
+  { to: "/blog", label: "News & Blog" },
+  { to: "/login", label: "My Account" },
+] as const;
+
+type SectionKey = "shopping" | "information" | "newsletter";
+
 export default function Footer() {
+  const [openSection, setOpenSection] = useState<SectionKey | null>(null);
+
+  const toggleSection = (section: SectionKey) => {
+    setOpenSection((current) => (current === section ? null : section));
+  };
+
   return (
-    <footer className="border-t border-[#e8d7c1] bg-[#2b130c] text-[#f8ead7]">
-      <div className="layout-shell grid gap-4 px-4 py-4 md:grid-cols-[1fr_0.8fr_1fr] md:px-6 md:py-5">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <img
-              src={logoImg}
-              alt="Shivray"
-              className="h-10 w-10 rounded-full border border-[#d6a35c]/40 object-cover"
-            />
-            <div>
-              <p className="font-heading text-xl leading-none text-[#ffd68d]">Shivray</p>
-              <p className="mt-1 text-[10px] font-semibold leading-4 tracking-[0.04em] text-[#d1b08b]">
-                चला घडवूया इतिहास पुन्हा
-              </p>
+    <footer className="w-full bg-[#4a1f14] text-[#f8ead7]">
+      <div className="px-4 py-8 md:px-8 md:py-12 xl:px-14">
+        <div className="hidden gap-10 lg:grid lg:grid-cols-[1.2fr_0.75fr_0.75fr_1.1fr]">
+          <div>
+            <div className="flex items-start gap-4">
+              <img
+                src={logoImg}
+                alt="Shivray"
+                className="h-20 w-20 rounded-full object-cover"
+              />
+              <div className="pt-1">
+                <p className="font-heading text-3xl leading-none text-[#ffd68d]">Shivray</p>
+                <p className="mt-3 text-xs font-semibold tracking-[0.08em] text-[#d7b28f]">
+                  {siteConfig.brandTagline}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-10 space-y-6 text-lg leading-9 text-[#edd8c5]">
+              <div className="flex items-start gap-4">
+                <MapPin className="mt-2 h-5 w-5 shrink-0 text-[#ffd68d]" />
+                <p>{siteConfig.address}</p>
+              </div>
+              <a
+                href={`tel:${siteConfig.phoneHref}`}
+                className="flex items-start gap-4 transition hover:text-[#ffd68d]"
+              >
+                <Phone className="mt-2 h-5 w-5 shrink-0 text-[#ffd68d]" />
+                <p>{siteConfig.phoneDisplay}</p>
+              </a>
+              <a
+                href={`mailto:${siteConfig.email}`}
+                className="flex items-start gap-4 transition hover:text-[#ffd68d]"
+              >
+                <Mail className="mt-2 h-5 w-5 shrink-0 text-[#ffd68d]" />
+                <p>{siteConfig.email}</p>
+              </a>
+            </div>
+
+            <div className="mt-7 flex items-center gap-5">
+              <a
+                href={siteConfig.socialLinks.facebook}
+                aria-label="Facebook"
+                className="transition hover:text-[#ffd68d]"
+              >
+                <Facebook className="h-6 w-6" />
+              </a>
+              <a
+                href={siteConfig.socialLinks.instagram}
+                aria-label="Instagram"
+                className="transition hover:text-[#ffd68d]"
+              >
+                <Instagram className="h-6 w-6" />
+              </a>
+              <a
+                href={siteConfig.socialLinks.youtube}
+                aria-label="YouTube"
+                className="transition hover:text-[#ffd68d]"
+              >
+                <Youtube className="h-6 w-6" />
+              </a>
             </div>
           </div>
-          <p className="mt-2 max-w-md text-[13px] leading-5 text-[#e7d6c2]">
-            Crafted to feel fast, premium, and easy to browse on phones, with direct paths
-            to products, catalogue requests, contact, and login.
-          </p>
-          <div className="mt-2.5 flex items-center gap-2">
-            <a
-              href={siteConfig.socialLinks.facebook}
-              aria-label="Facebook"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#d6a35c]/40 text-[#ffd68d] transition hover:bg-[#3a1b10]"
-            >
-              <Facebook className="h-4 w-4" />
-            </a>
-            <a
-              href={siteConfig.socialLinks.instagram}
-              aria-label="Instagram"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#d6a35c]/40 text-[#ffd68d] transition hover:bg-[#3a1b10]"
-            >
-              <Instagram className="h-4 w-4" />
-            </a>
-            <a
-              href={siteConfig.socialLinks.youtube}
-              aria-label="YouTube"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#d6a35c]/40 text-[#ffd68d] transition hover:bg-[#3a1b10]"
-            >
-              <Youtube className="h-4 w-4" />
-            </a>
+
+          <div>
+            <h3 className="text-[2.1rem] font-semibold text-[#fff7ed]">Shopping</h3>
+            <div className="mt-7 grid gap-4 text-[1.08rem] text-[#e4c6ae]">
+              {shoppingLinks.map((link) => (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  className="transition hover:text-[#ffd68d]"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-[2.1rem] font-semibold text-[#fff7ed]">Information</h3>
+            <div className="mt-7 grid gap-4 text-[1.08rem] text-[#e4c6ae]">
+              {informationLinks.map((link) => (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  className="transition hover:text-[#ffd68d]"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-[2.1rem] font-semibold text-[#fff7ed]">Newsletter</h3>
+            <p className="mt-7 text-[1.08rem] leading-8 text-[#e4c6ae]">
+              Become the first to know about new product drops, heritage stories, and
+              featured collections.
+            </p>
+            <form className="mt-7 flex gap-3" onSubmit={(event) => event.preventDefault()}>
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="min-w-0 flex-1 rounded-full border border-white/15 bg-transparent px-6 py-4 text-base text-[#fff7ed] outline-none placeholder:text-[#cfae92]"
+              />
+              <button
+                type="submit"
+                className="rounded-full bg-[#fff7ed] px-8 py-4 text-base font-semibold text-[#34180e] transition hover:bg-[#f4ddbc]"
+              >
+                Subscribe
+              </button>
+            </form>
+            <p className="mt-5 text-sm leading-6 text-[#cfb097]">
+              By subscribing, you agree to receive updates from Shivray.
+            </p>
           </div>
         </div>
 
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffd68d]">
-            Quick Links
-          </p>
-          <div className="mt-2 grid gap-1">
-            {footerLinks.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className="text-[13px] leading-5 text-[#f4e7d8] transition hover:text-[#ffd68d]"
-              >
-                {link.label}
-              </Link>
+        <div className="lg:hidden">
+          <div className="flex items-start gap-3">
+            <img
+              src={logoImg}
+              alt="Shivray"
+              className="h-16 w-16 rounded-full object-cover"
+            />
+            <div className="pt-1">
+              <p className="font-heading text-2xl leading-none text-[#ffd68d]">Shivray</p>
+              <p className="mt-2 text-xs font-semibold tracking-[0.08em] text-[#d7b28f]">
+                {siteConfig.brandTagline}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-7 space-y-5 text-[15px] leading-7 text-[#f2dfcc]">
+            <div className="flex items-start gap-3">
+              <MapPin className="mt-1 h-4 w-4 shrink-0 text-[#ffd68d]" />
+              <p>{siteConfig.address}</p>
+            </div>
+            <a
+              href={`tel:${siteConfig.phoneHref}`}
+              className="flex items-start gap-3 transition hover:text-[#ffd68d]"
+            >
+              <Phone className="mt-1 h-4 w-4 shrink-0 text-[#ffd68d]" />
+              <p>{siteConfig.phoneDisplay}</p>
+            </a>
+            <a
+              href={`mailto:${siteConfig.email}`}
+              className="flex items-start gap-3 transition hover:text-[#ffd68d]"
+            >
+              <Mail className="mt-1 h-4 w-4 shrink-0 text-[#ffd68d]" />
+              <p>{siteConfig.email}</p>
+            </a>
+          </div>
+
+          <div className="mt-5 flex items-center gap-4 text-[#fff5e6]">
+            <a href={siteConfig.socialLinks.facebook} aria-label="Facebook">
+              <Facebook className="h-5 w-5" />
+            </a>
+            <a href={siteConfig.socialLinks.instagram} aria-label="Instagram">
+              <Instagram className="h-5 w-5" />
+            </a>
+            <a href={siteConfig.socialLinks.youtube} aria-label="YouTube">
+              <Youtube className="h-5 w-5" />
+            </a>
+          </div>
+
+          <div className="mt-8 space-y-1">
+            {[
+              { key: "shopping" as const, title: "Shopping", links: shoppingLinks },
+              { key: "information" as const, title: "Information", links: informationLinks },
+              { key: "newsletter" as const, title: "Newsletter", links: [] },
+            ].map((section) => (
+              <div key={section.key} className="py-2">
+                <button
+                  type="button"
+                  onClick={() => toggleSection(section.key)}
+                  className="flex w-full items-center justify-between py-3 text-left"
+                >
+                  <span className="text-[1.8rem] font-semibold leading-none text-[#fff7ed]">
+                    {section.title}
+                  </span>
+                  {openSection === section.key ? (
+                    <ChevronDown className="h-5 w-5 text-[#ffd68d]" />
+                  ) : (
+                    <Plus className="h-5 w-5 text-[#ffd68d]" />
+                  )}
+                </button>
+
+                {openSection === section.key ? (
+                  section.key === "newsletter" ? (
+                    <div className="pb-4 pt-1">
+                      <p className="text-sm leading-6 text-[#eedbc7]">
+                        Stay connected for new product drops, heritage stories, and catalogue
+                        updates from Shivray.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid gap-2 pb-4 text-sm text-[#eedbc7]">
+                      {section.links.map((link) => (
+                        <Link
+                          key={link.label}
+                          to={link.to}
+                          className="py-1 transition hover:text-[#ffd68d]"
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )
+                ) : null}
+              </div>
             ))}
           </div>
         </div>
 
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffd68d]">
-            Contact
+        <div className="mt-10 border-t border-white/10 pt-6 text-[#cfb097] lg:mt-14 lg:flex lg:items-center lg:justify-between">
+          <Link
+            to="/contact"
+            className="text-lg font-semibold text-[#f2dfcc] transition hover:text-[#ffd68d]"
+          >
+            Help & FAQs
+          </Link>
+          <p className="mt-4 text-sm leading-6 lg:mt-0">
+            © 2026 Shivray. All rights reserved.
           </p>
-          <div className="mt-2 grid gap-2 text-[13px] leading-5 text-[#f4e7d8]">
-            <div className="flex gap-2.5">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#ffd68d]" />
-              <span>{siteConfig.address}</span>
-            </div>
-            <a
-              href={`tel:${siteConfig.phoneHref}`}
-              className="flex gap-2.5 transition hover:text-[#ffd68d]"
-            >
-              <Phone className="h-4 w-4 shrink-0 text-[#ffd68d]" />
-              <span>{siteConfig.phoneDisplay}</span>
-            </a>
-            <a
-              href={`mailto:${siteConfig.email}`}
-              className="flex gap-2.5 transition hover:text-[#ffd68d]"
-            >
-              <Mail className="h-4 w-4 shrink-0 text-[#ffd68d]" />
-              <span>{siteConfig.email}</span>
-            </a>
-          </div>
         </div>
       </div>
     </footer>

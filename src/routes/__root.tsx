@@ -1,10 +1,11 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MobileTabBar from "@/components/MobileTabBar";
 import FloatingActions from "@/components/FloatingActions";
 import logoImg from "@/assets/logo-dark.jpg";
+import { siteConfig } from "@/lib/site-config";
 
 import appCss from "../styles.css?url";
 
@@ -83,24 +84,40 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const [preloaderPhase, setPreloaderPhase] = useState<"show" | "exit" | "hidden">("show");
+  const location = useLocation();
+  const hideFooter = location.pathname.startsWith("/admin");
 
   useEffect(() => {
+    let hasStartedExit = false;
+    let exitTimer: number | undefined;
+    let hiddenTimer: number | undefined;
+
     const hideLoader = () => {
-      window.setTimeout(() => {
+      if (hasStartedExit) return;
+      hasStartedExit = true;
+
+      exitTimer = window.setTimeout(() => {
         setPreloaderPhase("exit");
-        window.setTimeout(() => {
+        hiddenTimer = window.setTimeout(() => {
           setPreloaderPhase("hidden");
         }, 750);
-      }, 1150);
+      }, 350);
     };
+
+    // Never let the app stay blocked behind the preloader if the browser
+    // keeps waiting on late resources or emits noisy console warnings.
+    const failSafeTimer = window.setTimeout(hideLoader, 1400);
 
     if (document.readyState === "complete") {
       hideLoader();
-      return;
+    } else {
+      window.addEventListener("load", hideLoader, { once: true });
     }
 
-    window.addEventListener("load", hideLoader);
     return () => {
+      window.clearTimeout(failSafeTimer);
+      if (exitTimer) window.clearTimeout(exitTimer);
+      if (hiddenTimer) window.clearTimeout(hiddenTimer);
       window.removeEventListener("load", hideLoader);
     };
   }, []);
@@ -134,17 +151,20 @@ function RootComponent() {
             preloaderPhase === "exit" ? "opacity-0 scale-90" : "opacity-100 scale-100"
           }`}
         >
-          <div className="relative flex h-28 w-28 items-center justify-center">
+          <div className="relative flex h-36 w-36 items-center justify-center">
             <span className="absolute inset-0 rounded-full border-2 border-gold/30 border-t-gold animate-[spin_3.8s_linear_infinite]" />
-            <span className="absolute inset-3 rounded-full border border-gold/25 animate-pulse" />
+            <span className="absolute inset-4 rounded-full border border-gold/25 animate-pulse" />
             <img
               src={logoImg}
               alt="Shivray"
-              className="h-20 w-20 rounded-full object-cover ring-2 ring-gold/50"
+              className="h-24 w-24 rounded-full object-cover ring-2 ring-gold/50 md:h-28 md:w-28"
             />
           </div>
-          <p className="mt-4 font-heading text-xs uppercase tracking-[0.35em] text-gold/95">
+          <p className="mt-5 font-heading text-sm tracking-[0.28em] text-gold/95">
             Shivray
+          </p>
+          <p className="mt-2 max-w-[16rem] text-center text-[11px] font-semibold tracking-[0.08em] text-[#f8deae]">
+            {siteConfig.brandTagline}
           </p>
         </div>
       </div>
@@ -152,7 +172,7 @@ function RootComponent() {
       <main className="mobile-webapp-main flex-1">
         <Outlet />
       </main>
-      <Footer />
+      {hideFooter ? null : <Footer />}
       <MobileTabBar />
       <FloatingActions />
     </div>

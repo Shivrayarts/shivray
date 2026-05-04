@@ -29,7 +29,8 @@ export function normalizeDisplayCase(
   mode: "title" | "sentence" = "sentence",
 ) {
   if (!shouldNormalizeCaps(value)) {
-    return value.trim()
+    // If not all caps, still apply the requested case transformation
+    return mode === "title" ? toTitleCase(value) : toSentenceCase(value)
   }
 
   return mode === "title" ? toTitleCase(value.trim()) : toSentenceCase(value.trim())

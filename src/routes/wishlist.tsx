@@ -6,6 +6,7 @@ import { allProducts, type Product } from "@/data/products";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { getProductsFromDbServer } from "@/lib/server/products.functions";
+import { normalizeDisplayCase } from "@/lib/utils";
 
 export const Route = createFileRoute("/wishlist")({
   component: WishlistPage,
@@ -84,7 +85,7 @@ function WishlistPage() {
                 >
                   <img
                     src={product.image}
-                    alt={product.name}
+                    alt={normalizeDisplayCase(product.name)}
                     className="h-24 w-24 rounded-md object-cover"
                     loading="lazy"
                   />
@@ -95,7 +96,7 @@ function WishlistPage() {
                       params={{ productId: product.id }}
                       className="mt-1 block font-heading text-base font-semibold text-foreground hover:text-primary"
                     >
-                      {product.name}
+                      {normalizeDisplayCase(product.name)}
                     </Link>
                     <p className="mt-1 text-sm font-bold text-primary">{product.price}</p>
                     <p className="mt-2 text-sm text-muted-foreground">{product.shortDescription}</p>

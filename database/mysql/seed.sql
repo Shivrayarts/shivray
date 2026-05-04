@@ -153,3 +153,138 @@ ON DUPLICATE KEY UPDATE
   sort_order = VALUES(sort_order),
   is_active = VALUES(is_active);
 
+INSERT INTO hero_banners (
+  slug,
+  eyebrow,
+  title_top,
+  title_bottom,
+  copy_text,
+  image_url,
+  sort_order,
+  is_active
+)
+VALUES
+  (
+    'timeless-culture-banner',
+    'Premium Craftsmanship Since 2015',
+    'Timeless Culture',
+    'Modern Vision',
+    'From heritage artifacts to custom statement pieces, each creation carries tradition, precision, and visual impact.',
+    '/assets/hero-banner-3.jpg',
+    1,
+    1
+  ),
+  (
+    'warrior-legacy-banner',
+    'Made For Proud Spaces',
+    'Warrior Legacy',
+    'Handcrafted Detail',
+    'Bring home statues, shields, and decor pieces shaped with heritage-inspired artistry and a premium finish.',
+    '/assets/products-poster.jpg',
+    2,
+    1
+  ),
+  (
+    'royal-presence-banner',
+    'Signature Heritage Collection',
+    'Royal Presence',
+    'Bold Display',
+    'Explore statement pieces designed for gifting, home decor, devotion, and unforgettable first impressions.',
+    '/assets/hero-banner-2.jpg',
+    3,
+    1
+  )
+ON DUPLICATE KEY UPDATE
+  eyebrow = VALUES(eyebrow),
+  title_top = VALUES(title_top),
+  title_bottom = VALUES(title_bottom),
+  copy_text = VALUES(copy_text),
+  image_url = VALUES(image_url),
+  sort_order = VALUES(sort_order),
+  is_active = VALUES(is_active);
+
+INSERT INTO homepage_reviews (
+  id,
+  author_name,
+  review_text,
+  rating,
+  location,
+  sort_order,
+  is_active
+)
+VALUES
+  (
+    1,
+    'Prasad Jadhav',
+    'The murti quality is excellent and the finishing feels premium. Delivery and support were both smooth.',
+    5,
+    'Pune',
+    1,
+    1
+  ),
+  (
+    2,
+    'Snehal Patil',
+    'We ordered a heritage gift piece for our office and it looked even better in person than in the photos.',
+    5,
+    'Kolhapur',
+    2,
+    1
+  ),
+  (
+    3,
+    'Amit Deshmukh',
+    'Very responsive team, great craftsmanship, and clear updates throughout the order process.',
+    4,
+    'Mumbai',
+    3,
+    1
+  )
+ON DUPLICATE KEY UPDATE
+  author_name = VALUES(author_name),
+  review_text = VALUES(review_text),
+  rating = VALUES(rating),
+  location = VALUES(location),
+  sort_order = VALUES(sort_order),
+  is_active = VALUES(is_active);
+
+INSERT INTO homepage_videos (
+  id,
+  title,
+  description,
+  video_url,
+  sort_order,
+  is_active
+)
+VALUES
+  (
+    1,
+    'Shivkalin Shastranche Aajche Shilpakar',
+    'Satyajit Arun Vaidya shares his journey from passion to profession in historical weapon crafting.',
+    'https://youtu.be/xh-ibz0qxaA',
+    1,
+    1
+  ),
+  (
+    2,
+    'Bhetarupi Aitihasik Shastra Banavnare Satyajeet Vaidya',
+    'Historic weapons as gifts and display pieces that preserve traditional craftsmanship.',
+    'https://youtu.be/2alkiZgDxMI',
+    2,
+    1
+  ),
+  (
+    3,
+    'Puratan Shastrancha Itihas Jopasanara Kalakar Mavala',
+    'A short feature on the artisan spirit and the story behind these heritage-inspired creations.',
+    'https://youtu.be/WpBQTatwZhs',
+    3,
+    1
+  )
+ON DUPLICATE KEY UPDATE
+  title = VALUES(title),
+  description = VALUES(description),
+  video_url = VALUES(video_url),
+  sort_order = VALUES(sort_order),
+  is_active = VALUES(is_active);
+

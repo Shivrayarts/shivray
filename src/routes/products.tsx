@@ -18,6 +18,7 @@ import productDhoop1 from "@/assets/product-dhoop-1.jpg";
 import productStatue1 from "@/assets/product-statue-1.jpg";
 import heroBanner3 from "@/assets/hero-banner-3.jpg";
 import productWeapon1 from "@/assets/product-weapon-1.jpg";
+import { normalizeDisplayCase } from "@/lib/utils";
 
 export const Route = createFileRoute("/products")({
   loader: () => getProductsFromDbServer(),
@@ -437,7 +438,7 @@ function ProductsPage() {
                       params={{ productId: product.id }}
                       className="block line-clamp-1 min-h-[1.8rem] text-[0.9rem] font-normal leading-7 text-[#111111]"
                     >
-                      {product.name}
+                      {normalizeDisplayCase(product.name)}
                     </Link>
                     <p className="mt-0.5 line-clamp-2 min-h-[3rem] text-[0.9rem] font-normal leading-7 text-[#111111]">
                       {product.shortDescription}
@@ -510,7 +511,7 @@ function ProductsPage() {
                     params={{ productId: product.id }}
                     className="block min-h-[3.2rem] line-clamp-2 text-[1.9rem] font-normal leading-[0.98] tracking-[-0.045em] text-[#181818]"
                   >
-                    {product.name}
+                    {normalizeDisplayCase(product.name)}
                   </Link>
                   <p className="mt-2 text-[1rem] font-normal text-[#b3b3b3]">
                     {product.category}

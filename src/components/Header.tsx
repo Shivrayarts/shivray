@@ -8,8 +8,8 @@ import { siteConfig } from "@/lib/site-config";
 
 const navLinks = [
   { to: "/", label: "Home" },
-  { to: "/products", label: "Product" },
-  { to: "/required-catalogue", label: "Required Catalogue" },
+  { to: "/products", label: "Products" },
+  { to: "/required-catalogue", label: "Catalogue" },
   { to: "/contact", label: "Contact" },
   { to: "/login", label: "Login" },
 ] as const;
@@ -38,8 +38,8 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-[#eadbc8] bg-[#fffaf4]/95 backdrop-blur-md">
       <div className="hidden border-b border-[#f2e4d4] bg-[#2b130c] px-4 py-2 text-[#f8e8cf] md:block lg:hidden md:px-6">
-        <div className="layout-shell flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.24em]">
-          <span className="truncate">Mobile first catalogue and enquiry experience</span>
+        <div className="layout-shell flex items-center justify-between gap-3 text-[11px]">
+          <span className="truncate">Mobile-first catalogue and enquiry experience</span>
           <a
             href={`tel:${siteConfig.phoneHref}`}
             className="hidden items-center gap-2 font-semibold text-[#ffd68d] md:inline-flex"
@@ -72,8 +72,8 @@ export default function Header() {
               <p className="truncate font-heading text-lg leading-none text-[#f8ecd9]">
                 Shivray
               </p>
-              <p className="mt-1 truncate text-[9px] font-semibold uppercase tracking-[0.24em] text-[#d8b48b]">
-                Heritage Store
+              <p className="mt-1 truncate text-[10px] font-semibold text-[#d8b48b]">
+                {siteConfig.brandTagline}
               </p>
             </div>
           </Link>
@@ -107,8 +107,8 @@ export default function Header() {
                 <p className="truncate font-heading text-3xl leading-none text-[#34180e]">
                   Shivray
                 </p>
-                <p className="mt-2 truncate text-[10px] font-semibold uppercase tracking-[0.34em] text-[#9b7757]">
-                  Heritage for mobile shoppers
+                <p className="mt-2 truncate text-[11px] font-semibold text-[#9b7757]">
+                  {siteConfig.brandTagline}
                 </p>
               </div>
             </Link>
@@ -121,7 +121,7 @@ export default function Header() {
                   <Link
                     key={link.to}
                     to={link.to}
-                    className={`rounded-full px-3 py-3 text-xs font-semibold uppercase tracking-[0.14em] transition xl:px-4 ${
+                    className={`rounded-full px-3 py-3 text-sm font-semibold transition xl:px-4 ${
                       active
                         ? "bg-[#34180e] text-white"
                         : "text-[#5f402b] hover:bg-[#f5ecdf] hover:text-[#34180e]"
@@ -147,7 +147,7 @@ export default function Header() {
                   />
                   <button
                     type="submit"
-                    className="rounded-full bg-[#34180e] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-[#221008]"
+                    className="rounded-full bg-[#34180e] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#221008]"
                   >
                     Go
                   </button>
@@ -195,10 +195,10 @@ export default function Header() {
             <Link
               to="/login"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-center gap-2 rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#34180e]"
+              className="flex items-center justify-center gap-2 rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm font-semibold text-[#34180e]"
             >
               <LogIn className="h-4 w-4" />
-              My Account
+              My account
             </Link>
             {navLinks.map((link) => {
               const active = location.pathname === link.to;
@@ -208,7 +208,7 @@ export default function Header() {
                   key={link.to}
                   to={link.to}
                   onClick={() => setMobileOpen(false)}
-                  className={`rounded-2xl px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] transition ${
+                  className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
                     active
                       ? "bg-[#34180e] text-white"
                       : "border border-[#eadbc8] bg-white text-[#5f402b] hover:bg-[#f7efe5]"
