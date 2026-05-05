@@ -1,0 +1,25 @@
+[33mb447f99[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Add README.md
+[33m96fa710[m Remove TanStack dependencies and convert to static React app
+[33m58c72ab[m converted  titled case to setence case
+[33m0877f3f[m Fix product name case formatting to sentence case
+[33m6bd0606[m Add catalogue assets and latest site updates
+[33m67835f0[m Refresh storefront layouts and homepage stability
+[33m3e71bfb[m Update storefront cards and login navigation
+[33md30b5b4[m Add catalogue, wishlist, and mobile storefront updates
+[33m95b0e6c[m Implement admin/product/cart improvements and UI enhancements
+[33m94d0831[m Add admin edit/restock tools and mobile web app shell
+[33m9dbab28[m Fix Vercel deployment for TanStack Start using Nitro
+[33mc0d1bf8[m Initial commit
+[33m89e0dfc[m Update site info for publish
+[33m4dfa21d[m Build heritage e-commerce site assets and routes
+[33m1fb739d[m Design system and pages added
+[33m1ff4f08[m Assets and UI: added visuals and components
+[33ma06c15a[m Add product assets and logos
+[33m5251760[m Update product assets and logos
+[33m09d07da[m Add brand assets
+[33m29308f6[m Add brand assets
+[33m4ff70f3[m Changes
+[33md1969a2[m Createecommerce homepage theme
+[33m81529f3[m Createecommerce homepage theme
+[33m52b68aa[m Work in progress
+[33mcefafcb[m template: tanstack_start_ts
