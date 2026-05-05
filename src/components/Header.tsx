@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@/lib/spa-router";
 import { FormEvent, useState } from "react";
 import { Heart, LogIn, Menu, Phone, Search, ShoppingCart, X } from "lucide-react";
 import logoImg from "@/assets/logo-dark.jpg";

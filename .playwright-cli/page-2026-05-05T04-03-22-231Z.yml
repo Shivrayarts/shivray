@@ -1,0 +1,73 @@
+- generic [ref=e3]:
+  - generic:
+    - generic:
+      - generic:
+        - img
+      - paragraph: Shivray
+      - paragraph: Let's shape history again
+  - banner [ref=e17]:
+    - generic [ref=e20]:
+      - link "Shivray Shivray Let's shape history again" [ref=e21] [cursor=pointer]:
+        - /url: "#/"
+        - img "Shivray" [ref=e22]
+        - generic [ref=e23]:
+          - paragraph [ref=e24]: Shivray
+          - paragraph [ref=e25]: Let's shape history again
+      - navigation [ref=e26]:
+        - link "Home" [ref=e27] [cursor=pointer]:
+          - /url: "#/"
+        - link "Products" [ref=e28] [cursor=pointer]:
+          - /url: "#/products"
+        - link "Catalogue" [ref=e29] [cursor=pointer]:
+          - /url: "#/required-catalogue"
+        - link "Contact" [ref=e30] [cursor=pointer]:
+          - /url: "#/contact"
+      - generic [ref=e31]:
+        - generic [ref=e33]:
+          - img [ref=e34]
+          - textbox "Search products or categories" [ref=e37]:
+            - /placeholder: Search products
+          - button "Go" [ref=e38]
+        - link "Open account" [ref=e39] [cursor=pointer]:
+          - /url: "#/login"
+          - img [ref=e40]
+        - link "Open liked products" [ref=e43] [cursor=pointer]:
+          - /url: "#/wishlist"
+          - img [ref=e44]
+        - link "Open cart" [ref=e46] [cursor=pointer]:
+          - /url: "#/cart"
+          - img [ref=e47]
+  - main [ref=e51]:
+    - generic [ref=e430]:
+      - generic [ref=e431]:
+        - img [ref=e433]
+        - heading "Admin Login" [level=1] [ref=e437]
+        - paragraph [ref=e438]: Secure local dashboard access for the Hostinger-compatible build.
+      - generic [ref=e439]:
+        - generic [ref=e440]:
+          - text: Admin Email
+          - generic [ref=e441]:
+            - img
+            - textbox "Admin Email" [ref=e442]:
+              - /placeholder: admin@shivray.local
+              - text: admin@shivray.local
+        - generic [ref=e443]:
+          - text: Password
+          - generic [ref=e444]:
+            - img
+            - textbox "Password" [ref=e445]:
+              - /placeholder: Enter admin password
+              - text: Admin@123
+        - button "Login as Admin" [active] [ref=e446]
+      - generic [ref=e447]:
+        - paragraph [ref=e448]: Local credentials
+        - paragraph [ref=e449]: "Email: admin@shivray.local"
+        - paragraph [ref=e450]: "Password: Admin@123"
+      - link "Back to storefront" [ref=e451] [cursor=pointer]:
+        - /url: "#/"
+  - generic [ref=e411]:
+    - link "Chat on WhatsApp" [ref=e412] [cursor=pointer]:
+      - /url: https://wa.me/917558585858?text=Hi%20Shivray%2C%20I%20want%20to%20know%20more%20about%20your%20products.
+      - img [ref=e413]
+    - button "Back to top":
+      - img

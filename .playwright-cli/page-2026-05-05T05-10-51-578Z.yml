@@ -1,0 +1,149 @@
+- generic [ref=e3]:
+  - generic [ref=e10]:
+    - img "Shivray" [ref=e14]
+    - paragraph [ref=e15]: Shivray
+    - paragraph [ref=e16]: Let's shape history again
+  - banner [ref=e17]:
+    - generic [ref=e20]:
+      - link "Shivray Shivray Let's shape history again" [ref=e21] [cursor=pointer]:
+        - /url: /
+        - img "Shivray" [ref=e22]
+        - generic [ref=e23]:
+          - paragraph [ref=e24]: Shivray
+          - paragraph [ref=e25]: Let's shape history again
+      - navigation [ref=e26]:
+        - link "Home" [ref=e27] [cursor=pointer]:
+          - /url: /
+        - link "Products" [ref=e28] [cursor=pointer]:
+          - /url: /products
+        - link "Catalogue" [ref=e29] [cursor=pointer]:
+          - /url: /required-catalogue
+        - link "Contact" [ref=e30] [cursor=pointer]:
+          - /url: /contact
+      - generic [ref=e31]:
+        - generic [ref=e33]:
+          - img [ref=e34]
+          - textbox "Search products or categories" [ref=e37]:
+            - /placeholder: Search products
+          - button "Go" [ref=e38]
+        - link "Open account" [ref=e39] [cursor=pointer]:
+          - /url: /login
+          - img [ref=e40]
+        - link "Open liked products" [ref=e43] [cursor=pointer]:
+          - /url: /wishlist
+          - img [ref=e44]
+        - link "Open cart" [ref=e46] [cursor=pointer]:
+          - /url: /cart
+          - img [ref=e47]
+          - generic [ref=e51]: "1"
+  - main [ref=e52]:
+    - generic [ref=e53]:
+      - generic [ref=e55]:
+        - heading "Your Cart" [level=1] [ref=e56]
+        - paragraph [ref=e57]: Review your selected products before proceeding.
+      - generic [ref=e60]:
+        - generic [ref=e61]:
+          - img "Shastradhari maharaj - coloured" [ref=e62]
+          - generic [ref=e63]:
+            - paragraph [ref=e64]: Statues
+            - link "Shastradhari maharaj - coloured" [ref=e65] [cursor=pointer]:
+              - /url: /products/shastradhari-maharaj-coloured
+            - paragraph [ref=e66]: Rs. 5,100
+          - generic [ref=e67]:
+            - generic [ref=e68]:
+              - button "Decrease quantity of Shastradhari maharaj - coloured" [ref=e69]:
+                - img [ref=e70]
+              - generic [ref=e71]: "1"
+              - button "Increase quantity of Shastradhari maharaj - coloured" [ref=e72]:
+                - img [ref=e73]
+            - button "Remove" [ref=e74]:
+              - img [ref=e75]
+              - text: Remove
+        - generic [ref=e78]:
+          - button "Clear Cart" [ref=e79]
+          - link "Enquire / Order" [ref=e80] [cursor=pointer]:
+            - /url: /contact
+        - generic [ref=e81]:
+          - heading "Place Order" [level=2] [ref=e82]
+          - paragraph [ref=e83]: "This creates an order record that appears in the admin `Orders` section."
+          - generic [ref=e84]:
+            - textbox "Customer name" [ref=e85]: customer
+            - textbox "Email" [ref=e86]: customer@example.com
+            - textbox "Phone number" [ref=e87]
+            - combobox [ref=e88]:
+              - option "Cash On Delivery" [selected]
+              - option "Online Payment"
+            - textbox "Delivery address" [ref=e89]
+          - generic [ref=e90]:
+            - paragraph [ref=e91]: "Order total: Rs. 0.51"
+            - button "Place Order" [ref=e92]
+  - contentinfo [ref=e93]:
+    - generic [ref=e94]:
+      - generic [ref=e95]:
+        - generic [ref=e96]:
+          - generic [ref=e97]:
+            - img "Shivray" [ref=e98]
+            - generic [ref=e99]:
+              - paragraph [ref=e100]: Shivray
+              - paragraph [ref=e101]: Let's shape history again
+          - generic [ref=e102]:
+            - generic [ref=e103]:
+              - img [ref=e104]
+              - paragraph [ref=e107]: Sainath Chowk, Dhankawadi, Pune, Maharashtra 411043
+            - link "75 58 58 58 58" [ref=e108] [cursor=pointer]:
+              - /url: tel:+917558585858
+              - img [ref=e109]
+              - paragraph [ref=e111]: 75 58 58 58 58
+            - link "shivray.arts30@gmail.com" [ref=e112] [cursor=pointer]:
+              - /url: mailto:shivray.arts30@gmail.com
+              - img [ref=e113]
+              - paragraph [ref=e116]: shivray.arts30@gmail.com
+          - generic [ref=e117]:
+            - link "Facebook" [ref=e118] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e119]
+            - link "Instagram" [ref=e121] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e122]
+            - link "YouTube" [ref=e125] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e126]
+        - generic [ref=e129]:
+          - heading "Shopping" [level=3] [ref=e130]
+          - generic [ref=e131]:
+            - link "Shipping and Delivery" [ref=e132] [cursor=pointer]:
+              - /url: /products
+            - link "Catalogue Request" [ref=e133] [cursor=pointer]:
+              - /url: /required-catalogue
+            - link "Wishlist" [ref=e134] [cursor=pointer]:
+              - /url: /wishlist
+            - link "Cart" [ref=e135] [cursor=pointer]:
+              - /url: /cart
+        - generic [ref=e136]:
+          - heading "Information" [level=3] [ref=e137]
+          - generic [ref=e138]:
+            - link "About Us" [ref=e139] [cursor=pointer]:
+              - /url: /about
+            - link "Contact" [ref=e140] [cursor=pointer]:
+              - /url: /contact
+            - link "News & Blog" [ref=e141] [cursor=pointer]:
+              - /url: /blog
+            - link "My Account" [ref=e142] [cursor=pointer]:
+              - /url: /login
+        - generic [ref=e143]:
+          - heading "Newsletter" [level=3] [ref=e144]
+          - paragraph [ref=e145]: Become the first to know about new product drops, heritage stories, and featured collections.
+          - generic [ref=e146]:
+            - textbox "Enter your email" [ref=e147]
+            - button "Subscribe" [ref=e148]
+          - paragraph [ref=e149]: By subscribing, you agree to receive updates from Shivray.
+      - generic [ref=e150]:
+        - link "Help & FAQs" [ref=e151] [cursor=pointer]:
+          - /url: /contact
+        - paragraph [ref=e152]: © 2026 Shivray. All rights reserved.
+  - generic [ref=e153]:
+    - link "Chat on WhatsApp" [ref=e154] [cursor=pointer]:
+      - /url: https://wa.me/917558585858?text=Hi%20Shivray%2C%20I%20want%20to%20know%20more%20about%20your%20products.
+      - img [ref=e155]
+    - button "Back to top":
+      - img

@@ -7,6 +7,10 @@ import productWeapon3 from "@/assets/product-weapon-3.jpg";
 import productDhoop1 from "@/assets/product-dhoop-1.jpg";
 import productShield1 from "@/assets/product-shield-1.jpg";
 import productTalwar1 from "@/assets/product-talwar-1.jpg";
+import productWeapon4 from "@/assets/Products/product-2.jpeg";
+import productWeapon5 from "@/assets/Products/product-3.jpeg";
+import productWeapon6 from "@/assets/Products/product-4.jpeg";
+import productWeapon7 from "@/assets/Products/product-5.jpeg";
 
 export type Product = {
   id: string;
@@ -145,6 +149,58 @@ export const allProducts: Product[] = [
       "A statement piece made with attention to blade profile, grip detail, and ceremonial display aesthetics.",
     material: "Steel blade with crafted hilt",
     dimensions: "Approx. 34 in length",
+  },
+  {
+    id: "saffron-straight-sword",
+    name: "Saffron straight sword",
+    price: "Rs. 6,800",
+    image: productWeapon4,
+    category: "Weapons",
+    tag: "New",
+    shortDescription: "Straight ceremonial sword with a saffron blade finish and display-ready profile.",
+    details:
+      "A heritage-inspired sword crafted for decorative walls, collector displays, and premium gifting sets.",
+    material: "Steel blade with finished hilt",
+    dimensions: "Approx. 30 in length",
+  },
+  {
+    id: "black-curved-talwar",
+    name: "Black curved talwar",
+    price: "Rs. 7,400",
+    image: productWeapon5,
+    category: "Weapons",
+    tag: "New",
+    shortDescription: "Curved talwar design with dark finish and traditional warrior silhouette.",
+    details:
+      "Built for heritage-themed interiors, this decorative talwar balances classic curve styling with a strong display presence.",
+    material: "Forged steel with decorative grip",
+    dimensions: "Approx. 31 in length",
+  },
+  {
+    id: "decorated-talwar-with-sheath",
+    name: "Decorated talwar with sheath",
+    price: "Rs. 9,500",
+    image: productWeapon6,
+    category: "Weapons",
+    tag: "Featured",
+    shortDescription: "Curved display talwar paired with a decorated sheath for ceremonial presentation.",
+    details:
+      "Designed as a premium wall or showcase piece, this set combines vibrant sheath work with a heritage weapon form.",
+    material: "Steel blade, carved grip, decorative sheath",
+    dimensions: "Approx. 32 in length",
+  },
+  {
+    id: "royal-straight-blade",
+    name: "Royal straight blade",
+    price: "Rs. 8,200",
+    image: productWeapon7,
+    category: "Weapons",
+    tag: "Popular",
+    shortDescription: "Long straight blade with ornate hilt detailing and a regal display look.",
+    details:
+      "A statement sword for collectors who want a cleaner blade line while keeping the premium Shivray presentation style.",
+    material: "Steel blade with engraved hilt accents",
+    dimensions: "Approx. 33 in length",
   },
 ];
 

@@ -1,0 +1,165 @@
+- generic [ref=e3]:
+  - generic [ref=e10]:
+    - img "Shivray" [ref=e14]
+    - paragraph [ref=e15]: Shivray
+    - paragraph [ref=e16]: Let's shape history again
+  - banner [ref=e17]:
+    - generic [ref=e20]:
+      - link "Shivray Shivray Let's shape history again" [ref=e21] [cursor=pointer]:
+        - /url: "#/"
+        - img "Shivray" [ref=e22]
+        - generic [ref=e23]:
+          - paragraph [ref=e24]: Shivray
+          - paragraph [ref=e25]: Let's shape history again
+      - navigation [ref=e26]:
+        - link "Home" [ref=e27] [cursor=pointer]:
+          - /url: "#/"
+        - link "Products" [ref=e28] [cursor=pointer]:
+          - /url: "#/products"
+        - link "Catalogue" [ref=e29] [cursor=pointer]:
+          - /url: "#/required-catalogue"
+        - link "Contact" [ref=e30] [cursor=pointer]:
+          - /url: "#/contact"
+      - generic [ref=e31]:
+        - generic [ref=e33]:
+          - img [ref=e34]
+          - textbox "Search products or categories" [ref=e37]:
+            - /placeholder: Search products
+          - button "Go" [ref=e38]
+        - link "Open account" [ref=e39] [cursor=pointer]:
+          - /url: "#/login"
+          - img [ref=e40]
+        - link "Open liked products" [ref=e43] [cursor=pointer]:
+          - /url: "#/wishlist"
+          - img [ref=e44]
+        - link "Open cart" [ref=e46] [cursor=pointer]:
+          - /url: "#/cart"
+          - img [ref=e47]
+  - main [ref=e51]:
+    - generic [ref=e54]:
+      - complementary [ref=e55]:
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - img [ref=e59]
+            - generic [ref=e63]:
+              - paragraph [ref=e64]: Admin
+              - heading "Shivray Panel" [level=2] [ref=e65]
+          - paragraph [ref=e66]: Use the menu to switch between dashboard, products, orders, customers, and reviews.
+        - generic [ref=e67]:
+          - button "Dashboard" [ref=e68]:
+            - img [ref=e69]
+            - text: Dashboard
+          - button "Products" [ref=e72]:
+            - img [ref=e73]
+            - text: Products
+          - button "Categories" [ref=e77]:
+            - img [ref=e78]
+            - text: Categories
+          - button "Brands" [ref=e82]:
+            - img [ref=e83]
+            - text: Brands
+          - button "Orders" [ref=e86]:
+            - img [ref=e87]
+            - text: Orders
+          - button "Customers" [ref=e92]:
+            - img [ref=e93]
+            - text: Customers
+          - button "Vaccination" [ref=e98]:
+            - img [ref=e99]
+            - text: Vaccination
+          - button "Reviews" [ref=e102]:
+            - img [ref=e103]
+            - text: Reviews
+      - main [ref=e107]:
+        - generic [ref=e109]:
+          - generic [ref=e110]:
+            - paragraph [ref=e111]: Admin Dashboard
+            - heading "Dashboard" [level=1] [ref=e112]
+          - generic [ref=e113]:
+            - link "View Store" [ref=e114] [cursor=pointer]:
+              - /url: "#/"
+            - button "Logout" [ref=e115]
+        - generic [ref=e116]:
+          - generic [ref=e118]:
+            - generic [ref=e119]:
+              - paragraph [ref=e120]: Customers
+              - paragraph [ref=e121]: "3"
+            - img [ref=e123]
+          - generic [ref=e129]:
+            - generic [ref=e130]:
+              - paragraph [ref=e131]: Orders
+              - paragraph [ref=e132]: "6"
+            - img [ref=e134]
+          - generic [ref=e138]:
+            - generic [ref=e139]:
+              - paragraph [ref=e140]: Avg Sale
+              - paragraph [ref=e141]: ₹ 4170.40
+            - img [ref=e143]
+          - generic [ref=e146]:
+            - generic [ref=e147]:
+              - paragraph [ref=e148]: Total Products
+              - paragraph [ref=e149]: "9"
+            - img [ref=e151]
+        - generic [ref=e156]:
+          - generic [ref=e157]:
+            - generic [ref=e158]:
+              - heading "Recent Transactions" [level=2] [ref=e159]
+              - paragraph [ref=e160]: Review the latest order activity and billing status.
+            - generic [ref=e161]: Live
+          - table [ref=e164]:
+            - rowgroup [ref=e165]:
+              - row "ID Customer Name Payment Info Price Status" [ref=e166]:
+                - columnheader "ID" [ref=e167]
+                - columnheader "Customer Name" [ref=e168]
+                - columnheader "Payment Info" [ref=e169]
+                - columnheader "Price" [ref=e170]
+                - columnheader "Status" [ref=e171]
+            - rowgroup [ref=e172]:
+              - row "#pets-43 Krushna Narade Cash On Delivery Pending ₹ 1,400.00 Pending" [ref=e173]:
+                - cell "#pets-43" [ref=e174]
+                - cell "Krushna Narade" [ref=e175]
+                - cell "Cash On Delivery Pending" [ref=e176]
+                - cell "₹ 1,400.00" [ref=e177]
+                - cell "Pending" [ref=e178]:
+                  - generic [ref=e179]: Pending
+              - row "#pets-44 Krushna Narade Cash On Delivery Pending ₹ 2,400.00 Cancelled" [ref=e180]:
+                - cell "#pets-44" [ref=e181]
+                - cell "Krushna Narade" [ref=e182]
+                - cell "Cash On Delivery Pending" [ref=e183]
+                - cell "₹ 2,400.00" [ref=e184]
+                - cell "Cancelled" [ref=e185]:
+                  - generic [ref=e186]: Cancelled
+              - row "#pets-46 Krishna Online Payment Cancelled ₹ 900.00 Cancelled" [ref=e187]:
+                - cell "#pets-46" [ref=e188]
+                - cell "Krishna" [ref=e189]
+                - cell "Online Payment Cancelled" [ref=e190]
+                - cell "₹ 900.00" [ref=e191]
+                - cell "Cancelled" [ref=e192]:
+                  - generic [ref=e193]: Cancelled
+              - row "#pets-47 Vyankatesh Online Payment Pending ₹ 900.00 Pending" [ref=e194]:
+                - cell "#pets-47" [ref=e195]
+                - cell "Vyankatesh" [ref=e196]
+                - cell "Online Payment Pending" [ref=e197]
+                - cell "₹ 900.00" [ref=e198]
+                - cell "Pending" [ref=e199]:
+                  - generic [ref=e200]: Pending
+              - row "#pets-48 Vyankatesh Online Payment Pending ₹ 13,173.00 Pending" [ref=e201]:
+                - cell "#pets-48" [ref=e202]
+                - cell "Vyankatesh" [ref=e203]
+                - cell "Online Payment Pending" [ref=e204]
+                - cell "₹ 13,173.00" [ref=e205]
+                - cell "Pending" [ref=e206]:
+                  - generic [ref=e207]: Pending
+              - row "#pets-49 Vyankatesh Online Payment Pending ₹ 6,249.40 Pending" [ref=e208]:
+                - cell "#pets-49" [ref=e209]
+                - cell "Vyankatesh" [ref=e210]
+                - cell "Online Payment Pending" [ref=e211]
+                - cell "₹ 6,249.40" [ref=e212]
+                - cell "Pending" [ref=e213]:
+                  - generic [ref=e214]: Pending
+  - generic [ref=e215]:
+    - link "Chat on WhatsApp" [ref=e216] [cursor=pointer]:
+      - /url: https://wa.me/917558585858?text=Hi%20Shivray%2C%20I%20want%20to%20know%20more%20about%20your%20products.
+      - img [ref=e217]
+    - button "Back to top":
+      - img

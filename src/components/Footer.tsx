@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "@/lib/spa-router";
 import { useState } from "react";
 import {
   ChevronDown,

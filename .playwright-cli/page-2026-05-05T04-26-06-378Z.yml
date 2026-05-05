@@ -1,0 +1,425 @@
+- generic [ref=e3]:
+  - generic [ref=e10]:
+    - img "Shivray" [ref=e14]
+    - paragraph [ref=e15]: Shivray
+    - paragraph [ref=e16]: Let's shape history again
+  - banner [ref=e17]:
+    - generic [ref=e20]:
+      - link "Shivray Shivray Let's shape history again" [ref=e21] [cursor=pointer]:
+        - /url: /
+        - img "Shivray" [ref=e22]
+        - generic [ref=e23]:
+          - paragraph [ref=e24]: Shivray
+          - paragraph [ref=e25]: Let's shape history again
+      - navigation [ref=e26]:
+        - link "Home" [ref=e27] [cursor=pointer]:
+          - /url: /
+        - link "Products" [ref=e28] [cursor=pointer]:
+          - /url: /products
+        - link "Catalogue" [ref=e29] [cursor=pointer]:
+          - /url: /required-catalogue
+        - link "Contact" [ref=e30] [cursor=pointer]:
+          - /url: /contact
+      - generic [ref=e31]:
+        - generic [ref=e33]:
+          - img [ref=e34]
+          - textbox "Search products or categories" [ref=e37]:
+            - /placeholder: Search products
+          - button "Go" [ref=e38]
+        - link "Open account" [ref=e39] [cursor=pointer]:
+          - /url: /login
+          - img [ref=e40]
+        - link "Open liked products" [ref=e43] [cursor=pointer]:
+          - /url: /wishlist
+          - img [ref=e44]
+        - link "Open cart" [ref=e46] [cursor=pointer]:
+          - /url: /cart
+          - img [ref=e47]
+  - main [ref=e51]:
+    - generic [ref=e52]:
+      - generic [ref=e54]:
+        - generic [ref=e55]: Product Catalogue
+        - heading "Built for quick mobile product discovery." [level=1] [ref=e56]
+      - generic [ref=e58]:
+        - heading "Popular Categories" [level=2] [ref=e60]
+        - generic [ref=e61]:
+          - button "Maharaj Statues Maharaj Statues 3 products" [ref=e62]:
+            - img "Maharaj Statues" [ref=e64]
+            - heading "Maharaj Statues" [level=3] [ref=e65]
+            - paragraph [ref=e66]: 3 products
+          - button "Warrior Weapons Warrior Weapons 8 products" [ref=e67]:
+            - img "Warrior Weapons" [ref=e69]
+            - heading "Warrior Weapons" [level=3] [ref=e70]
+            - paragraph [ref=e71]: 8 products
+          - button "Premium Shields Premium Shields 1 products" [ref=e72]:
+            - img "Premium Shields" [ref=e74]
+            - heading "Premium Shields" [level=3] [ref=e75]
+            - paragraph [ref=e76]: 1 products
+          - button "Dhoop Collection Dhoop Collection 1 products" [ref=e77]:
+            - img "Dhoop Collection" [ref=e79]
+            - heading "Dhoop Collection" [level=3] [ref=e80]
+            - paragraph [ref=e81]: 1 products
+      - generic [ref=e89]:
+        - generic [ref=e90]:
+          - img
+          - textbox "Search statue, sword, shield..." [ref=e91]
+        - generic [ref=e92]:
+          - generic [ref=e93]:
+            - img [ref=e94]
+            - text: Filters
+          - button "All" [ref=e95]
+          - button "Statues" [ref=e96]
+          - button "Weapons" [ref=e97]
+          - button "Shields" [ref=e98]
+          - button "Dhoop" [ref=e99]
+      - generic [ref=e101]:
+        - generic [ref=e102]:
+          - generic [ref=e103]:
+            - paragraph [ref=e104]: Results
+            - heading "13 products for mobile users" [level=2] [ref=e105]
+          - link "Get full catalogue" [ref=e106] [cursor=pointer]:
+            - /url: /required-catalogue
+        - generic [ref=e107]:
+          - generic [ref=e108]:
+            - link "Shastradhari maharaj - coloured" [ref=e110] [cursor=pointer]:
+              - /url: /products/shastradhari-maharaj-coloured
+              - img "Shastradhari maharaj - coloured" [ref=e111]
+            - generic [ref=e112]:
+              - link "Shastradhari maharaj - coloured" [ref=e113] [cursor=pointer]:
+                - /url: /products/shastradhari-maharaj-coloured
+              - paragraph [ref=e114]: Statues
+              - generic [ref=e115]:
+                - generic [ref=e116]:
+                  - img [ref=e117]
+                  - generic [ref=e120]: from Rs. 5,100
+                - generic [ref=e121]:
+                  - img [ref=e122]
+                  - generic [ref=e124]: Statues
+              - paragraph [ref=e125]: A vibrant handcrafted Maharaj idol with warrior detailing.
+              - generic [ref=e126]:
+                - link "View details" [ref=e127] [cursor=pointer]:
+                  - /url: /products/shastradhari-maharaj-coloured
+                - button [ref=e128]:
+                  - img [ref=e129]
+          - generic [ref=e131]:
+            - link "Ashwarudh maharaj" [ref=e133] [cursor=pointer]:
+              - /url: /products/ashwarudh-maharaj
+              - img "Ashwarudh maharaj" [ref=e134]
+            - generic [ref=e135]:
+              - link "Ashwarudh maharaj" [ref=e136] [cursor=pointer]:
+                - /url: /products/ashwarudh-maharaj
+              - paragraph [ref=e137]: Statues
+              - generic [ref=e138]:
+                - generic [ref=e139]:
+                  - img [ref=e140]
+                  - generic [ref=e143]: from Rs. 12,850
+                - generic [ref=e144]:
+                  - img [ref=e145]
+                  - generic [ref=e147]: Statues
+              - paragraph [ref=e148]: Mounted Maharaj sculpture with regal posture and detail.
+              - generic [ref=e149]:
+                - link "View details" [ref=e150] [cursor=pointer]:
+                  - /url: /products/ashwarudh-maharaj
+                - button [ref=e151]:
+                  - img [ref=e152]
+          - generic [ref=e154]:
+            - link "Roudra shambhu chatrapati" [ref=e156] [cursor=pointer]:
+              - /url: /products/roudra-shambhu-chatrapati
+              - img "Roudra shambhu chatrapati" [ref=e157]
+            - generic [ref=e158]:
+              - link "Roudra shambhu chatrapati" [ref=e159] [cursor=pointer]:
+                - /url: /products/roudra-shambhu-chatrapati
+              - paragraph [ref=e160]: Statues
+              - generic [ref=e161]:
+                - generic [ref=e162]:
+                  - img [ref=e163]
+                  - generic [ref=e166]: from Rs. 5,100
+                - generic [ref=e167]:
+                  - img [ref=e168]
+                  - generic [ref=e170]: Statues
+              - paragraph [ref=e171]: Powerful artistic representation inspired by Maratha valor.
+              - generic [ref=e172]:
+                - link "View details" [ref=e173] [cursor=pointer]:
+                  - /url: /products/roudra-shambhu-chatrapati
+                - button [ref=e174]:
+                  - img [ref=e175]
+          - generic [ref=e177]:
+            - link "Royal khanjar with sheath" [ref=e179] [cursor=pointer]:
+              - /url: /products/royal-khanjar-with-sheath
+              - img "Royal khanjar with sheath" [ref=e180]
+            - generic [ref=e181]:
+              - link "Royal khanjar with sheath" [ref=e182] [cursor=pointer]:
+                - /url: /products/royal-khanjar-with-sheath
+              - paragraph [ref=e183]: Weapons
+              - generic [ref=e184]:
+                - generic [ref=e185]:
+                  - img [ref=e186]
+                  - generic [ref=e189]: from Rs. 8,500
+                - generic [ref=e190]:
+                  - img [ref=e191]
+                  - generic [ref=e193]: Weapons
+              - paragraph [ref=e194]: Decorative khanjar set with ornate sheath and rich finish.
+              - generic [ref=e195]:
+                - link "View details" [ref=e196] [cursor=pointer]:
+                  - /url: /products/royal-khanjar-with-sheath
+                - button [ref=e197]:
+                  - img [ref=e198]
+          - generic [ref=e200]:
+            - link "Vita (battle axe)" [ref=e202] [cursor=pointer]:
+              - /url: /products/vita-battle-axe
+              - img "Vita (battle axe)" [ref=e203]
+            - generic [ref=e204]:
+              - link "Vita (battle axe)" [ref=e205] [cursor=pointer]:
+                - /url: /products/vita-battle-axe
+              - paragraph [ref=e206]: Weapons
+              - generic [ref=e207]:
+                - generic [ref=e208]:
+                  - img [ref=e209]
+                  - generic [ref=e212]: from Rs. 6,200
+                - generic [ref=e213]:
+                  - img [ref=e214]
+                  - generic [ref=e216]: Weapons
+              - paragraph [ref=e217]: Traditional battle-axe replica with warrior-era styling.
+              - generic [ref=e218]:
+                - link "View details" [ref=e219] [cursor=pointer]:
+                  - /url: /products/vita-battle-axe
+                - button [ref=e220]:
+                  - img [ref=e221]
+          - generic [ref=e223]:
+            - link "Ceremonial gada" [ref=e225] [cursor=pointer]:
+              - /url: /products/ceremonial-gada
+              - img "Ceremonial gada" [ref=e226]
+            - generic [ref=e227]:
+              - link "Ceremonial gada" [ref=e228] [cursor=pointer]:
+                - /url: /products/ceremonial-gada
+              - paragraph [ref=e229]: Weapons
+              - generic [ref=e230]:
+                - generic [ref=e231]:
+                  - img [ref=e232]
+                  - generic [ref=e235]: from Rs. 9,800
+                - generic [ref=e236]:
+                  - img [ref=e237]
+                  - generic [ref=e239]: Weapons
+              - paragraph [ref=e240]: Royal ceremonial mace with engraved design language.
+              - generic [ref=e241]:
+                - link "View details" [ref=e242] [cursor=pointer]:
+                  - /url: /products/ceremonial-gada
+                - button [ref=e243]:
+                  - img [ref=e244]
+          - generic [ref=e246]:
+            - link "Brass dhoop stand" [ref=e248] [cursor=pointer]:
+              - /url: /products/brass-dhoop-stand
+              - img "Brass dhoop stand" [ref=e249]
+            - generic [ref=e250]:
+              - link "Brass dhoop stand" [ref=e251] [cursor=pointer]:
+                - /url: /products/brass-dhoop-stand
+              - paragraph [ref=e252]: Dhoop
+              - generic [ref=e253]:
+                - generic [ref=e254]:
+                  - img [ref=e255]
+                  - generic [ref=e258]: from Rs. 2,200
+                - generic [ref=e259]:
+                  - img [ref=e260]
+                  - generic [ref=e262]: Dhoop
+              - paragraph [ref=e263]: Traditional brass incense stand for pooja and decor.
+              - generic [ref=e264]:
+                - link "View details" [ref=e265] [cursor=pointer]:
+                  - /url: /products/brass-dhoop-stand
+                - button [ref=e266]:
+                  - img [ref=e267]
+          - generic [ref=e269]:
+            - link "Maratha war shield" [ref=e271] [cursor=pointer]:
+              - /url: /products/maratha-war-shield
+              - img "Maratha war shield" [ref=e272]
+            - generic [ref=e273]:
+              - link "Maratha war shield" [ref=e274] [cursor=pointer]:
+                - /url: /products/maratha-war-shield
+              - paragraph [ref=e275]: Shields
+              - generic [ref=e276]:
+                - generic [ref=e277]:
+                  - img [ref=e278]
+                  - generic [ref=e281]: from Rs. 7,500
+                - generic [ref=e282]:
+                  - img [ref=e283]
+                  - generic [ref=e285]: Shields
+              - paragraph [ref=e286]: Historical style shield replica with rugged detailing.
+              - generic [ref=e287]:
+                - link "View details" [ref=e288] [cursor=pointer]:
+                  - /url: /products/maratha-war-shield
+                - button [ref=e289]:
+                  - img [ref=e290]
+          - generic [ref=e292]:
+            - link "Talwar - curved sword" [ref=e294] [cursor=pointer]:
+              - /url: /products/talwar-curved-sword
+              - img "Talwar - curved sword" [ref=e295]
+            - generic [ref=e296]:
+              - link "Talwar - curved sword" [ref=e297] [cursor=pointer]:
+                - /url: /products/talwar-curved-sword
+              - paragraph [ref=e298]: Weapons
+              - generic [ref=e299]:
+                - generic [ref=e300]:
+                  - img [ref=e301]
+                  - generic [ref=e304]: from Rs. 11,000
+                - generic [ref=e305]:
+                  - img [ref=e306]
+                  - generic [ref=e308]: Weapons
+              - paragraph [ref=e309]: Classic curved talwar inspired by Maratha battle tradition.
+              - generic [ref=e310]:
+                - link "View details" [ref=e311] [cursor=pointer]:
+                  - /url: /products/talwar-curved-sword
+                - button [ref=e312]:
+                  - img [ref=e313]
+          - generic [ref=e315]:
+            - link "Saffron straight sword" [ref=e317] [cursor=pointer]:
+              - /url: /products/saffron-straight-sword
+              - img "Saffron straight sword" [ref=e318]
+            - generic [ref=e319]:
+              - link "Saffron straight sword" [ref=e320] [cursor=pointer]:
+                - /url: /products/saffron-straight-sword
+              - paragraph [ref=e321]: Weapons
+              - generic [ref=e322]:
+                - generic [ref=e323]:
+                  - img [ref=e324]
+                  - generic [ref=e327]: from Rs. 6,800
+                - generic [ref=e328]:
+                  - img [ref=e329]
+                  - generic [ref=e331]: Weapons
+              - paragraph [ref=e332]: Straight ceremonial sword with a saffron blade finish and display-ready profile.
+              - generic [ref=e333]:
+                - link "View details" [ref=e334] [cursor=pointer]:
+                  - /url: /products/saffron-straight-sword
+                - button [ref=e335]:
+                  - img [ref=e336]
+          - generic [ref=e338]:
+            - link "Black curved talwar" [ref=e340] [cursor=pointer]:
+              - /url: /products/black-curved-talwar
+              - img "Black curved talwar" [ref=e341]
+            - generic [ref=e342]:
+              - link "Black curved talwar" [ref=e343] [cursor=pointer]:
+                - /url: /products/black-curved-talwar
+              - paragraph [ref=e344]: Weapons
+              - generic [ref=e345]:
+                - generic [ref=e346]:
+                  - img [ref=e347]
+                  - generic [ref=e350]: from Rs. 7,400
+                - generic [ref=e351]:
+                  - img [ref=e352]
+                  - generic [ref=e354]: Weapons
+              - paragraph [ref=e355]: Curved talwar design with dark finish and traditional warrior silhouette.
+              - generic [ref=e356]:
+                - link "View details" [ref=e357] [cursor=pointer]:
+                  - /url: /products/black-curved-talwar
+                - button [ref=e358]:
+                  - img [ref=e359]
+          - generic [ref=e361]:
+            - link "Decorated talwar with sheath" [ref=e363] [cursor=pointer]:
+              - /url: /products/decorated-talwar-with-sheath
+              - img "Decorated talwar with sheath" [ref=e364]
+            - generic [ref=e365]:
+              - link "Decorated talwar with sheath" [ref=e366] [cursor=pointer]:
+                - /url: /products/decorated-talwar-with-sheath
+              - paragraph [ref=e367]: Weapons
+              - generic [ref=e368]:
+                - generic [ref=e369]:
+                  - img [ref=e370]
+                  - generic [ref=e373]: from Rs. 9,500
+                - generic [ref=e374]:
+                  - img [ref=e375]
+                  - generic [ref=e377]: Weapons
+              - paragraph [ref=e378]: Curved display talwar paired with a decorated sheath for ceremonial presentation.
+              - generic [ref=e379]:
+                - link "View details" [ref=e380] [cursor=pointer]:
+                  - /url: /products/decorated-talwar-with-sheath
+                - button [ref=e381]:
+                  - img [ref=e382]
+          - generic [ref=e384]:
+            - link "Royal straight blade" [ref=e386] [cursor=pointer]:
+              - /url: /products/royal-straight-blade
+              - img "Royal straight blade" [ref=e387]
+            - generic [ref=e388]:
+              - link "Royal straight blade" [ref=e389] [cursor=pointer]:
+                - /url: /products/royal-straight-blade
+              - paragraph [ref=e390]: Weapons
+              - generic [ref=e391]:
+                - generic [ref=e392]:
+                  - img [ref=e393]
+                  - generic [ref=e396]: from Rs. 8,200
+                - generic [ref=e397]:
+                  - img [ref=e398]
+                  - generic [ref=e400]: Weapons
+              - paragraph [ref=e401]: Long straight blade with ornate hilt detailing and a regal display look.
+              - generic [ref=e402]:
+                - link "View details" [ref=e403] [cursor=pointer]:
+                  - /url: /products/royal-straight-blade
+                - button [ref=e404]:
+                  - img [ref=e405]
+  - contentinfo [ref=e407]:
+    - generic [ref=e408]:
+      - generic [ref=e409]:
+        - generic [ref=e410]:
+          - generic [ref=e411]:
+            - img "Shivray" [ref=e412]
+            - generic [ref=e413]:
+              - paragraph [ref=e414]: Shivray
+              - paragraph [ref=e415]: Let's shape history again
+          - generic [ref=e416]:
+            - generic [ref=e417]:
+              - img [ref=e418]
+              - paragraph [ref=e421]: Sainath Chowk, Dhankawadi, Pune, Maharashtra 411043
+            - link "75 58 58 58 58" [ref=e422] [cursor=pointer]:
+              - /url: tel:+917558585858
+              - img [ref=e423]
+              - paragraph [ref=e425]: 75 58 58 58 58
+            - link "shivray.arts30@gmail.com" [ref=e426] [cursor=pointer]:
+              - /url: mailto:shivray.arts30@gmail.com
+              - img [ref=e427]
+              - paragraph [ref=e430]: shivray.arts30@gmail.com
+          - generic [ref=e431]:
+            - link "Facebook" [ref=e432] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e433]
+            - link "Instagram" [ref=e435] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e436]
+            - link "YouTube" [ref=e439] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e440]
+        - generic [ref=e443]:
+          - heading "Shopping" [level=3] [ref=e444]
+          - generic [ref=e445]:
+            - link "Shipping and Delivery" [ref=e446] [cursor=pointer]:
+              - /url: /products
+            - link "Catalogue Request" [ref=e447] [cursor=pointer]:
+              - /url: /required-catalogue
+            - link "Wishlist" [ref=e448] [cursor=pointer]:
+              - /url: /wishlist
+            - link "Cart" [ref=e449] [cursor=pointer]:
+              - /url: /cart
+        - generic [ref=e450]:
+          - heading "Information" [level=3] [ref=e451]
+          - generic [ref=e452]:
+            - link "About Us" [ref=e453] [cursor=pointer]:
+              - /url: /about
+            - link "Contact" [ref=e454] [cursor=pointer]:
+              - /url: /contact
+            - link "News & Blog" [ref=e455] [cursor=pointer]:
+              - /url: /blog
+            - link "My Account" [ref=e456] [cursor=pointer]:
+              - /url: /login
+        - generic [ref=e457]:
+          - heading "Newsletter" [level=3] [ref=e458]
+          - paragraph [ref=e459]: Become the first to know about new product drops, heritage stories, and featured collections.
+          - generic [ref=e460]:
+            - textbox "Enter your email" [ref=e461]
+            - button "Subscribe" [ref=e462]
+          - paragraph [ref=e463]: By subscribing, you agree to receive updates from Shivray.
+      - generic [ref=e464]:
+        - link "Help & FAQs" [ref=e465] [cursor=pointer]:
+          - /url: /contact
+        - paragraph [ref=e466]: © 2026 Shivray. All rights reserved.
+  - generic [ref=e467]:
+    - link "Chat on WhatsApp" [ref=e468] [cursor=pointer]:
+      - /url: https://wa.me/917558585858?text=Hi%20Shivray%2C%20I%20want%20to%20know%20more%20about%20your%20products.
+      - img [ref=e469]
+    - button "Back to top":
+      - img

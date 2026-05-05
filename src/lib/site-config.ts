@@ -4,7 +4,7 @@ export const siteConfig = {
   phoneHref: "+917558585858",
   whatsappHref: "https://wa.me/917558585858",
   email: "shivray.arts30@gmail.com",
-  brandTagline: "चला घडवूया इतिहास पुन्हा",
+  brandTagline: "Let's shape history again",
   socialLinks: {
     facebook: "#",
     instagram: "#",

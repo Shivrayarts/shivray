@@ -35,3 +35,13 @@ export function normalizeDisplayCase(
 
   return mode === "title" ? toTitleCase(value.trim()) : toSentenceCase(value.trim())
 }
+
+export function parseCurrencyAmount(value: string) {
+  const trimmed = value.trim()
+  if (!trimmed) return 0
+
+  const matchedNumber = trimmed.match(/\d[\d,]*(?:\.\d+)?/)
+  if (!matchedNumber) return 0
+
+  return Number(matchedNumber[0].replace(/,/g, "")) || 0
+}
