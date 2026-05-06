@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Mail, MapPin, MessageCircle, Phone, Send, Youtube } from "lucide-react";
+import { Facebook, Instagram, Mail, MapPin, Phone, Send, Youtube } from "lucide-react";
 import { useMemo, useState } from "react";
 import { siteConfig } from "@/lib/site-config";
 
@@ -6,7 +6,7 @@ export default function ContactPage() {
   const [form, setForm] = useState({ name: "", phone: "", message: "" });
   const whatsappLink = useMemo(() => {
     const query = encodeURIComponent(
-      `Hi Shivray, I am ${form.name || "interested in your products"}. ${form.phone ? `My number is ${form.phone}. ` : ""}${form.message || "Please contact me back."}`,
+      `Hi Shivray Arts, I am ${form.name || "interested in your products"}. ${form.phone ? `My number is ${form.phone}. ` : ""}${form.message || "Please contact me back."}`,
     );
     return `${siteConfig.whatsappHref}?text=${query}`;
   }, [form]);
@@ -30,7 +30,6 @@ export default function ContactPage() {
               <a href={siteConfig.socialLinks.instagram} aria-label="Instagram" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#eadbc8] bg-white text-[#34180e]"><Instagram className="h-4 w-4" /></a>
               <a href={siteConfig.socialLinks.youtube} aria-label="YouTube" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#eadbc8] bg-white text-[#34180e]"><Youtube className="h-4 w-4" /></a>
             </div>
-            <a href={whatsappLink} target="_blank" rel="noreferrer" className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white"><MessageCircle className="h-4 w-4" />WhatsApp Now</a>
           </div>
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">Quick Enquiry</p>

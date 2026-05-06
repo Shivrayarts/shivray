@@ -7,7 +7,6 @@ import {
   ChevronRight,
   Clock3,
   Heart,
-  PlayCircle,
   ShieldCheck,
   Star,
 } from "lucide-react";
@@ -36,19 +35,6 @@ const features = [
   { icon: BookOpenText, title: "Catalogue Support", copy: "Customers can request a full catalogue and get tailored recommendations for their budget." },
 ] as const;
 
-function getVideoEmbedUrl(url: string) {
-  const trimmed = url.trim();
-  if (trimmed.includes("youtube.com/watch?v=")) {
-    const videoId = trimmed.split("v=")[1]?.split("&")[0];
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : trimmed;
-  }
-  if (trimmed.includes("youtu.be/")) {
-    const videoId = trimmed.split("youtu.be/")[1]?.split("?")[0];
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : trimmed;
-  }
-  return trimmed;
-}
-
 export default function HomePage() {
   const products = useStoredProducts();
   const catalogueTypes = useStoredCatalogueTypes();
@@ -57,14 +43,11 @@ export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [categorySlide, setCategorySlide] = useState(0);
   const [currentReview, setCurrentReview] = useState(0);
-  const [currentVideo, setCurrentVideo] = useState(0);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
   const heroSlides = storedHomeContent.banners;
   const reviews = storedHomeContent.reviews;
-  const videos = storedHomeContent.videos;
   const hasHeroSlides = heroSlides.length > 0;
   const hasReviews = reviews.length > 0;
-  const hasVideos = videos.length > 0;
   const categoryCollections = catalogueTypes.filter((item) => item.isActive).slice(0, 4);
   const spotlightProductCards = spotlightProducts.map((product) => {
     const matchedProduct = products.find((item) => item.id === product.id);
@@ -94,14 +77,6 @@ export default function HomePage() {
   }, [reviews.length]);
 
   useEffect(() => {
-    if (videos.length <= 1) return;
-    const timer = window.setInterval(() => {
-      setCurrentVideo((prev) => (prev + 1) % videos.length);
-    }, 6000);
-    return () => window.clearInterval(timer);
-  }, [videos.length]);
-
-  useEffect(() => {
     setCurrentSlide((prev) => (heroSlides.length === 0 ? 0 : Math.min(prev, heroSlides.length - 1)));
   }, [heroSlides.length]);
 
@@ -109,12 +84,7 @@ export default function HomePage() {
     setCurrentReview((prev) => (reviews.length === 0 ? 0 : Math.min(prev, reviews.length - 1)));
   }, [reviews.length]);
 
-  useEffect(() => {
-    setCurrentVideo((prev) => (videos.length === 0 ? 0 : Math.min(prev, videos.length - 1)));
-  }, [videos.length]);
-
   const activeReview = hasReviews ? reviews[currentReview] : null;
-  const activeVideo = hasVideos ? videos[currentVideo] : null;
   const activeHeroSlide = hasHeroSlides ? heroSlides[currentSlide] : null;
 
   const handleCategoriesScroll = () => {
@@ -259,46 +229,6 @@ export default function HomePage() {
           </div>
           <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
             {products.map((product) => renderHomeProductCard(product))}
-          </div>
-        </div>
-      </section>
-
-      <section className="px-4 pb-8 md:px-6 md:pb-14">
-        <div className="layout-shell bg-[linear-gradient(180deg,#fffaf1_0%,#f6ead8_100%)] px-0 py-5 md:py-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-[#a86c2b]">Featured videos</p>
-              <h2 className="mt-2 font-heading text-3xl text-[#34180e]">Stories and Workshop Moments in Motion</h2>
-            </div>
-          </div>
-          <div className="mt-6 grid gap-6 xl:grid-cols-[1.45fr_0.75fr] xl:items-stretch">
-            <div className="overflow-hidden rounded-[28px] bg-[#2a140e] shadow-[0_24px_50px_-35px_rgba(0,0,0,0.55)]">
-              {activeVideo ? getVideoEmbedUrl(activeVideo.videoUrl).includes("youtube.com/embed/") ? (
-                <iframe src={getVideoEmbedUrl(activeVideo.videoUrl)} title={activeVideo.title} className="aspect-video w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-              ) : (
-                <video src={activeVideo.videoUrl} controls className="aspect-video w-full bg-black" />
-              ) : (
-                <div className="flex aspect-video items-center justify-center px-6 text-center text-sm text-[#f6e6d4]">
-                  No featured videos have been added yet.
-                </div>
-              )}
-            </div>
-            <div className="rounded-[28px] bg-white/80 p-6 shadow-[0_24px_55px_-40px_rgba(80,40,20,0.55)]">
-              <div className="inline-flex rounded-2xl bg-[#fff1d9] p-3 text-[#b17024]"><PlayCircle className="h-5 w-5" /></div>
-              <h3 className="mt-5 font-heading text-3xl text-[#34180e]">{activeVideo?.title ?? "Featured videos"}</h3>
-              <p className="mt-4 text-sm leading-7 text-[#6c4b33]">
-                {activeVideo?.description ?? "Use the admin panel to add workshop videos, reels, or YouTube embeds for the homepage."}
-              </p>
-              {videos.length > 0 ? (
-                <div className="mt-6 flex flex-wrap gap-3">
-                  {videos.map((video, index) => (
-                    <button key={video.id} type="button" onClick={() => setCurrentVideo(index)} className={`rounded-full px-4 py-2 text-xs font-semibold ${index === currentVideo ? "bg-[#34180e] text-white" : "bg-[#f8efe4] text-[#8b4d1d]"}`}>
-                      Video {index + 1}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
           </div>
         </div>
       </section>

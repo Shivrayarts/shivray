@@ -7,8 +7,8 @@ const articles = [
 ] as const;
 
 const videos = [
-  { title: "Shivkalin Shastranche Aajche Shilpakar", desc: "Satyajit Arun Vaidya shares his journey from passion to profession in historical weapon crafting.", url: "https://youtu.be/xh-ibz0qxaA" },
-  { title: "Bhetarupi Aitihasik Shastra Banavnare Satyajeet Vaidya", desc: "Historic weapons as gifts revive the art of traditional weaponry.", url: "https://youtu.be/2alkiZgDxMI" },
+  { title: "Shivkalin Shastranche Aajche Shilpakar", desc: "Shivray Arts shares its journey from passion to profession in historical weapon crafting.", url: "https://youtu.be/xh-ibz0qxaA" },
+  { title: "Bhetarupi Aitihasik Shastra Banavnare Shivray Arts", desc: "Historic weapons as gifts revive the art of traditional weaponry.", url: "https://youtu.be/2alkiZgDxMI" },
   { title: "Puratan Shastrancha Itihas Jopasanara Kalakar Mavala", desc: "A young artisan keeps alive the martial heritage of the era.", url: "https://youtu.be/WpBQTatwZhs" },
 ] as const;
 

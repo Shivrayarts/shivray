@@ -65,12 +65,12 @@ export default function Header() {
           <Link to="/" className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-2 text-center">
             <img
               src={logoImg}
-              alt="Shivray"
+              alt="Shivray Arts"
               className="h-12 w-12 rounded-full border border-[#cfae84] object-cover"
             />
             <div className="min-w-0">
               <p className="truncate font-heading text-lg leading-none text-[#f8ecd9]">
-                Shivray
+                Shivray Arts
               </p>
               <p className="mt-1 truncate text-[10px] font-semibold text-[#d8b48b]">
                 {siteConfig.brandTagline}
@@ -100,12 +100,12 @@ export default function Header() {
             <Link to="/" className="flex min-w-0 items-center gap-4 pr-4 xl:pr-6">
               <img
                 src={logoImg}
-                alt="Shivray"
+                alt="Shivray Arts"
                 className="h-16 w-16 rounded-full border border-[#e3c7a5] bg-white p-1 object-cover"
               />
               <div className="min-w-0">
                 <p className="truncate font-heading text-3xl leading-none text-[#34180e]">
-                  Shivray
+                  Shivray Arts
                 </p>
                 <p className="mt-2 truncate text-[11px] font-semibold text-[#9b7757]">
                   {siteConfig.brandTagline}

@@ -63,12 +63,12 @@ export const homeContent = {
       id: "video-1",
       title: "Shivkalin Shastranche Aajche Shilpakar",
       description:
-        "Satyajit Arun Vaidya shares his journey from passion to profession in historical weapon crafting.",
+        "Shivray Arts shares its journey from passion to profession in historical weapon crafting.",
       videoUrl: "https://youtu.be/xh-ibz0qxaA",
     },
     {
       id: "video-2",
-      title: "Bhetarupi Aitihasik Shastra Banavnare Satyajeet Vaidya",
+      title: "Bhetarupi Aitihasik Shastra Banavnare Shivray Arts",
       description:
         "Historic weapons as gifts and display pieces that preserve traditional craftsmanship.",
       videoUrl: "https://youtu.be/2alkiZgDxMI",

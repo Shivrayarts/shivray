@@ -44,11 +44,11 @@ export default function Footer() {
             <div className="flex items-start gap-4">
               <img
                 src={logoImg}
-                alt="Shivray"
+                alt="Shivray Arts"
                 className="h-20 w-20 rounded-full object-cover"
               />
               <div className="pt-1">
-                <p className="font-heading text-3xl leading-none text-[#ffd68d]">Shivray</p>
+                <p className="font-heading text-3xl leading-none text-[#ffd68d]">Shivray Arts</p>
                 <p className="mt-3 text-xs font-semibold tracking-[0.08em] text-[#d7b28f]">
                   {siteConfig.brandTagline}
                 </p>
@@ -151,7 +151,7 @@ export default function Footer() {
               </button>
             </form>
             <p className="mt-5 text-sm leading-6 text-[#cfb097]">
-              By subscribing, you agree to receive updates from Shivray.
+              By subscribing, you agree to receive updates from Shivray Arts.
             </p>
           </div>
         </div>
@@ -160,11 +160,11 @@ export default function Footer() {
           <div className="flex items-start gap-3">
             <img
               src={logoImg}
-              alt="Shivray"
+              alt="Shivray Arts"
               className="h-16 w-16 rounded-full object-cover"
             />
             <div className="pt-1">
-              <p className="font-heading text-2xl leading-none text-[#ffd68d]">Shivray</p>
+              <p className="font-heading text-2xl leading-none text-[#ffd68d]">Shivray Arts</p>
               <p className="mt-2 text-xs font-semibold tracking-[0.08em] text-[#d7b28f]">
                 {siteConfig.brandTagline}
               </p>
@@ -231,7 +231,7 @@ export default function Footer() {
                     <div className="pb-4 pt-1">
                       <p className="text-sm leading-6 text-[#eedbc7]">
                         Stay connected for new product drops, heritage stories, and catalogue
-                        updates from Shivray.
+                        updates from Shivray Arts.
                       </p>
                     </div>
                   ) : (
@@ -261,7 +261,7 @@ export default function Footer() {
             Help & FAQs
           </Link>
           <p className="mt-4 text-sm leading-6 lg:mt-0">
-            © 2026 Shivray. All rights reserved.
+            © 2026 Shivray Arts. All rights reserved.
           </p>
         </div>
       </div>
