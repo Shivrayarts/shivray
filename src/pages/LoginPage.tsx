@@ -9,20 +9,24 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!email.trim() || !password.trim()) {
       setMessage("Enter both email and password.");
       return;
     }
 
-    loginCustomer({
-      name: email.split("@")[0],
-      email,
-    });
+    try {
+      await loginCustomer({
+        name: email.split("@")[0],
+        email,
+      });
 
-    setMessage("Customer login saved on this device and visible in admin customers.");
-    navigate({ to: "/" });
+      setMessage("Customer login saved and visible in admin customers.");
+      navigate({ to: "/" });
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to complete customer login.");
+    }
   }
 
   return (
@@ -34,7 +38,7 @@ export default function LoginPage() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">Benefits</p>
             <div className="mt-5 space-y-4">
               <Link to="/products" className="flex items-center justify-between rounded-[24px] border border-[#eadbc8] bg-[#fff9f2] p-4"><div className="flex items-center gap-3"><div className="rounded-2xl bg-[#fff1d9] p-3 text-[#b17024]"><ShoppingBag className="h-5 w-5" /></div><div><p className="font-semibold text-[#34180e]">Continue shopping</p><p className="mt-1 text-sm text-[#7e624b]">Browse products like the reference storefront.</p></div></div><ArrowRight className="h-4 w-4 text-[#b17024]" /></Link>
-              {[{ icon: Smartphone, title: "Thumb-friendly layout", text: "Large fields, rounded actions, and no clutter for phone users." }, { icon: ShieldCheck, title: "Trust-focused design", text: "A calmer and more premium visual style that feels safer to use." }, { icon: LockKeyhole, title: "Static-host ready", text: "This version stores login state locally so it works without TanStack Start server actions." }].map((item) => (
+              {[{ icon: Smartphone, title: "Thumb-friendly layout", text: "Large fields, rounded actions, and no clutter for phone users." }, { icon: ShieldCheck, title: "Trust-focused design", text: "A calmer and more premium visual style that feels safer to use." }, { icon: LockKeyhole, title: "Static-host ready", text: "This version stores login state locally so it works smoothly on static hosting." }].map((item) => (
                 <div key={item.title} className="rounded-[24px] bg-[#fcf7f0] p-4"><div className="flex gap-3"><item.icon className="mt-0.5 h-5 w-5 shrink-0 text-[#b17024]" /><div><p className="font-semibold text-[#34180e]">{item.title}</p><p className="mt-2 text-sm leading-6 text-[#7e624b]">{item.text}</p></div></div></div>
               ))}
             </div>

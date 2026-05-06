@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
+import { apiRequest } from "@/lib/api";
 
 const ADMIN_AUTH_KEY = "shivray_admin_authenticated";
 const ADMIN_AUTH_EVENT = "shivray-admin-auth-changed";
+
+function dispatchAdminAuthChanged() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(ADMIN_AUTH_EVENT));
+}
 
 export function isAdminAuthenticated() {
   if (typeof window === "undefined") return false;
@@ -12,17 +18,39 @@ export function setAdminAuthenticated(value: boolean) {
   if (typeof window === "undefined") return;
   if (value) {
     window.localStorage.setItem(ADMIN_AUTH_KEY, "true");
-    window.dispatchEvent(new Event(ADMIN_AUTH_EVENT));
-    return;
+  } else {
+    window.localStorage.removeItem(ADMIN_AUTH_KEY);
   }
-  window.localStorage.removeItem(ADMIN_AUTH_KEY);
-  window.dispatchEvent(new Event(ADMIN_AUTH_EVENT));
+
+  dispatchAdminAuthChanged();
 }
 
-export function logoutAdmin() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(ADMIN_AUTH_KEY);
-  window.dispatchEvent(new Event(ADMIN_AUTH_EVENT));
+export async function loginAdmin(email: string, password: string) {
+  await apiRequest("/api/admin/login", {
+    method: "POST",
+    body: { email, password },
+  });
+
+  setAdminAuthenticated(true);
+}
+
+export async function refreshAdminAuthStatus() {
+  try {
+    const response = await apiRequest<{ authenticated: boolean }>("/api/admin/session");
+    setAdminAuthenticated(response.authenticated);
+    return response.authenticated;
+  } catch {
+    setAdminAuthenticated(false);
+    return false;
+  }
+}
+
+export async function logoutAdmin() {
+  try {
+    await apiRequest("/api/admin/logout", { method: "POST" });
+  } finally {
+    setAdminAuthenticated(false);
+  }
 }
 
 export function useAdminAuthStatus() {
@@ -34,6 +62,7 @@ export function useAdminAuthStatus() {
     const sync = () => setAuthenticated(isAdminAuthenticated());
 
     sync();
+    void refreshAdminAuthStatus().then(sync).catch(() => undefined);
     window.addEventListener("storage", sync);
     window.addEventListener(ADMIN_AUTH_EVENT, sync);
 

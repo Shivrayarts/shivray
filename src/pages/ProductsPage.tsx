@@ -193,7 +193,6 @@ export default function ProductsPage() {
                   <p className="mt-2 text-[1rem] font-normal text-[#b3b3b3]">{product.category}</p>
                   <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 text-[0.98rem]">
                     <div className="flex items-center gap-2 text-[#b8b8b8]"><Tag className="h-4 w-4 stroke-[1.8]" /><span className="font-normal text-[#1c1c1c]">from {product.price}</span></div>
-                    <div className="flex items-center gap-2 text-[#b8b8b8]"><BookOpenText className="h-4 w-4 stroke-[1.8]" /><span className="font-normal text-[#1c1c1c]">{product.category}</span></div>
                   </div>
                   <p className="mt-4 line-clamp-2 min-h-[3.1rem] text-[0.95rem] leading-6 text-[#747474]">{product.shortDescription}</p>
                   <div className="mt-6 flex items-center gap-3">

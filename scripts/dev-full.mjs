@@ -62,29 +62,39 @@ if (process.argv.includes("--check")) {
 
 console.log("DB env check passed. Starting frontend + backend dev server...\n");
 
-const extraArgs = process.argv.slice(2);
-const child =
-  process.platform === "win32"
-    ? spawn(process.env.ComSpec || "cmd.exe", ["/d", "/s", "/c", "npm run dev"], {
-        stdio: "inherit",
-        env: getSpawnSafeEnv({
-          ...process.env,
-          ...envFromFile,
-        }),
-      })
-    : spawn("npm", ["run", "dev", ...extraArgs], {
-        stdio: "inherit",
-        env: getSpawnSafeEnv({
-          ...process.env,
-          ...envFromFile,
-        }),
-      });
+const resolvedSpawnEnv = getSpawnSafeEnv({
+  ...process.env,
+  ...envFromFile,
+});
 
-child.on("exit", (code, signal) => {
-  if (signal) {
-    process.kill(process.pid, signal);
-    return;
+const extraArgs = process.argv.slice(2);
+
+function spawnScript(scriptName, args = []) {
+  if (process.platform === "win32") {
+    return spawn(process.env.ComSpec || "cmd.exe", ["/d", "/s", "/c", `npm run ${scriptName}`], {
+      stdio: "inherit",
+      env: resolvedSpawnEnv,
+    });
   }
 
-  process.exit(code ?? 0);
-});
+  return spawn("npm", ["run", scriptName, ...args], {
+    stdio: "inherit",
+    env: resolvedSpawnEnv,
+  });
+}
+
+const serverChild = spawnScript("dev:server");
+const clientChild = spawnScript("dev", extraArgs);
+
+function shutdown(code = 0) {
+  for (const child of [serverChild, clientChild]) {
+    if (!child.killed) {
+      child.kill();
+    }
+  }
+
+  process.exit(code);
+}
+
+serverChild.on("exit", (code) => shutdown(code ?? 0));
+clientChild.on("exit", (code) => shutdown(code ?? 0));

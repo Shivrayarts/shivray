@@ -212,7 +212,7 @@ function getCustomProductsFromStorage(): Product[] {
   if (typeof window === "undefined") return [];
   const raw = window.localStorage.getItem(CUSTOM_PRODUCTS_KEY);
   if (!raw) return [];
-  try {
+  try { 
     const parsed = JSON.parse(raw) as Product[];
     if (!Array.isArray(parsed)) return [];
     return parsed.filter(

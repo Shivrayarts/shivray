@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@/lib/spa-router";
 import { LockKeyhole, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
-import { isAdminAuthenticated, setAdminAuthenticated } from "@/lib/admin-auth";
+import { isAdminAuthenticated, loginAdmin } from "@/lib/admin-auth";
 
 const ADMIN_EMAIL = "admin@shivray.local";
 const ADMIN_PASSWORD = "Admin@123";
@@ -18,19 +18,16 @@ export default function AdminLoginPage() {
     }
   }, [navigate]);
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const normalizedEmail = email.trim().toLowerCase();
 
-    if (normalizedEmail !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
-      setError("Invalid admin email or password.");
-      return;
+    try {
+      await loginAdmin(email.trim().toLowerCase(), password);
+      setError("");
+      navigate({ to: "/admin" });
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "Invalid admin email or password.");
     }
-
-    // Set authentication and navigate to the admin dashboard
-    setAdminAuthenticated(true);
-    setError("");
-    navigate({ to: "/admin" });
   }
 
   return (

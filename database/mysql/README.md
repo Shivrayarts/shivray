@@ -7,6 +7,9 @@ Run:
 SOURCE database/mysql/schema.sql;
 ```
 
+If you already created the database earlier, run the schema file again.
+It now includes `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` statements for the backend fields used by the current React app.
+
 ## 2) Seed demo data
 Run:
 

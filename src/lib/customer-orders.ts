@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { parseCurrencyAmount } from "@/lib/utils";
+import { apiRequest } from "@/lib/api";
 
 export type CustomerProfile = {
   id: string;
@@ -55,6 +56,8 @@ const CUSTOMERS_EVENT = "shivray-customers-updated";
 const ORDERS_EVENT = "shivray-orders-updated";
 const SESSION_EVENT = "shivray-customer-session-updated";
 
+let adminCommerceBootstrapPromise: Promise<void> | null = null;
+
 function canUseStorage() {
   return typeof window !== "undefined";
 }
@@ -95,37 +98,58 @@ function buildOrderId() {
   return `#order-${Date.now().toString().slice(-6)}`;
 }
 
-export function getStoredCustomers() {
-  return readJson<CustomerProfile[]>(CUSTOMERS_KEY, []);
+function formatCurrency(value: number) {
+  return `Rs. ${value.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
-export function saveStoredCustomers(customers: CustomerProfile[]) {
+function computePaymentInfo(
+  paymentMethod: "Cash On Delivery" | "Online Payment",
+  status: OrderStatus,
+) {
+  if (status === "Cancelled") {
+    return `${paymentMethod} Cancelled`;
+  }
+
+  return `${paymentMethod} ${status}`;
+}
+
+function applyCustomersToCache(customers: CustomerProfile[]) {
   writeJson(CUSTOMERS_KEY, customers, CUSTOMERS_EVENT);
 }
 
-export function getStoredOrders() {
-  return readJson<OrderRecord[]>(ORDERS_KEY, []);
-}
-
-export function saveStoredOrders(orders: OrderRecord[]) {
+function applyOrdersToCache(orders: OrderRecord[]) {
   writeJson(ORDERS_KEY, orders, ORDERS_EVENT);
 }
 
-export function getCustomerSession() {
-  return readJson<CustomerSession | null>(SESSION_KEY, null);
+function logSyncError(scope: string, error: unknown) {
+  console.error(`Failed to sync ${scope} with the backend.`, error);
 }
 
-export function saveCustomerSession(session: CustomerSession | null) {
-  if (!canUseStorage()) return;
-  if (session) {
-    writeJson(SESSION_KEY, session, SESSION_EVENT);
-    return;
+async function refreshAdminCommerceData() {
+  const [customersResponse, ordersResponse] = await Promise.all([
+    apiRequest<{ customers: CustomerProfile[] }>("/api/admin/customers"),
+    apiRequest<{ orders: OrderRecord[] }>("/api/admin/orders"),
+  ]);
+
+  applyCustomersToCache(customersResponse.customers);
+  applyOrdersToCache(ordersResponse.orders);
+}
+
+function bootstrapAdminCommerceData() {
+  if (!adminCommerceBootstrapPromise) {
+    adminCommerceBootstrapPromise = refreshAdminCommerceData().catch((error) => {
+      adminCommerceBootstrapPromise = null;
+      logSyncError("admin commerce bootstrap", error);
+    });
   }
 
-  removeStored(SESSION_KEY, SESSION_EVENT);
+  return adminCommerceBootstrapPromise;
 }
 
-export function loginCustomer(input: {
+function upsertCustomerLocally(input: {
   name: string;
   email: string;
   phone?: string;
@@ -161,7 +185,7 @@ export function loginCustomer(input: {
     customers.unshift(customer);
   }
 
-  saveStoredCustomers(customers);
+  applyCustomersToCache(customers);
   saveCustomerSession({
     customerId: customer.id,
     name: customer.name,
@@ -171,11 +195,72 @@ export function loginCustomer(input: {
   return customer;
 }
 
+export function getStoredCustomers() {
+  return readJson<CustomerProfile[]>(CUSTOMERS_KEY, []);
+}
+
+export function saveStoredCustomers(customers: CustomerProfile[]) {
+  applyCustomersToCache(customers);
+}
+
+export function getStoredOrders() {
+  return readJson<OrderRecord[]>(ORDERS_KEY, []);
+}
+
+export function saveStoredOrders(orders: OrderRecord[]) {
+  applyOrdersToCache(orders);
+}
+
+export function getCustomerSession() {
+  return readJson<CustomerSession | null>(SESSION_KEY, null);
+}
+
+export function saveCustomerSession(session: CustomerSession | null) {
+  if (!canUseStorage()) return;
+  if (session) {
+    writeJson(SESSION_KEY, session, SESSION_EVENT);
+    return;
+  }
+
+  removeStored(SESSION_KEY, SESSION_EVENT);
+}
+
+export async function loginCustomer(input: {
+  name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+}) {
+  try {
+    const response = await apiRequest<{ customer: CustomerProfile }>("/api/customers/login", {
+      method: "POST",
+      body: input,
+    });
+
+    const customers = getStoredCustomers();
+    const nextCustomers = [
+      response.customer,
+      ...customers.filter((customer) => customer.id !== response.customer.id),
+    ];
+    applyCustomersToCache(nextCustomers);
+    saveCustomerSession({
+      customerId: response.customer.id,
+      name: response.customer.name,
+      email: response.customer.email,
+    });
+
+    return response.customer;
+  } catch (error) {
+    logSyncError("customer login", error);
+    return upsertCustomerLocally(input);
+  }
+}
+
 export function logoutCustomer() {
   saveCustomerSession(null);
 }
 
-export function updateCustomerProfile(customerId: string, updates: Partial<CustomerProfile>) {
+export async function updateCustomerProfile(customerId: string, updates: Partial<CustomerProfile>) {
   const customers = getStoredCustomers();
   const next = customers.map((customer) =>
     customer.id === customerId
@@ -186,47 +271,60 @@ export function updateCustomerProfile(customerId: string, updates: Partial<Custo
       : customer,
   );
 
-  saveStoredCustomers(next);
+  applyCustomersToCache(next);
+
+  try {
+    const customer = next.find((item) => item.id === customerId);
+    if (!customer) return;
+
+    await apiRequest("/api/customers/" + encodeURIComponent(customerId), {
+      method: "PUT",
+      body: customer,
+    });
+  } catch (error) {
+    logSyncError("customer profile", error);
+  }
 }
 
-export function placeOrder(input: {
+export async function placeOrder(input: {
   customer: CustomerProfile;
   items: OrderItem[];
   paymentMethod: "Cash On Delivery" | "Online Payment";
 }) {
-  const paymentInfo =
-    input.paymentMethod === "Cash On Delivery"
-      ? "Cash On Delivery Pending"
-      : "Online Payment Pending";
+  try {
+    const response = await apiRequest<{ order: OrderRecord }>("/api/orders", {
+      method: "POST",
+      body: input,
+    });
 
-  const totalPriceValue = input.items.reduce((sum, item) => {
-    const unitPrice = parseCurrencyAmount(item.price);
-    return sum + unitPrice * item.quantity;
-  }, 0);
+    applyOrdersToCache([response.order, ...getStoredOrders()]);
+    return response.order;
+  } catch (error) {
+    logSyncError("order placement", error);
 
-  const totalPrice = `Rs. ${totalPriceValue.toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+    const totalPriceValue = input.items.reduce((sum, item) => {
+      const unitPrice = parseCurrencyAmount(item.price);
+      return sum + unitPrice * item.quantity;
+    }, 0);
 
-  const nextOrder: OrderRecord = {
-    id: buildOrderId(),
-    customerId: input.customer.id,
-    customerName: input.customer.name,
-    customerEmail: input.customer.email,
-    customerPhone: input.customer.phone,
-    customerAddress: input.customer.address,
-    items: input.items,
-    paymentMethod: input.paymentMethod,
-    paymentInfo,
-    status: "Pending",
-    totalPrice,
-    createdAt: new Date().toISOString(),
-  };
+    const nextOrder: OrderRecord = {
+      id: buildOrderId(),
+      customerId: input.customer.id,
+      customerName: input.customer.name,
+      customerEmail: input.customer.email,
+      customerPhone: input.customer.phone,
+      customerAddress: input.customer.address,
+      items: input.items,
+      paymentMethod: input.paymentMethod,
+      paymentInfo: computePaymentInfo(input.paymentMethod, "Pending"),
+      status: "Pending",
+      totalPrice: formatCurrency(totalPriceValue),
+      createdAt: new Date().toISOString(),
+    };
 
-  const orders = getStoredOrders();
-  saveStoredOrders([nextOrder, ...orders]);
-  return nextOrder;
+    applyOrdersToCache([nextOrder, ...getStoredOrders()]);
+    return nextOrder;
+  }
 }
 
 export function updateOrderStatus(orderId: string, status: OrderStatus) {
@@ -236,22 +334,26 @@ export function updateOrderStatus(orderId: string, status: OrderStatus) {
       ? {
           ...order,
           status,
-          paymentInfo:
-            status === "Cancelled"
-              ? order.paymentMethod === "Cash On Delivery"
-                ? "Cash On Delivery Cancelled"
-                : "Online Payment Cancelled"
-              : order.paymentMethod === "Cash On Delivery"
-              ? `Cash On Delivery ${status}`
-              : `Online Payment ${status}`,
+          paymentInfo: computePaymentInfo(order.paymentMethod, status),
         }
       : order,
   );
 
-  saveStoredOrders(next);
+  applyOrdersToCache(next);
+
+  const targetOrder = next.find((order) => order.id === orderId);
+  if (!targetOrder) return;
+
+  void apiRequest("/api/admin/orders/" + encodeURIComponent(orderId) + "/status", {
+    method: "PATCH",
+    body: {
+      status,
+      paymentMethod: targetOrder.paymentMethod,
+    },
+  }).catch((error) => logSyncError("order status", error));
 }
 
-function useStoredValue<T>(read: () => T, events: string[]) {
+function useStoredValue<T>(read: () => T, events: string[], bootstrap?: () => Promise<void> | null) {
   const [value, setValue] = useState<T>(() => read());
 
   useEffect(() => {
@@ -260,6 +362,10 @@ function useStoredValue<T>(read: () => T, events: string[]) {
     const syncValue = () => setValue(read());
 
     syncValue();
+    if (bootstrap) {
+      void bootstrap().then(syncValue).catch(() => undefined);
+    }
+
     window.addEventListener("storage", syncValue);
     for (const eventName of events) {
       window.addEventListener(eventName, syncValue);
@@ -271,17 +377,17 @@ function useStoredValue<T>(read: () => T, events: string[]) {
         window.removeEventListener(eventName, syncValue);
       }
     };
-  }, [events, read]);
+  }, [events, bootstrap, read]);
 
   return value;
 }
 
 export function useStoredCustomers() {
-  return useStoredValue(getStoredCustomers, [CUSTOMERS_EVENT]);
+  return useStoredValue(getStoredCustomers, [CUSTOMERS_EVENT], bootstrapAdminCommerceData);
 }
 
 export function useStoredOrders() {
-  return useStoredValue(getStoredOrders, [ORDERS_EVENT]);
+  return useStoredValue(getStoredOrders, [ORDERS_EVENT], bootstrapAdminCommerceData);
 }
 
 export function useCustomerSession() {

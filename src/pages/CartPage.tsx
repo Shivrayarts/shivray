@@ -42,7 +42,7 @@ export default function CartPage() {
     [items],
   );
 
-  function handlePlaceOrder() {
+  async function handlePlaceOrder() {
     const resolvedName = checkoutForm.name.trim() || currentCustomer?.name || customerSession?.name || "";
     const resolvedEmail = checkoutForm.email.trim() || currentCustomer?.email || customerSession?.email || "";
     const resolvedPhone = checkoutForm.phone.trim() || currentCustomer?.phone || "";
@@ -53,43 +53,47 @@ export default function CartPage() {
       return;
     }
 
-    const customer =
-      currentCustomer ??
-      loginCustomer({
+    try {
+      const customer =
+        currentCustomer ??
+        (await loginCustomer({
+          name: resolvedName,
+          email: resolvedEmail,
+          phone: resolvedPhone,
+          address: resolvedAddress,
+        }));
+
+      await updateCustomerProfile(customer.id, {
         name: resolvedName,
         email: resolvedEmail,
         phone: resolvedPhone,
         address: resolvedAddress,
+        lastLoginAt: new Date().toISOString(),
       });
 
-    updateCustomerProfile(customer.id, {
-      name: resolvedName,
-      email: resolvedEmail,
-      phone: resolvedPhone,
-      address: resolvedAddress,
-      lastLoginAt: new Date().toISOString(),
-    });
+      const order = await placeOrder({
+        customer: {
+          ...customer,
+          name: resolvedName,
+          email: resolvedEmail,
+          phone: resolvedPhone,
+          address: resolvedAddress,
+        },
+        items: items.map(({ product, quantity }) => ({
+          productId: product.id,
+          productName: product.name,
+          price: product.price,
+          quantity,
+          image: product.image,
+        })),
+        paymentMethod: checkoutForm.paymentMethod,
+      });
 
-    const order = placeOrder({
-      customer: {
-        ...customer,
-        name: resolvedName,
-        email: resolvedEmail,
-        phone: resolvedPhone,
-        address: resolvedAddress,
-      },
-      items: items.map(({ product, quantity }) => ({
-        productId: product.id,
-        productName: product.name,
-        price: product.price,
-        quantity,
-        image: product.image,
-      })),
-      paymentMethod: checkoutForm.paymentMethod,
-    });
-
-    clearCart();
-    setOrderMessage(`Order ${order.id} placed successfully. It now appears in admin orders.`);
+      clearCart();
+      setOrderMessage(`Order ${order.id} placed successfully. It now appears in admin orders.`);
+    } catch (error) {
+      setOrderMessage(error instanceof Error ? error.message : "Unable to place the order right now.");
+    }
   }
 
   return (
