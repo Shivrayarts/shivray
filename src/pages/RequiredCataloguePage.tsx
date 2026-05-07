@@ -13,10 +13,13 @@ export default function RequiredCataloguePage() {
     catalogueType: catalogueTypes[0].id,
     notes: "",
   });
+  const [phoneTouched, setPhoneTouched] = useState(false);
   const [categorySlide, setCategorySlide] = useState(0);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
   const categoryCards = catalogueTypes.slice(0, 4);
   const selectedCatalogue = getCatalogueTypeById(form.catalogueType, catalogueTypes);
+  const isPhoneValid = /^\d{10}$/.test(form.phone);
+  const shouldShowPhoneError = phoneTouched && form.phone.length > 0 && !isPhoneValid;
 
   useEffect(() => {
     if (!catalogueTypes.some((item) => item.id === form.catalogueType)) {
@@ -37,6 +40,18 @@ export default function RequiredCataloguePage() {
     const cardWidth = firstCard.offsetWidth + 16;
     const nextSlide = Math.round(node.scrollLeft / cardWidth);
     setCategorySlide(Math.max(0, Math.min(nextSlide, categoryCards.length - 1)));
+  };
+
+  const handlePhoneChange = (value: string) => {
+    const digitsOnly = value.replace(/\D/g, "").slice(0, 10);
+    setForm((current) => ({ ...current, phone: digitsOnly }));
+  };
+
+  const handleWhatsappClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    setPhoneTouched(true);
+    if (!isPhoneValid) {
+      event.preventDefault();
+    }
   };
 
   return (
@@ -95,11 +110,30 @@ export default function RequiredCataloguePage() {
                 </div>
               </div>
               <div><label htmlFor="catalogue-name" className="text-sm font-medium text-[#34180e]">Name</label><input id="catalogue-name" type="text" value={form.name} onChange={(event) => setForm((value) => ({ ...value, name: event.target.value }))} placeholder="Your name" className="mt-2 w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e]" /></div>
-              <div><label htmlFor="catalogue-phone" className="text-sm font-medium text-[#34180e]">Phone Number</label><input id="catalogue-phone" type="tel" value={form.phone} onChange={(event) => setForm((value) => ({ ...value, phone: event.target.value }))} placeholder="+91" className="mt-2 w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e]" /></div>
+              <div>
+                <label htmlFor="catalogue-phone" className="text-sm font-medium text-[#34180e]">Phone Number</label>
+                <input
+                  id="catalogue-phone"
+                  type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]{10}"
+                  maxLength={10}
+                  value={form.phone}
+                  onBlur={() => setPhoneTouched(true)}
+                  onChange={(event) => handlePhoneChange(event.target.value)}
+                  placeholder="Enter 10-digit phone number"
+                  className={`mt-2 w-full rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${
+                    shouldShowPhoneError ? "border-[#b42318]" : "border-[#eadbc8]"
+                  }`}
+                />
+                {shouldShowPhoneError ? (
+                  <p className="mt-2 text-sm text-[#b42318]">Please enter a valid 10-digit phone number.</p>
+                ) : null}
+              </div>
               <div><div className="rounded-[24px] border border-[#eadbc8] bg-[#fcf8f2] px-4 py-4"><p className="text-sm font-medium text-[#34180e]">Selected catalogue</p><p className="mt-2 font-semibold text-[#34180e]">{selectedCatalogue.title}</p><p className="mt-2 text-sm leading-6 text-[#7e624b]">{selectedCatalogue.description}</p></div></div>
               <div><label htmlFor="catalogue-notes" className="text-sm font-medium text-[#34180e]">Notes</label><textarea id="catalogue-notes" rows={4} value={form.notes} onChange={(event) => setForm((value) => ({ ...value, notes: event.target.value }))} placeholder="Budget, quantity, or special requirement" className="mt-2 w-full resize-none rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e]" /></div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <a href={whatsappLink} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white"><MessageCircle className="h-4 w-4" />Request on WhatsApp</a>
+                <a href={whatsappLink} onClick={handleWhatsappClick} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white"><MessageCircle className="h-4 w-4" />Download Catalogue</a>
                 <a href={`tel:${siteConfig.phoneHref}`} className="inline-flex items-center justify-center rounded-full border border-[#d8b48b] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#34180e]">Call Now</a>
               </div>
             </form>
