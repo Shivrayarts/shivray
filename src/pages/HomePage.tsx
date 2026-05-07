@@ -6,8 +6,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock3,
-  ExternalLink,
   Heart,
+  Play,
   ShieldCheck,
   Star,
 } from "lucide-react";
@@ -35,27 +35,6 @@ const features = [
   { icon: Clock3, title: "Fast Enquiry Flow", copy: "Designed for mobile users who want quick browsing, quick contact, and quick buying decisions." },
   { icon: BookOpenText, title: "Catalogue Support", copy: "Customers can request a full catalogue and get tailored recommendations for their budget." },
 ] as const;
-
-function getYoutubeEmbedUrl(url: string) {
-  try {
-    const parsed = new URL(url);
-    if (parsed.hostname.includes("youtu.be")) {
-      const videoId = parsed.pathname.replace("/", "");
-      return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
-    }
-
-    if (parsed.hostname.includes("youtube.com")) {
-      const videoId = parsed.searchParams.get("v");
-      if (videoId) return `https://www.youtube.com/embed/${videoId}`;
-      const match = parsed.pathname.match(/\/embed\/([^/?]+)/);
-      return match?.[1] ? `https://www.youtube.com/embed/${match[1]}` : "";
-    }
-  } catch {
-    return "";
-  }
-
-  return "";
-}
 
 export default function HomePage() {
   const products = useStoredProducts();
@@ -307,7 +286,6 @@ export default function HomePage() {
             <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {featuredVideos.map((video) => {
                 const isYoutube = video.videoType === "youtube";
-                const embedUrl = isYoutube ? getYoutubeEmbedUrl(video.videoUrl) : "";
 
                 return (
                   <article
@@ -317,29 +295,20 @@ export default function HomePage() {
                     }`}
                   >
                     <div className={`relative bg-[#120907] ${isYoutube ? "aspect-video" : "mx-auto aspect-[9/16] max-w-[22rem]"}`}>
-                      {isYoutube && embedUrl ? (
-                        <iframe
-                          src={embedUrl}
-                          title={video.title}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                          allowFullScreen
-                          className="h-full w-full"
-                        />
-                      ) : isYoutube ? (
-                        <div className="flex h-full items-center justify-center px-6 text-center text-sm text-[#f6dbc2]">
-                          Invalid YouTube link. Update this video entry from the admin panel.
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(227,169,43,0.32),transparent_45%),linear-gradient(180deg,rgba(12,5,4,0.22)_0%,rgba(12,5,4,0.88)_100%)]" />
+                      <div className="relative flex h-full w-full flex-col items-center justify-center gap-4 px-6 text-center text-[#f6dbc2]">
+                        <span className="inline-flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/10">
+                          <Play className="h-7 w-7 text-[#f3bf56]" />
+                        </span>
+                        <div>
+                          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#f3bf56]">
+                            {isYoutube ? "YouTube placeholder" : "Reel placeholder"}
+                          </p>
+                          <p className="mt-3 text-sm leading-6 text-[#f6dbc2]">
+                            Video playback has been removed for now. This card keeps the section layout ready for future media.
+                          </p>
                         </div>
-                      ) : (
-                        <video
-                          src={video.videoUrl}
-                          poster={video.thumbnail || undefined}
-                          controls
-                          playsInline
-                          muted
-                          loop
-                          className="h-full w-full object-cover"
-                        />
-                      )}
+                      </div>
                     </div>
                     <div className="p-5">
                       <div className="flex items-center gap-2">
@@ -354,17 +323,9 @@ export default function HomePage() {
                       </div>
                       <h3 className="mt-4 font-heading text-2xl text-[#34180e]">{video.title}</h3>
                       <p className="mt-3 text-sm leading-6 text-[#6c4b33]">{video.description}</p>
-                      {isYoutube ? (
-                        <a
-                          href={video.videoUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#8b4d1d]"
-                        >
-                          Watch on YouTube
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                      ) : null}
+                      <p className="mt-5 text-sm font-semibold text-[#8b4d1d]">
+                        Placeholder only
+                      </p>
                     </div>
                   </article>
                 );
