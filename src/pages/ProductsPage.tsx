@@ -22,6 +22,7 @@ export default function ProductsPage() {
   const [search, setSearch] = useState(initialSearch);
   const [category, setCategory] = useState<(typeof categories)[number]>("All");
   const [sortBy, setSortBy] = useState("featured");
+  const [mobileSortOpen, setMobileSortOpen] = useState(false);
   const [categorySlide, setCategorySlide] = useState(0);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
@@ -53,6 +54,20 @@ export default function ProductsPage() {
     if (sortBy === "name") sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
     return sortedProducts;
   }, [category, products, search, sortBy]);
+
+  const sortLabel =
+    sortBy === "price-low"
+      ? "Price: Low to High"
+      : sortBy === "price-high"
+        ? "Price: High to Low"
+        : sortBy === "name"
+          ? "Name"
+          : "Sort By";
+
+  const selectSort = (value: string) => {
+    setSortBy(value);
+    setMobileSortOpen(false);
+  };
 
   const handleCategoriesScroll = () => {
     const node = categoriesRef.current;
@@ -96,19 +111,51 @@ export default function ProductsPage() {
       <section className="px-4 pt-3 md:hidden">
         <div className="layout-shell sticky top-[4.45rem] z-20 rounded-[18px] border border-[#e9e5df] bg-white px-4 py-3 shadow-[0_10px_30px_-24px_rgba(0,0,0,0.45)]">
           <div className="flex items-center gap-3">
-            <button type="button" onClick={() => setMobileFiltersOpen((prev) => !prev)} className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[#e7e3dc] bg-white px-4 py-3 text-[1.05rem] font-semibold text-[#121212]">
+            <button
+              type="button"
+              onClick={() => {
+                setMobileFiltersOpen((prev) => !prev);
+                setMobileSortOpen(false);
+              }}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[#e7e3dc] bg-white px-4 py-3 text-[1.05rem] font-semibold text-[#121212]"
+            >
               <SlidersHorizontal className="h-4 w-4" /> Filter
             </button>
             <div className="relative flex-1">
-              <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="h-full w-full appearance-none rounded-[10px] border border-[#e7e3dc] bg-white px-4 py-3 pr-10 text-[1.05rem] font-medium text-[#2b2b2b]">
-                <option value="featured">Sort By</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="name">Name</option>
-              </select>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileSortOpen((prev) => !prev);
+                  setMobileFiltersOpen(false);
+                }}
+                className="inline-flex w-full items-center justify-between rounded-[10px] border border-[#e7e3dc] bg-white px-4 py-3 text-left text-[1.05rem] font-medium text-[#2b2b2b]"
+              >
+                <span className="truncate">{sortLabel}</span>
+              </button>
               <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6c4b33]" />
             </div>
           </div>
+          {mobileSortOpen ? (
+            <div className="mt-4 space-y-2 border-t border-[#f0ece6] pt-4">
+              {[
+                { value: "featured", label: "Sort By" },
+                { value: "price-low", label: "Price: Low to High" },
+                { value: "price-high", label: "Price: High to Low" },
+                { value: "name", label: "Name" },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => selectSort(option.value)}
+                  className={`block w-full rounded-[12px] px-4 py-3 text-left text-[1rem] ${
+                    sortBy === option.value ? "bg-[#34180e] text-white" : "bg-[#f8f5f0] text-[#34180e]"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
           {mobileFiltersOpen ? (
             <div className="mt-4 space-y-3 border-t border-[#f0ece6] pt-4">
               <div className="relative">

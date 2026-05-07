@@ -31,9 +31,12 @@ type RouterContextValue = {
 const RouterContext = createContext<RouterContextValue | null>(null);
 
 function normalizePath(pathname: string, search = "") {
+  const normalizedPathname =
+    pathname.length > 1 && pathname.endsWith("/") ? pathname.replace(/\/+$/, "") || "/" : pathname;
+
   return {
-    href: `${pathname}${search}`,
-    pathname,
+    href: `${normalizedPathname}${search}`,
+    pathname: normalizedPathname,
     search,
   };
 }
@@ -75,7 +78,9 @@ function buildPath(to: string, params?: Record<string, string>, search?: SearchV
   }
 
   const qs = query.toString();
-  return `${pathname}${qs ? `?${qs}` : ""}`;
+  const normalizedPathname =
+    pathname.length > 1 && pathname.endsWith("/") ? pathname.replace(/\/+$/, "") || "/" : pathname;
+  return `${normalizedPathname}${qs ? `?${qs}` : ""}`;
 }
 
 export function RouterProvider({ children }: { children: ReactNode }) {

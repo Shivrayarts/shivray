@@ -89,6 +89,11 @@ function canUseStorage() {
   return typeof window !== "undefined";
 }
 
+function shouldBootstrapStorefront() {
+  if (!canUseStorage()) return false;
+  return window.location.pathname.startsWith("/admin");
+}
+
 function readJson<T>(key: string, fallback: T): T {
   if (!canUseStorage()) return fallback;
   const raw = window.localStorage.getItem(key);
@@ -167,6 +172,10 @@ function syncHomeContentToApi(content: StoredHomeContent) {
 }
 
 function bootstrapStorefrontData() {
+  if (!shouldBootstrapStorefront()) {
+    return Promise.resolve();
+  }
+
   if (!storefrontBootstrapPromise) {
     storefrontBootstrapPromise = refreshStorefrontData().catch((error) => {
       storefrontBootstrapPromise = null;
