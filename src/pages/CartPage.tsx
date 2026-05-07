@@ -113,7 +113,11 @@ export default function CartPage() {
 
   return (
     <div>
-      <section className="bg-primary py-14 text-primary-foreground md:py-16"><div className="layout-shell px-4"><h1 className="font-heading text-3xl font-bold md:text-4xl">Your Cart</h1><p className="mt-2 text-sm opacity-90 md:text-base">Review your selected products before proceeding.</p></div></section>
+      <section className="bg-primary py-6 text-primary-foreground md:py-6">
+        <div className="layout-shell px-4"><h1 className="font-heading text-3xl font-bold md:text-4xl">Your Cart</h1>
+        {/* <p className="mt-2 text-sm opacity-90 md:text-base">Review your selected products before proceeding.</p> */}
+        </div>
+        </section>
       <section className="py-12 md:py-16">
         <div className="layout-shell px-4">
           {items.length === 0 ? (

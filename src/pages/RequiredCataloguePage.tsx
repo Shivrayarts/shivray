@@ -70,7 +70,7 @@ export default function RequiredCataloguePage() {
           <h1 className="mt-4 font-heading text-4xl leading-none text-[#fff5e6] md:text-6xl">{resolvedLocale === "mr" ? "योग्य कॅटलॉग प्रकार एका झटक्यात मागवा." : "Ask for the right catalogue type in one quick step."}</h1>
         </div>
       </section> */}
-      <section className="px-4 py-8 md:px-6 md:py-10">
+      {/* <section className="px-4 py-8 md:px-6 md:py-10">
         <div className="layout-shell rounded-[34px] bg-[#fffdf8] px-4 py-6 md:px-8 md:py-8">
           <div className="text-center"><h2 className="font-body text-3xl font-semibold text-[#1d150f] md:text-4xl">{resolvedLocale === "mr" ? "लोकप्रिय श्रेणी" : "Popular Categories"}</h2></div>
           <div ref={categoriesRef} onScroll={handleCategoriesScroll} className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-4 md:gap-x-6 md:overflow-visible md:pb-0">
@@ -88,7 +88,7 @@ export default function RequiredCataloguePage() {
             {categoryCards.map((card, index) => <span key={card.id} className={`rounded-full ${index === categorySlide ? "h-4 w-4 border border-[#1d150f] bg-white shadow-[inset_0_0_0_4px_#1d150f]" : "h-2.5 w-2.5 bg-[#a9a29c]"}`} />)}
           </div>
         </div>
-      </section>
+      </section> */}
       <section className="px-4 pt-6 md:px-6">
         <div className="layout-shell grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">

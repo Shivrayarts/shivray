@@ -14,17 +14,18 @@ function PinterestIcon({ className }: { className?: string }) {
 
 export default function ContactPage() {
   const { resolvedLocale } = useLanguage();
-  const [form, setForm] = useState({ name: "", phone: "", message: "" });
-  const [touched, setTouched] = useState({ name: false, phone: false, message: false });
+  const [form, setForm] = useState({ name: "", phone: "", city: "", message: "" });
+  const [touched, setTouched] = useState({ name: false, phone: false, city: false, message: false });
 
   const isNameValid = isValidName(form.name);
   const isPhoneValid = isValidPhone(form.phone);
+  const isCityValid = isValidName(form.city);
   const isMessageValid = isValidMessage(form.message);
-  const isFormValid = isNameValid && isPhoneValid && isMessageValid;
+  const isFormValid = isNameValid && isPhoneValid && isCityValid && isMessageValid;
 
   const whatsappLink = useMemo(() => {
     const query = encodeURIComponent(
-      `Hi Shivray Arts, I am ${form.name || "interested in your products"}. ${form.phone ? `My number is ${form.phone}. ` : ""}${form.message || "Please contact me back."}`,
+      `Hi Shivray Arts, I am ${form.name || "interested in your products"}. ${form.phone ? `My number is ${form.phone}. ` : ""}${form.city ? `I am from ${form.city}. ` : ""}${form.message || "Please contact me back."}`,
     );
     return `${siteConfig.whatsappHref}?text=${query}`;
   }, [form]);
@@ -37,6 +38,7 @@ export default function ContactPage() {
         "",
         `Name: ${form.name || "-"}`,
         `Phone: ${form.phone || "-"}`,
+        `City: ${form.city || "-"}`,
         "",
         "Message:",
         form.message || "Please contact me back.",
@@ -47,7 +49,7 @@ export default function ContactPage() {
   }, [form]);
 
   const markAllTouched = () => {
-    setTouched({ name: true, phone: true, message: true });
+    setTouched({ name: true, phone: true, city: true, message: true });
   };
 
   const handleWhatsappClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -66,17 +68,6 @@ export default function ContactPage() {
 
   return (
     <div className="bg-[#f7f1e7] pb-8 md:pb-12">
-      {/* <section className="bg-[#2b130c] px-4 pb-8 pt-6 text-white md:px-6 md:pb-12 md:pt-10">
-        <div className="layout-shell">
-          <span className="inline-flex rounded-full border border-[#f2bb64]/30 bg-[#f2bb64]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffd68d]">
-            {resolvedLocale === "mr" ? "संपर्क पृष्ठ" : "Contact Page"}
-          </span>
-          <h1 className="mt-4 font-heading text-4xl leading-none text-[#fff5e6] md:text-6xl">
-            {resolvedLocale === "mr" ? "मोबाइल वापरकर्त्यांसाठी सोपे संपर्क पर्याय." : "Simple contact options for mobile users."}
-          </h1>
-        </div>
-      </section> */}
-
       <section className="px-4 pt-6 md:px-6">
         <div className="layout-shell grid gap-6 md:grid-cols-[0.95fr_1.05fr]">
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
@@ -120,6 +111,20 @@ export default function ContactPage() {
               </div>
             </div>
 
+            <div className="mt-5 overflow-hidden rounded-[24px] border border-[#eadbc8] bg-[#fcf7f0]">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3912.51070307764!2d73.84964267533366!3d18.465839282617132!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2ebfc8839e635%3A0x1c5a29c430af4660!2sShivray%20Art%20And%20Handicraft!5e1!3m2!1sen!2sin!4v1778154625650!5m2!1sen!2sin"
+                width="600"
+                height="450"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Shivray Art And Handicraft location"
+                className="h-[260px] w-full md:h-[320px]"
+              />
+            </div>
+
             <div className="mt-5 flex items-center gap-3">
               <a href={siteConfig.socialLinks.facebook} aria-label="Facebook" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#eadbc8] bg-white text-[#34180e]">
                 <Facebook className="h-4 w-4" />
@@ -141,7 +146,7 @@ export default function ContactPage() {
               {resolvedLocale === "mr" ? "जलद चौकशी" : "Quick Enquiry"}
             </p>
             <h2 className="mt-2 font-heading text-3xl text-[#34180e]">
-              {resolvedLocale === "mr" ? "तुमच्या फोनवरून छोटा संदेश पाठवा" : "Send a short message from your phone"}
+              {resolvedLocale === "mr" ? "संपर्क साधा" : "Contact Us"}
             </h2>
 
             <form className="mt-6 space-y-4" onSubmit={(event) => event.preventDefault()}>
@@ -183,6 +188,24 @@ export default function ContactPage() {
                   <p className="mt-2 text-sm text-[#b42318]">
                     {resolvedLocale === "mr" ? "कृपया वैध १० अंकी फोन नंबर टाका." : "Please enter a valid 10-digit phone number."}
                   </p>
+                ) : null}
+              </div>
+
+              <div>
+                <label htmlFor="contact-city" className="text-sm font-medium text-[#34180e]">
+                  {resolvedLocale === "mr" ? "शहर" : "City"}
+                </label>
+                <input
+                  id="contact-city"
+                  type="text"
+                  value={form.city}
+                  onBlur={() => setTouched((value) => ({ ...value, city: true }))}
+                  onChange={(event) => setForm((value) => ({ ...value, city: event.target.value }))}
+                  placeholder={resolvedLocale === "mr" ? "तुमचे शहर" : "Your city"}
+                  className={`mt-2 w-full rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${touched.city && !isCityValid ? "border-[#b42318]" : "border-[#eadbc8]"}`}
+                />
+                {touched.city && !isCityValid ? (
+                  <p className="mt-2 text-sm text-[#b42318]">{resolvedLocale === "mr" ? "कृपया तुमचे शहर टाका." : "Please enter your city."}</p>
                 ) : null}
               </div>
 

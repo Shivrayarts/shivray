@@ -75,7 +75,7 @@ export default function Footer() {
 
   return (
     <footer className="w-full bg-[#4a1f14] text-[#f8ead7]">
-      <div className="px-4 py-8 md:px-8 md:py-12 xl:px-14">
+      <div className="px-4 pb-28 pt-8 md:px-8 md:py-12 xl:px-14">
         <div className="hidden gap-10 lg:grid lg:grid-cols-[1.2fr_0.75fr_0.75fr_1.1fr]">
           <div>
             <div className="flex items-start gap-4">

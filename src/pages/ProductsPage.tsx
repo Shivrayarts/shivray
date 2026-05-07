@@ -136,7 +136,7 @@ export default function ProductsPage() {
           </h1>
         </div>
       </section> */}
-      <section className="hidden px-4 py-8 md:block md:px-6 md:py-10">
+      <section className="px-4 py-6 md:px-6 md:py-10">
         <div className="layout-shell rounded-[34px] bg-[#fffdf8] px-4 py-6 md:px-8 md:py-8">
           <div className="text-center">
             <h2 className="font-body text-3xl font-semibold text-[#1d150f] md:text-4xl">
