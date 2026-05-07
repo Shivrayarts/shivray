@@ -2,9 +2,11 @@ import { Link, useNavigate } from "@/lib/spa-router";
 import { ArrowRight, LockKeyhole, Mail, ShieldCheck, ShoppingBag, Smartphone } from "lucide-react";
 import { useState } from "react";
 import { isValidEmail } from "@/lib/form-validation";
+import { useLanguage } from "@/lib/language";
 import { loginCustomer } from "@/lib/customer-orders";
 
 export default function LoginPage() {
+  const { resolvedLocale } = useLanguage();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,7 +17,7 @@ export default function LoginPage() {
     event.preventDefault();
     if (!isValidEmail(email.trim()) || password.trim().length < 6) {
       setTouched({ email: true, password: true });
-      setMessage("Enter a valid email and a password with at least 6 characters.");
+      setMessage(resolvedLocale === "mr" ? "वैध ईमेल आणि किमान ६ अक्षरांचा पासवर्ड टाका." : "Enter a valid email and a password with at least 6 characters.");
       return;
     }
 
@@ -25,22 +27,22 @@ export default function LoginPage() {
         email,
       });
 
-      setMessage("Customer login saved and visible in admin customers.");
+      setMessage(resolvedLocale === "mr" ? "ग्राहक लॉगिन जतन झाले आणि अॅडमिन ग्राहक यादीत दिसेल." : "Customer login saved and visible in admin customers.");
       navigate({ to: "/" });
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to complete customer login.");
+      setMessage(error instanceof Error ? error.message : (resolvedLocale === "mr" ? "ग्राहक लॉगिन पूर्ण करता आले नाही." : "Unable to complete customer login."));
     }
   }
 
   return (
     <div className="bg-[#f7f1e7] pb-8 md:pb-12">
-      <section className="bg-[#2b130c] px-4 pb-8 pt-6 text-white md:px-6 md:pb-12 md:pt-10"><div className="layout-shell"><span className="inline-flex rounded-full border border-[#f2bb64]/30 bg-[#f2bb64]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffd68d]">Login Page</span><h1 className="mt-4 font-heading text-4xl leading-none text-[#fff5e6] md:text-6xl">A cleaner login screen for mobile customers.</h1></div></section>
+      <section className="bg-[#2b130c] px-4 pb-8 pt-6 text-white md:px-6 md:pb-12 md:pt-10"><div className="layout-shell"><span className="inline-flex rounded-full border border-[#f2bb64]/30 bg-[#f2bb64]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffd68d]">{resolvedLocale === "mr" ? "लॉगिन पृष्ठ" : "Login Page"}</span><h1 className="mt-4 font-heading text-4xl leading-none text-[#fff5e6] md:text-6xl">{resolvedLocale === "mr" ? "मोबाइल ग्राहकांसाठी स्वच्छ लॉगिन स्क्रीन." : "A cleaner login screen for mobile customers."}</h1></div></section>
       <section className="px-4 pt-6 md:px-6">
         <div className="layout-shell grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">Benefits</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">{resolvedLocale === "mr" ? "फायदे" : "Benefits"}</p>
             <div className="mt-5 space-y-4">
-              <Link to="/products" className="flex items-center justify-between rounded-[24px] border border-[#eadbc8] bg-[#fff9f2] p-4"><div className="flex items-center gap-3"><div className="rounded-2xl bg-[#fff1d9] p-3 text-[#b17024]"><ShoppingBag className="h-5 w-5" /></div><div><p className="font-semibold text-[#34180e]">Continue shopping</p><p className="mt-1 text-sm text-[#7e624b]">Browse products like the reference storefront.</p></div></div><ArrowRight className="h-4 w-4 text-[#b17024]" /></Link>
+              <Link to="/products" className="flex items-center justify-between rounded-[24px] border border-[#eadbc8] bg-[#fff9f2] p-4"><div className="flex items-center gap-3"><div className="rounded-2xl bg-[#fff1d9] p-3 text-[#b17024]"><ShoppingBag className="h-5 w-5" /></div><div><p className="font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "खरेदी सुरू ठेवा" : "Continue shopping"}</p><p className="mt-1 text-sm text-[#7e624b]">{resolvedLocale === "mr" ? "स्टोअरफ्रंटमधील उत्पादने सहज पाहा." : "Browse products like the reference storefront."}</p></div></div><ArrowRight className="h-4 w-4 text-[#b17024]" /></Link>
               {[{ icon: Smartphone, title: "Thumb-friendly layout", text: "Large fields, rounded actions, and no clutter for phone users." }, { icon: ShieldCheck, title: "Trust-focused design", text: "A calmer and more premium visual style that feels safer to use." }, { icon: LockKeyhole, title: "Static-host ready", text: "This version stores login state locally so it works smoothly on static hosting." }].map((item) => (
                 <div key={item.title} className="rounded-[24px] bg-[#fcf7f0] p-4"><div className="flex gap-3"><item.icon className="mt-0.5 h-5 w-5 shrink-0 text-[#b17024]" /><div><p className="font-semibold text-[#34180e]">{item.title}</p><p className="mt-2 text-sm leading-6 text-[#7e624b]">{item.text}</p></div></div></div>
               ))}
@@ -48,16 +50,16 @@ export default function LoginPage() {
           </div>
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
             <div className="mx-auto max-w-md">
-              <div className="flex items-center gap-3"><div className="rounded-2xl bg-[#fff1d9] p-3 text-[#b17024]"><LockKeyhole className="h-5 w-5" /></div><div><p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">Sign In</p><h2 className="mt-1 font-heading text-3xl text-[#34180e]">Welcome back</h2></div></div>
+              <div className="flex items-center gap-3"><div className="rounded-2xl bg-[#fff1d9] p-3 text-[#b17024]"><LockKeyhole className="h-5 w-5" /></div><div><p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">{resolvedLocale === "mr" ? "साइन इन" : "Sign In"}</p><h2 className="mt-1 font-heading text-3xl text-[#34180e]">{resolvedLocale === "mr" ? "पुन्हा स्वागत आहे" : "Welcome back"}</h2></div></div>
               <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-                <div><label htmlFor="login-email" className="text-sm font-medium text-[#34180e]">Email</label><div className="relative mt-2"><Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#927863]" /><input id="login-email" type="email" value={email} onBlur={() => setTouched((value) => ({ ...value, email: true }))} onChange={(event) => setEmail(event.target.value)} placeholder="your@email.com" className={`w-full rounded-2xl border bg-[#fcf8f2] py-3 pl-11 pr-4 text-sm text-[#34180e] ${touched.email && !isValidEmail(email) ? "border-[#b42318]" : "border-[#eadbc8]"}`} /></div>{touched.email && !isValidEmail(email) ? <p className="mt-2 text-sm text-[#b42318]">Please enter a valid email address.</p> : null}</div>
-                <div><label htmlFor="login-password" className="text-sm font-medium text-[#34180e]">Password</label><div className="relative mt-2"><LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#927863]" /><input id="login-password" type="password" value={password} onBlur={() => setTouched((value) => ({ ...value, password: true }))} onChange={(event) => setPassword(event.target.value)} placeholder="Enter password" className={`w-full rounded-2xl border bg-[#fcf8f2] py-3 pl-11 pr-4 text-sm text-[#34180e] ${touched.password && password.trim().length < 6 ? "border-[#b42318]" : "border-[#eadbc8]"}`} /></div>{touched.password && password.trim().length < 6 ? <p className="mt-2 text-sm text-[#b42318]">Password must be at least 6 characters.</p> : null}</div>
-                <button type="submit" className="inline-flex w-full items-center justify-center rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white">Login</button>
+                <div><label htmlFor="login-email" className="text-sm font-medium text-[#34180e]">{resolvedLocale === "mr" ? "ईमेल" : "Email"}</label><div className="relative mt-2"><Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#927863]" /><input id="login-email" type="email" value={email} onBlur={() => setTouched((value) => ({ ...value, email: true }))} onChange={(event) => setEmail(event.target.value)} placeholder="your@email.com" className={`w-full rounded-2xl border bg-[#fcf8f2] py-3 pl-11 pr-4 text-sm text-[#34180e] ${touched.email && !isValidEmail(email) ? "border-[#b42318]" : "border-[#eadbc8]"}`} /></div>{touched.email && !isValidEmail(email) ? <p className="mt-2 text-sm text-[#b42318]">{resolvedLocale === "mr" ? "कृपया वैध ईमेल पत्ता टाका." : "Please enter a valid email address."}</p> : null}</div>
+                <div><label htmlFor="login-password" className="text-sm font-medium text-[#34180e]">{resolvedLocale === "mr" ? "पासवर्ड" : "Password"}</label><div className="relative mt-2"><LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#927863]" /><input id="login-password" type="password" value={password} onBlur={() => setTouched((value) => ({ ...value, password: true }))} onChange={(event) => setPassword(event.target.value)} placeholder={resolvedLocale === "mr" ? "पासवर्ड टाका" : "Enter password"} className={`w-full rounded-2xl border bg-[#fcf8f2] py-3 pl-11 pr-4 text-sm text-[#34180e] ${touched.password && password.trim().length < 6 ? "border-[#b42318]" : "border-[#eadbc8]"}`} /></div>{touched.password && password.trim().length < 6 ? <p className="mt-2 text-sm text-[#b42318]">{resolvedLocale === "mr" ? "पासवर्ड किमान ६ अक्षरांचा असावा." : "Password must be at least 6 characters."}</p> : null}</div>
+                <button type="submit" className="inline-flex w-full items-center justify-center rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white">{resolvedLocale === "mr" ? "लॉगिन" : "Login"}</button>
               </form>
               {message ? <p className="mt-3 text-sm font-medium text-[#7a4d20]">{message}</p> : null}
               <div className="mt-5 flex flex-col gap-3 text-center text-sm text-[#7e624b]">
-                <Link to="/contact" className="transition hover:text-[#34180e]">Need help with your account?</Link>
-                <Link to="/admin-login" className="transition hover:text-[#34180e]">Admin login</Link>
+                <Link to="/contact" className="transition hover:text-[#34180e]">{resolvedLocale === "mr" ? "तुमच्या खात्यासाठी मदत हवी आहे?" : "Need help with your account?"}</Link>
+                <Link to="/admin-login" className="transition hover:text-[#34180e]">{resolvedLocale === "mr" ? "अॅडमिन लॉगिन" : "Admin login"}</Link>
               </div>
             </div>
           </div>

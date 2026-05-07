@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock3,
-  Heart,
   Play,
   ShieldCheck,
   Star,
@@ -17,11 +16,13 @@ import {
   useStoredProducts,
 } from "@/lib/content-store";
 import { useWishlist } from "@/hooks/use-wishlist";
-import { normalizeDisplayCase } from "@/lib/utils";
+import { resolveLocalizedText, useLanguage } from "@/lib/language";
+import ProductGalleryCard from "@/components/ProductGalleryCard";
 import productDhoop1 from "@/assets/product-dhoop-1.jpg";
 import productStatue1 from "@/assets/product-statue-1.jpg";
 import productShowcase1 from "@/assets/Products/product-1.png";
 import productWeapon1 from "@/assets/product-weapon-1.jpg";
+import type { Product } from "@/data/products";
 
 const spotlightProducts = [
   { id: "shastradhari-maharaj-coloured", title: "Shastradhari Maharaj", price: "Rs. 5,100", image: productStatue1 },
@@ -36,7 +37,16 @@ const features = [
   { icon: BookOpenText, title: "Catalogue Support", copy: "Customers can request a full catalogue and get tailored recommendations for their budget." },
 ] as const;
 
+function getProductCategoryFromCatalogueId(id: string): Product["category"] | null {
+  if (id.includes("statue")) return "Statues";
+  if (id.includes("weapon")) return "Weapons";
+  if (id.includes("shield")) return "Shields";
+  if (id.includes("dhoop")) return "Dhoop";
+  return null;
+}
+
 export default function HomePage() {
+  const { resolvedLocale } = useLanguage();
   const products = useStoredProducts();
   const catalogueTypes = useStoredCatalogueTypes();
   const storedHomeContent = useStoredHomeContent();
@@ -59,6 +69,11 @@ export default function HomePage() {
       price: matchedProduct?.price ?? product.price,
       image: product.image,
       category: matchedProduct?.category ?? "Statues",
+      tag: matchedProduct?.tag ?? "",
+      shortDescription: matchedProduct?.shortDescription ?? "",
+      details: matchedProduct?.details ?? "",
+      material: matchedProduct?.material ?? "",
+      dimensions: matchedProduct?.dimensions ?? "",
     };
   });
 
@@ -99,37 +114,6 @@ export default function HomePage() {
     setCategorySlide(Math.max(0, Math.min(nextSlide, categoryCollections.length - 1)));
   };
 
-  const renderHomeProductCard = (product: {
-    id: string;
-    name: string;
-    price: string;
-    image: string;
-    category: string;
-  }) => (
-    <div key={product.id} className="overflow-hidden rounded-[1.75rem] border border-[#eadfce] bg-[#fffdf9] shadow-[0_24px_50px_-38px_rgba(77,41,19,0.45)] transition hover:-translate-y-1">
-      <div className="relative overflow-hidden rounded-t-[1.65rem] bg-[radial-gradient(circle_at_top,rgba(112,53,20,0.28),rgba(24,10,6,0.96))]">
-        <button
-          type="button"
-          onClick={() => toggleWishlist(product.id)}
-          aria-label={isWishlisted(product.id) ? "Remove from wishlist" : "Add to wishlist"}
-          className="absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/92 text-[#8b4d1d]"
-        >
-          <Heart className={`h-4 w-4 ${isWishlisted(product.id) ? "fill-current text-[#c76b2c]" : ""}`} />
-        </button>
-        <Link to="/products/$productId" params={{ productId: product.id }} className="block">
-          <img src={product.image} alt={product.name} width={600} height={700} className="h-[10.5rem] w-full object-cover md:h-[15rem]" />
-        </Link>
-      </div>
-      <div className="bg-[#fffdf9] px-4 pb-5 pt-4">
-        <p className="text-sm font-medium text-[#c77628]">{product.category}</p>
-        <Link to="/products/$productId" params={{ productId: product.id }} className="mt-2 block min-h-[3.5rem] font-heading text-[1.35rem] leading-[0.96] tracking-[-0.03em] text-[#6f2d06] md:min-h-[4.2rem] md:text-[1.9rem]">
-          <span className="line-clamp-2">{normalizeDisplayCase(product.name, "sentence")}</span>
-        </Link>
-        <p className="mt-4 text-[1.5rem] font-semibold text-[#b46a16]">{product.price}</p>
-      </div>
-    </div>
-  );
-
   return (
     <div className="bg-[#f7f1e7]">
       <section className="relative isolate overflow-hidden bg-[#2b0b08] text-white">
@@ -141,28 +125,28 @@ export default function HomePage() {
           <div className="mx-auto max-w-5xl">
             {activeHeroSlide ? (
               <>
-                <p className="text-sm font-semibold text-[#e3a92b] md:text-base">{activeHeroSlide.eyebrow}</p>
-                <h1 className="mt-6 font-heading text-5xl font-semibold leading-[0.92] text-[#fbf2e2] sm:text-6xl md:text-8xl">{activeHeroSlide.titleTop}</h1>
-                <h2 className="mt-2 font-heading text-5xl font-semibold leading-[0.92] text-[#e1a126] sm:text-6xl md:text-8xl">{activeHeroSlide.titleBottom}</h2>
-                <p className="mx-auto mt-7 max-w-4xl text-lg leading-9 text-[#f6e6d4] md:text-[1.05rem]">{activeHeroSlide.copy}</p>
+                <p className="text-sm font-semibold text-[#e3a92b] md:text-base">{resolveLocalizedText(activeHeroSlide.eyebrow, resolvedLocale)}</p>
+                <h1 className="mt-6 font-heading text-5xl font-semibold leading-[0.92] text-[#fbf2e2] sm:text-6xl md:text-8xl">{resolveLocalizedText(activeHeroSlide.titleTop, resolvedLocale)}</h1>
+                <h2 className="mt-2 font-heading text-5xl font-semibold leading-[0.92] text-[#e1a126] sm:text-6xl md:text-8xl">{resolveLocalizedText(activeHeroSlide.titleBottom, resolvedLocale)}</h2>
+                <p className="mx-auto mt-7 max-w-4xl text-lg leading-9 text-[#f6e6d4] md:text-[1.05rem]">{resolveLocalizedText(activeHeroSlide.copy, resolvedLocale)}</p>
               </>
             ) : (
               <>
                 <p className="text-sm font-semibold text-[#e3a92b] md:text-base">Shivray Home</p>
-                <h1 className="mt-6 font-heading text-5xl font-semibold leading-[0.92] text-[#fbf2e2] sm:text-6xl md:text-8xl">No banner</h1>
-                <h2 className="mt-2 font-heading text-5xl font-semibold leading-[0.92] text-[#e1a126] sm:text-6xl md:text-8xl">configured yet</h2>
+                <h1 className="mt-6 font-heading text-5xl font-semibold leading-[0.92] text-[#fbf2e2] sm:text-6xl md:text-8xl">{resolvedLocale === "mr" ? "बॅनर" : "No banner"}</h1>
+                <h2 className="mt-2 font-heading text-5xl font-semibold leading-[0.92] text-[#e1a126] sm:text-6xl md:text-8xl">{resolvedLocale === "mr" ? "अजून सेट नाही" : "configured yet"}</h2>
                 <p className="mx-auto mt-7 max-w-4xl text-lg leading-9 text-[#f6e6d4] md:text-[1.05rem]">
-                  Add or edit homepage banners from the admin panel to show them here.
+                  {resolvedLocale === "mr" ? "येथे दाखवण्यासाठी अॅडमिन पॅनेलमधून मुख्यपृष्ठ बॅनर जोडा किंवा संपादित करा." : "Add or edit homepage banners from the admin panel to show them here."}
                 </p>
               </>
             )}
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link to="/products" className="inline-flex min-w-[20rem] items-center justify-center gap-3 rounded-xl bg-[#e1a126] px-8 py-4 font-heading text-sm font-semibold text-[#331208]">
-                Explore Products
+                {resolvedLocale === "mr" ? "उत्पादने पहा" : "Explore Products"}
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <Link to="/contact" className="inline-flex min-w-[20rem] items-center justify-center rounded-xl border border-[#d6a43c] bg-[#5a0a15]/20 px-8 py-4 font-heading text-sm font-semibold text-[#f6d37d]">
-                Get Custom Design
+                {resolvedLocale === "mr" ? "कस्टम डिझाइन मिळवा" : "Get Custom Design"}
               </Link>
             </div>
           </div>
@@ -182,21 +166,31 @@ export default function HomePage() {
       <section className="px-4 py-10 md:px-6 md:py-14">
         <div className="layout-shell rounded-[34px] bg-[#fffdf8] px-4 py-6 md:px-8 md:py-8">
           <div className="text-center">
-            <h2 className="font-body text-3xl font-semibold text-[#1d150f] md:text-4xl">Popular Categories</h2>
+            <h2 className="font-body text-3xl font-semibold text-[#1d150f] md:text-4xl">{resolvedLocale === "mr" ? "लोकप्रिय श्रेणी" : "Popular Categories"}</h2>
           </div>
           <div ref={categoriesRef} onScroll={handleCategoriesScroll} className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-4 md:gap-x-6 md:overflow-visible md:pb-0">
-            {categoryCollections.map((collection) => (
-              <Link key={collection.id} to="/required-catalogue" data-category-card className="group min-w-[78%] snap-center rounded-[2.3rem] bg-white p-3 text-left shadow-[0_24px_55px_-32px_rgba(80,40,20,0.38)] sm:min-w-[calc(50%-0.5rem)] md:min-w-0">
+            {categoryCollections.map((collection) => {
+              const productCategory = getProductCategoryFromCatalogueId(collection.id);
+
+              return (
+              <Link
+                key={collection.id}
+                to={productCategory ? "/products" : "/required-catalogue"}
+                search={productCategory ? { category: productCategory } : undefined}
+                data-category-card
+                className="group min-w-[78%] snap-center rounded-[2.3rem] bg-white p-3 text-left shadow-[0_24px_55px_-32px_rgba(80,40,20,0.38)] sm:min-w-[calc(50%-0.5rem)] md:min-w-0"
+              >
                 <div className="relative overflow-hidden rounded-[2rem] bg-[#b65a73]">
-                  <img src={collection.image} alt={collection.title} className="aspect-[0.92] w-full object-cover opacity-90 saturate-[0.7] transition duration-500 group-hover:scale-105" width={420} height={420} />
+                  <img src={collection.image} alt={resolveLocalizedText(collection.title, resolvedLocale)} className="aspect-[0.92] w-full object-cover opacity-90 saturate-[0.7] transition duration-500 group-hover:scale-105" width={420} height={420} />
                 </div>
                 <div className="px-2 pb-2 pt-5">
-                  <h3 className="font-body text-[2rem] font-semibold leading-none tracking-[-0.04em] text-[#1c140f] md:text-[2.1rem]">{collection.shortLabel}</h3>
-                  <p className="mt-2 text-[1.02rem] text-[#a09a93]">{collection.itemCountLabel}</p>
-                  <p className="mt-4 line-clamp-2 text-sm leading-6 text-[#635d57]">{collection.description}</p>
+                  <h3 className="font-body text-[2rem] font-semibold leading-none tracking-[-0.04em] text-[#1c140f] md:text-[2.1rem]">{resolveLocalizedText(collection.shortLabel, resolvedLocale)}</h3>
+                  <p className="mt-2 text-[1.02rem] text-[#a09a93]">{resolveLocalizedText(collection.itemCountLabel, resolvedLocale)}</p>
+                  <p className="mt-4 line-clamp-2 text-sm leading-6 text-[#635d57]">{resolveLocalizedText(collection.description, resolvedLocale)}</p>
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
           <div className="mt-7 flex items-center justify-center gap-3">
             {categoryCollections.map((collection, index) => (
@@ -210,13 +204,15 @@ export default function HomePage() {
         <div className="layout-shell">
           <div className="flex items-end justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold text-[#a86c2b]">Best selling products</p>
-              <h2 className="mt-2 font-heading text-3xl text-[#34180e]">Best Selling Products of the Week</h2>
+              <p className="text-sm font-semibold text-[#a86c2b]">{resolvedLocale === "mr" ? "सर्वाधिक विक्री" : "Best selling products"}</p>
+              <h2 className="mt-2 font-heading text-3xl text-[#34180e]">{resolvedLocale === "mr" ? "आठवड्याची सर्वाधिक विक्री झालेली उत्पादने" : "Best Selling Products of the Week"}</h2>
             </div>
-            <Link to="/products" className="hidden text-sm font-semibold text-[#8b4d1d] md:inline-flex">View all</Link>
+            <Link to="/products" className="hidden text-sm font-semibold text-[#8b4d1d] md:inline-flex">{resolvedLocale === "mr" ? "सर्व पहा" : "View all"}</Link>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {spotlightProductCards.map((product) => renderHomeProductCard(product))}
+            {spotlightProductCards.map((product) => (
+              <ProductGalleryCard key={product.id} product={product} isWishlisted={isWishlisted(product.id)} onToggleWishlist={toggleWishlist} />
+            ))}
           </div>
         </div>
       </section>
@@ -225,12 +221,14 @@ export default function HomePage() {
         <div className="layout-shell">
           <div className="flex items-end justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold text-[#a86c2b]">Full product range</p>
-              <h2 className="mt-2 font-heading text-3xl text-[#34180e]">Browse All Products on the Home Page</h2>
+              <p className="text-sm font-semibold text-[#a86c2b]">{resolvedLocale === "mr" ? "संपूर्ण उत्पादने" : "Full product range"}</p>
+              <h2 className="mt-2 font-heading text-3xl text-[#34180e]">{resolvedLocale === "mr" ? "मुख्यपृष्ठावर सर्व उत्पादने पहा" : "Browse All Products on the Home Page"}</h2>
             </div>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {products.map((product) => renderHomeProductCard(product))}
+            {products.map((product) => (
+              <ProductGalleryCard key={product.id} product={product} isWishlisted={isWishlisted(product.id)} onToggleWishlist={toggleWishlist} />
+            ))}
           </div>
         </div>
       </section>
@@ -238,25 +236,25 @@ export default function HomePage() {
       <section className="px-4 pb-8 md:px-6 md:pb-14">
         <div className="layout-shell bg-[#fffdf8] px-0 py-8">
           <div className="text-center">
-            <p className="text-sm font-semibold text-[#a86c2b]">Customer reviews</p>
-            <h2 className="mt-2 font-heading text-3xl text-[#34180e]">What Customers Are Saying</h2>
+            <p className="text-sm font-semibold text-[#a86c2b]">{resolvedLocale === "mr" ? "ग्राहक अभिप्राय" : "Customer reviews"}</p>
+            <h2 className="mt-2 font-heading text-3xl text-[#34180e]">{resolvedLocale === "mr" ? "ग्राहक काय म्हणत आहेत" : "What Customers Are Saying"}</h2>
           </div>
           <div className="mx-auto mt-8 max-w-3xl">
             <div className="rounded-[26px] bg-white p-6 text-left shadow-[0_20px_45px_-38px_rgba(79,40,16,0.45)] md:p-8">
               {activeReview ? (
                 <>
                   <p className="text-[1.6rem] font-semibold leading-none text-[#1f1711] md:text-[1.8rem]">{activeReview.authorName}</p>
-                  <p className="mt-2 text-sm text-[#8c8177]">{activeReview.location}</p>
+                  <p className="mt-2 text-sm text-[#8c8177]">{resolveLocalizedText(activeReview.location, resolvedLocale)}</p>
                   <div className="mt-3 flex items-center gap-1 text-[#f4bc12]">
                     {Array.from({ length: 5 }).map((_, starIndex) => (
                       <Star key={`${activeReview.id}-${starIndex}`} className={`h-4 w-4 ${starIndex < activeReview.rating ? "fill-current" : ""}`} />
                     ))}
                   </div>
-                  <p className="mt-5 text-[1.05rem] leading-8 text-[#4c433d] md:text-[1.12rem]">{activeReview.reviewText}</p>
+                  <p className="mt-5 text-[1.05rem] leading-8 text-[#4c433d] md:text-[1.12rem]">{resolveLocalizedText(activeReview.reviewText, resolvedLocale)}</p>
                 </>
               ) : (
                 <p className="text-[1.05rem] leading-8 text-[#4c433d] md:text-[1.12rem]">
-                  No customer reviews have been added yet. You can publish them from the admin panel.
+                  {resolvedLocale === "mr" ? "अजून ग्राहक अभिप्राय जोडलेले नाहीत. तुम्ही ते अॅडमिन पॅनेलमधून प्रकाशित करू शकता." : "No customer reviews have been added yet. You can publish them from the admin panel."}
                 </p>
               )}
             </div>
@@ -275,11 +273,11 @@ export default function HomePage() {
         <div className="layout-shell rounded-[34px] bg-[linear-gradient(180deg,#2b0b08_0%,#4d160f_100%)] px-4 py-8 text-white md:px-8 md:py-10">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-sm font-semibold text-[#e3a92b]">Videos and reels</p>
-              <h2 className="mt-2 font-heading text-3xl text-[#fbf2e2]">See our work in motion</h2>
+              <p className="text-sm font-semibold text-[#e3a92b]">{resolvedLocale === "mr" ? "व्हिडिओ आणि रील्स" : "Videos and reels"}</p>
+              <h2 className="mt-2 font-heading text-3xl text-[#fbf2e2]">{resolvedLocale === "mr" ? "आमचे काम पाहा" : "See our work in motion"}</h2>
             </div>
             <p className="max-w-xl text-sm leading-6 text-[#f6dbc2]">
-              Add vertical reels for quick scroll content and YouTube videos for longer storytelling directly from the admin panel.
+              {resolvedLocale === "mr" ? "जलद स्क्रोलसाठी व्हर्टिकल रील्स आणि लांब कथनासाठी YouTube व्हिडिओ अॅडमिन पॅनेलमधून जोडा." : "Add vertical reels for quick scroll content and YouTube videos for longer storytelling directly from the admin panel."}
             </p>
           </div>
           {featuredVideos.length > 0 ? (
@@ -302,10 +300,10 @@ export default function HomePage() {
                         </span>
                         <div>
                           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#f3bf56]">
-                            {isYoutube ? "YouTube placeholder" : "Reel placeholder"}
+                            {isYoutube ? (resolvedLocale === "mr" ? "YouTube प्लेसहोल्डर" : "YouTube placeholder") : (resolvedLocale === "mr" ? "रील प्लेसहोल्डर" : "Reel placeholder")}
                           </p>
                           <p className="mt-3 text-sm leading-6 text-[#f6dbc2]">
-                            Video playback has been removed for now. This card keeps the section layout ready for future media.
+                            {resolvedLocale === "mr" ? "सध्या व्हिडिओ प्लेबॅक काढलेला आहे. हे कार्ड भविष्यातील मीडियासाठी सेक्शनचे लेआउट तयार ठेवते." : "Video playback has been removed for now. This card keeps the section layout ready for future media."}
                           </p>
                         </div>
                       </div>
@@ -313,18 +311,18 @@ export default function HomePage() {
                     <div className="p-5">
                       <div className="flex items-center gap-2">
                         <span className="rounded-full bg-[#fff1d9] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8b4d1d]">
-                          {isYoutube ? "YouTube" : "Reel"}
+                          {isYoutube ? "YouTube" : (resolvedLocale === "mr" ? "रील" : "Reel")}
                         </span>
                         {!isYoutube ? (
                           <span className="rounded-full bg-[#34180e] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white">
-                            Vertical
+                            {resolvedLocale === "mr" ? "उभा" : "Vertical"}
                           </span>
                         ) : null}
                       </div>
-                      <h3 className="mt-4 font-heading text-2xl text-[#34180e]">{video.title}</h3>
-                      <p className="mt-3 text-sm leading-6 text-[#6c4b33]">{video.description}</p>
+                      <h3 className="mt-4 font-heading text-2xl text-[#34180e]">{resolveLocalizedText(video.title, resolvedLocale)}</h3>
+                      <p className="mt-3 text-sm leading-6 text-[#6c4b33]">{resolveLocalizedText(video.description, resolvedLocale)}</p>
                       <p className="mt-5 text-sm font-semibold text-[#8b4d1d]">
-                        Placeholder only
+                        {resolvedLocale === "mr" ? "फक्त प्लेसहोल्डर" : "Placeholder only"}
                       </p>
                     </div>
                   </article>
@@ -333,7 +331,7 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="mt-8 rounded-[28px] border border-white/10 bg-white/10 p-6 text-[#f6dbc2]">
-              No videos added yet. You can publish reels and YouTube videos from the admin panel.
+              {resolvedLocale === "mr" ? "अजून व्हिडिओ जोडलेले नाहीत. तुम्ही रील्स आणि YouTube व्हिडिओ अॅडमिन पॅनेलमधून प्रकाशित करू शकता." : "No videos added yet. You can publish reels and YouTube videos from the admin panel."}
             </div>
           )}
         </div>
@@ -344,8 +342,16 @@ export default function HomePage() {
           {features.map((item) => (
             <div key={item.title} className="rounded-[28px] border border-[#e1cdb5] bg-white p-5 shadow-[0_20px_45px_-35px_rgba(58,27,9,0.55)]">
               <div className="inline-flex rounded-2xl bg-[#fff1d9] p-3 text-[#b17024]"><item.icon className="h-5 w-5" /></div>
-              <h3 className="mt-4 font-heading text-2xl text-[#34180e]">{item.title}</h3>
-              <p className="mt-3 text-sm leading-6 text-[#6c4b33]">{item.copy}</p>
+              <h3 className="mt-4 font-heading text-2xl text-[#34180e]">{resolvedLocale === "mr" ? ({
+                "Trusted Craftsmanship": "विश्वासार्ह कारागिरी",
+                "Fast Enquiry Flow": "जलद चौकशी प्रक्रिया",
+                "Catalogue Support": "कॅटलॉग सहाय्य",
+              }[item.title] ?? item.title) : item.title}</h3>
+              <p className="mt-3 text-sm leading-6 text-[#6c4b33]">{resolvedLocale === "mr" ? ({
+                "Trusted Craftsmanship": "वारसा प्रेरित, प्रदर्शन, भेटवस्तू आणि भक्तीसाठी हाताने पूर्ण केलेली उत्पादने.",
+                "Fast Enquiry Flow": "मोबाइल वापरकर्त्यांसाठी जलद ब्राउझिंग, संपर्क आणि खरेदी निर्णयासाठी तयार केलेले.",
+                "Catalogue Support": "ग्राहक पूर्ण कॅटलॉग मागवू शकतात आणि त्यांच्या बजेटनुसार शिफारसी मिळवू शकतात.",
+              }[item.title] ?? item.copy) : item.copy}</p>
             </div>
           ))}
         </div>

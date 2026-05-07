@@ -677,7 +677,8 @@ export default function AdminPage() {
     [averageOrderValue, customers.length, orderTotalValue, orders.length, products.length],
   );
 
-  const sectionTitle = {
+  const sectionTitle =
+    {
     dashboard: "Dashboard",
     products: "Products",
     categories: "Categories",
@@ -686,7 +687,7 @@ export default function AdminPage() {
     orders: "Orders",
     customers: "Customers",
     reviews: "Customer Reviews",
-  }[activeSection];
+    }[activeSection] ?? "Dashboard";
 
   function handleLogout() {
     logoutAdmin();
@@ -817,13 +818,13 @@ export default function AdminPage() {
             </p>
           </div>
 
-          <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-1">
             {adminMenuItems.map((item) => (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => setActiveSection(item.id)}
-                className={`flex w-full items-center gap-3 rounded-[18px] px-4 py-3 text-left text-sm font-semibold transition ${
+                className={`flex w-full items-center gap-3 rounded-[18px] px-4 py-3 text-left text-sm font-semibold transition xl:justify-start ${
                   activeSection === item.id
                     ? "bg-white/16 text-[#ffe08a]"
                     : "bg-white/8 text-[#f3eeff] hover:bg-white/12"

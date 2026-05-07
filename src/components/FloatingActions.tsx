@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { ArrowUp } from "lucide-react";
+import { useLanguage } from "@/lib/language";
 import { siteConfig } from "@/lib/site-config";
 
 const WHATSAPP_URL = `${siteConfig.whatsappHref}?text=Hi%20Shivray%2C%20I%20want%20to%20know%20more%20about%20your%20products.`;
 
 export default function FloatingActions() {
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const { resolvedLocale } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,7 +32,7 @@ export default function FloatingActions() {
         href={WHATSAPP_URL}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Chat on WhatsApp"
+        aria-label={resolvedLocale === "mr" ? "व्हॉट्सअॅपवर चॅट करा" : "Chat on WhatsApp"}
         className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform hover:scale-105 hover:brightness-105"
       >
         <svg
@@ -45,7 +47,7 @@ export default function FloatingActions() {
       <button
         type="button"
         onClick={scrollToTop}
-        aria-label="Back to top"
+        aria-label={resolvedLocale === "mr" ? "वर जा" : "Back to top"}
         className={`inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:scale-105 hover:bg-primary/90 ${
           showBackToTop
             ? "translate-y-0 opacity-100"

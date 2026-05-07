@@ -1,20 +1,25 @@
 import { Link } from "@/lib/spa-router";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ChevronRight, Heart, MessageCircle, ShoppingCart, Star } from "lucide-react";
+import { getCategoryLabel } from "@/data/products";
+import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { useStoredProducts } from "@/lib/content-store";
 import { siteConfig } from "@/lib/site-config";
 import { normalizeDisplayCase } from "@/lib/utils";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
+import ProductGalleryCard from "@/components/ProductGalleryCard";
 
 function getRandomValue(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 export default function ProductDetailPage({ productId }: { productId: string }) {
+  const { resolvedLocale } = useLanguage();
   const products = useStoredProducts();
   const product = products.find((item) => item.id === productId);
   const [addedCount, setAddedCount] = useState(0);
+  const [selectedImage, setSelectedImage] = useState("");
   const [liveMetrics, setLiveMetrics] = useState({ soldLast7Days: 42, viewingNow: 11, reviewCount: 36 });
   const { addToCart } = useCart();
   const { isWishlisted, toggleWishlist } = useWishlist();
@@ -23,7 +28,6 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
     () => products.filter((item) => item.category === product?.category && item.id !== product?.id).slice(0, 4),
     [product?.category, product?.id, products],
   );
-
   useEffect(() => {
     if (!product) return;
     setLiveMetrics({
@@ -33,13 +37,18 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
     });
   }, [product?.id]);
 
+  useEffect(() => {
+    if (!product) return;
+    setSelectedImage(product.image);
+  }, [product]);
+
   if (!product) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center px-4 py-20">
         <div className="max-w-md text-center">
           <h1 className="font-heading text-4xl text-[#34180e]">Product not found</h1>
           <Link to="/products" className="mt-6 inline-flex rounded-full bg-[#34180e] px-6 py-3 text-sm font-semibold text-white">
-            Back to Products
+            {resolvedLocale === "mr" ? "\u0909\u0924\u094d\u092a\u093e\u0926\u0928\u093e\u0902\u0915\u0921\u0947 \u092a\u0930\u0924" : "Back to Products"}
           </Link>
         </div>
       </div>
@@ -47,89 +56,109 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   }
 
   const whatsappLink = `${siteConfig.whatsappHref}?text=${encodeURIComponent(
-    `Hi Shivray, I want details for ${normalizeDisplayCase(product.name)}. Please share price and availability.`,
+    `Hi Shivray, I want details for ${normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}. Please share price and availability.`,
   )}`;
-  const galleryImages = [product.image, ...relatedProducts.map((item) => item.image)].slice(0, 4);
+  const galleryImages = [product.image, ...relatedProducts.map((item) => item.image)].slice(0, 3);
 
   return (
     <div className="bg-[#f7f1e7] pb-8 md:pb-12">
       <section className="bg-[#2b130c] px-4 pb-8 pt-6 text-white md:px-6 md:pb-12 md:pt-10">
         <div className="layout-shell">
           <div className="flex flex-wrap items-center gap-2 text-sm text-[#f4e7d8]">
-            <Link to="/" className="transition hover:text-white">Home</Link>
+            <Link to="/" className="transition hover:text-white">{resolvedLocale === "mr" ? "\u092e\u0941\u0916\u094d\u092f\u092a\u0943\u0937\u094d\u0920" : "Home"}</Link>
             <ChevronRight className="h-4 w-4 text-[#d8b48b]" />
-            <Link to="/products" className="transition hover:text-white">Catalog</Link>
+            <Link to="/products" className="transition hover:text-white">{resolvedLocale === "mr" ? "\u0915\u0945\u091f\u0932\u0949\u0917" : "Catalog"}</Link>
             <ChevronRight className="h-4 w-4 text-[#d8b48b]" />
-            <span className="text-white">{normalizeDisplayCase(product.name)}</span>
+            <span className="text-white">{normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}</span>
           </div>
           <Link to="/products" className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[#ffd68d] transition hover:text-white">
-            <ArrowLeft className="h-4 w-4" />Back to Products
+            <ArrowLeft className="h-4 w-4" />{resolvedLocale === "mr" ? "\u0909\u0924\u094d\u092a\u093e\u0926\u0928\u093e\u0902\u0915\u0921\u0947 \u092a\u0930\u0924" : "Back to Products"}
           </Link>
-          <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2bb64]">{product.category}</p>
-          <h1 className="mt-2 font-heading text-4xl leading-none text-[#fff5e6] md:text-6xl">{normalizeDisplayCase(product.name)}</h1>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-[#f4e7d8] md:text-base">{product.shortDescription}</p>
+          <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2bb64]">{getCategoryLabel(product.category, resolvedLocale)}</p>
+          <h1 className="mt-2 font-heading text-4xl leading-none text-[#fff5e6] md:text-6xl">{normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}</h1>
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-[#f4e7d8] md:text-base">{resolveLocalizedText(product.shortDescription, resolvedLocale)}</p>
         </div>
       </section>
       <section className="px-4 pt-6 md:px-6">
         <div className="layout-shell grid gap-6 md:grid-cols-[0.95fr_1.05fr]">
-          <div className="overflow-hidden rounded-[32px] border border-[#eadbc8] bg-white shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)]">
-            <img src={product.image} alt={normalizeDisplayCase(product.name)} className="h-full w-full object-cover" width={900} height={900} />
-            <div className="grid grid-cols-4 gap-3 border-t border-[#f0e3d5] p-4">
+          <div className="rounded-[20px] bg-[#f5f1e8] p-4 md:rounded-[24px] md:p-5">
+            <div className="overflow-hidden rounded-[6px] bg-white">
+              <img
+                src={selectedImage || product.image}
+                alt={normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}
+                className="aspect-[1/1.02] w-full object-cover"
+                width={900}
+                height={920}
+              />
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-3">
               {galleryImages.map((image, index) => (
-                <div key={`${image}-${index}`} className={`overflow-hidden rounded-2xl border ${index === 0 ? "border-[#c98f49]" : "border-[#eadbc8]"} bg-[#fcf8f2]`}>
-                  <img src={image} alt={`${normalizeDisplayCase(product.name)} preview ${index + 1}`} className="h-18 w-full object-cover" loading="lazy" />
-                </div>
+                <button
+                  key={`${image}-${index}`}
+                  type="button"
+                  onClick={() => setSelectedImage(image)}
+                  className={`overflow-hidden rounded-[4px] border bg-white transition ${
+                    image === (selectedImage || product.image) ? "border-[#1f1f1f]" : "border-[#ddd4c5]"
+                  }`}
+                >
+                  <img
+                    src={image}
+                    alt={`${normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))} preview ${index + 1}`}
+                    className="aspect-square w-full object-cover"
+                    loading="lazy"
+                  />
+                </button>
               ))}
             </div>
           </div>
           <div className="rounded-[32px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
             <div className="flex items-center justify-between gap-3">
-              <span className="rounded-full bg-[#fcf1dc] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#b17024]">{product.tag || "Featured piece"}</span>
+              <span className="rounded-full bg-[#fcf1dc] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#b17024]">{resolveLocalizedText(product.tag, resolvedLocale) || (resolvedLocale === "mr" ? "\u0935\u093f\u0936\u0947\u0937 \u0924\u0941\u0915\u0921\u093e" : "Featured piece")}</span>
               <p className="text-2xl font-semibold text-[#8b4d1d]">{product.price}</p>
             </div>
             <div className="mt-5 flex items-center gap-1 text-[#f09b21]">
               {Array.from({ length: 5 }).map((_, index) => <Star key={index} className="h-4 w-4 fill-current" />)}
-              <span className="ml-2 text-sm text-[#6c4b33]">({liveMetrics.reviewCount} reviews)</span>
+              <span className="ml-2 text-sm text-[#6c4b33]">({liveMetrics.reviewCount} {resolvedLocale === "mr" ? "\u0905\u092d\u093f\u092a\u094d\u0930\u093e\u092f" : "reviews"})</span>
             </div>
-            <p className="mt-5 text-sm leading-7 text-[#6c4b33]">{product.details}</p>
+            <p className="mt-5 text-sm leading-7 text-[#6c4b33]">{resolveLocalizedText(product.details, resolvedLocale)}</p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[24px] bg-[#fcf8f2] p-4"><p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">Material</p><p className="mt-2 text-sm text-[#34180e]">{product.material}</p></div>
-              <div className="rounded-[24px] bg-[#fcf8f2] p-4"><p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">Dimensions</p><p className="mt-2 text-sm text-[#34180e]">{product.dimensions}</p></div>
+              <div className="rounded-[24px] bg-[#fcf8f2] p-4"><p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">{resolvedLocale === "mr" ? "\u0938\u093e\u0939\u093f\u0924\u094d\u092f" : "Material"}</p><p className="mt-2 text-sm text-[#34180e]">{resolveLocalizedText(product.material, resolvedLocale)}</p></div>
+              <div className="rounded-[24px] bg-[#fcf8f2] p-4"><p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">{resolvedLocale === "mr" ? "\u092a\u0930\u093f\u092e\u093e\u0923" : "Dimensions"}</p><p className="mt-2 text-sm text-[#34180e]">{resolveLocalizedText(product.dimensions, resolvedLocale)}</p></div>
             </div>
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
               <button type="button" onClick={() => { addToCart(product.id); setAddedCount((value) => value + 1); }} className="inline-flex items-center justify-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white">
-                <ShoppingCart className="h-4 w-4" />Add to Cart
+                <ShoppingCart className="h-4 w-4" />{resolvedLocale === "mr" ? "\u0915\u093e\u0930\u094d\u091f\u092e\u0927\u094d\u092f\u0947 \u091c\u094b\u0921\u093e" : "Add to Cart"}
               </button>
               <button type="button" onClick={() => toggleWishlist(product.id)} className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] ${isWishlisted(product.id) ? "bg-[#34180e] text-white" : "border border-[#d8b48b] text-[#34180e]"}`}>
                 <Heart className={`h-4 w-4 ${isWishlisted(product.id) ? "fill-current" : ""}`} />
-                {isWishlisted(product.id) ? "Liked" : "Like"}
+                {isWishlisted(product.id) ? (resolvedLocale === "mr" ? "\u0906\u0935\u0921\u0932\u0947" : "Liked") : (resolvedLocale === "mr" ? "\u0906\u0935\u0921\u0932\u0947" : "Like")}
               </button>
               <a href={whatsappLink} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full border border-[#d8b48b] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#34180e]">
-                <MessageCircle className="h-4 w-4" />Enquire Now
+                <MessageCircle className="h-4 w-4" />{resolvedLocale === "mr" ? "\u0906\u0924\u093e \u091a\u094c\u0915\u0936\u0940 \u0915\u0930\u093e" : "Enquire Now"}
               </a>
             </div>
             <div className="mt-6 rounded-[24px] bg-[#fff8f4] p-5">
-              <p className="text-xl font-semibold text-[#e53b49]">{liveMetrics.soldLast7Days} sold in last 7 days</p>
+              <p className="text-xl font-semibold text-[#e53b49]">{liveMetrics.soldLast7Days} {resolvedLocale === "mr" ? "\u092e\u093e\u0917\u0940\u0932 \u096d \u0926\u093f\u0935\u0938\u093e\u0902\u0924 \u0935\u093f\u0915\u094d\u0930\u0940" : "sold in last 7 days"}</p>
               <div className="mt-4 flex items-center gap-3">
                 <div className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-black text-sm font-bold text-white">{liveMetrics.viewingNow}</div>
-                <p className="text-sm font-semibold text-[#34180e]">People are viewing this right now</p>
+                <p className="text-sm font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "\u0932\u094b\u0915 \u0938\u0927\u094d\u092f\u093e \u0939\u0947 \u092a\u093e\u0939\u0924 \u0906\u0939\u0947\u0924" : "People are viewing this right now"}</p>
               </div>
             </div>
-            {addedCount > 0 ? <p className="mt-3 text-sm text-green-700">Added to cart ({addedCount}).</p> : null}
+            {addedCount > 0 ? <p className="mt-3 text-sm text-green-700">{resolvedLocale === "mr" ? `\u0915\u093e\u0930\u094d\u091f\u092e\u0927\u094d\u092f\u0947 \u091c\u094b\u0921\u0932\u0947 (${addedCount}).` : `Added to cart (${addedCount}).`}</p> : null}
           </div>
         </div>
       </section>
       {relatedProducts.length ? (
         <section className="px-4 pt-8 md:px-6">
           <div className="layout-shell">
-            <div><p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">Similar Picks</p><h2 className="mt-1 font-heading text-3xl text-[#34180e]">More from this collection</h2></div>
+            <div><p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">{resolvedLocale === "mr" ? "\u0938\u092e\u093e\u0928 \u0928\u093f\u0935\u0921\u0940" : "Similar Picks"}</p><h2 className="mt-1 font-heading text-3xl text-[#34180e]">{resolvedLocale === "mr" ? "\u092f\u093e \u0938\u0902\u0917\u094d\u0930\u0939\u093e\u0924\u0940\u0932 \u0906\u0923\u0916\u0940" : "More from this collection"}</h2></div>
             <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
               {relatedProducts.map((item) => (
                 <Link key={item.id} to="/products/$productId" params={{ productId: item.id }} className="group overflow-hidden rounded-[24px] border border-[#eadbc8] bg-white shadow-[0_22px_55px_-40px_rgba(70,36,15,0.7)]">
-                  <div className="aspect-[0.95] overflow-hidden bg-[#f7efe5]"><img src={item.image} alt={item.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" /></div>
+                  <div className="aspect-[0.95] overflow-hidden bg-[#f7efe5]"><img src={item.image} alt={resolveLocalizedText(item.name, resolvedLocale)} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" /></div>
                   <div className="p-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">{item.category}</p>
-                    <p className="mt-2 line-clamp-2 font-heading text-lg leading-5 text-[#34180e]">{item.name}</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">{getCategoryLabel(item.category, resolvedLocale)}</p>
+                    <p className="mt-2 line-clamp-2 font-heading text-lg leading-5 text-[#34180e]">{resolveLocalizedText(item.name, resolvedLocale)}</p>
                     <p className="mt-3 text-sm font-semibold text-[#8b4d1d]">{item.price}</p>
                   </div>
                 </Link>

@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import MobileTabBar from "@/components/MobileTabBar";
 import FloatingActions from "@/components/FloatingActions";
 import logoImg from "@/assets/logo-dark.jpg";
+import { LanguageProvider, useLanguage } from "@/lib/language";
 import { siteConfig } from "@/lib/site-config";
 import { RouterProvider, useLocation } from "@/lib/spa-router";
 import { useAdminAuthState } from "@/lib/admin-auth";
@@ -24,12 +25,14 @@ import AdminPage from "@/pages/AdminPage";
 
 function AppShell() {
   const location = useLocation();
+  const { chooseLanguage, hasChosenLanguage, resolvedLocale } = useLanguage();
   const { authenticated: isAdminAuthed, resolved: adminAuthResolved } = useAdminAuthState();
   const [preloaderPhase, setPreloaderPhase] = useState<"show" | "exit" | "hidden">("show");
   const isAdminRoute =
     location.pathname === "/admin" || location.pathname === "/admin-login";
   const hideFooter = isAdminRoute;
   const shouldRenderPreloader = !isAdminRoute && preloaderPhase !== "hidden";
+  const shouldShowLanguageChooser = !isAdminRoute && preloaderPhase === "hidden" && !hasChosenLanguage;
 
   const page = useMemo(() => {
     if (location.pathname === "/") {
@@ -186,8 +189,44 @@ function AppShell() {
             </div>
             <p className="mt-5 font-heading text-sm tracking-[0.28em] text-gold/95">Shivray Arts</p>
             <p className="mt-2 max-w-[16rem] text-center text-[11px] font-semibold tracking-[0.08em] text-[#f8deae]">
-              {siteConfig.brandTagline}
+              {siteConfig.brandTagline[resolvedLocale]}
             </p>
+          </div>
+        </div>
+      ) : null}
+      {shouldShowLanguageChooser ? (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-[rgba(19,6,3,0.88)] px-4 py-8">
+          <div className="w-full max-w-xl rounded-[32px] border border-[#d8b48b] bg-[linear-gradient(180deg,#fff8ee_0%,#f8efe1_100%)] p-6 text-center shadow-[0_34px_90px_-45px_rgba(0,0,0,0.9)] md:p-8">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-[#d8b48b] bg-white/80">
+              <img src={logoImg} alt="Shivray Arts" className="h-16 w-16 rounded-full object-cover" />
+            </div>
+            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.32em] text-[#a86c2b]">
+              Select language
+            </p>
+            <h1 className="mt-3 font-heading text-4xl text-[#34180e]">Choose your language</h1>
+            <p className="mt-3 text-sm leading-6 text-[#6c4b33]">
+              English is the default experience. You can also continue in Marathi and change it later from the website header.
+            </p>
+            <div className="mt-8 grid gap-4 md:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => chooseLanguage("en")}
+                className="rounded-[26px] border border-[#d8b48b] bg-white px-6 py-5 text-left shadow-[0_16px_40px_-32px_rgba(70,36,15,0.5)] transition hover:-translate-y-0.5"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">English</p>
+                <h2 className="mt-2 font-heading text-2xl text-[#34180e]">Continue in English</h2>
+                <p className="mt-2 text-sm text-[#6c4b33]">Open the full website with English labels, products, and browsing content.</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => chooseLanguage("mr")}
+                className="rounded-[26px] border border-[#d8b48b] bg-[#34180e] px-6 py-5 text-left text-white shadow-[0_16px_40px_-32px_rgba(70,36,15,0.6)] transition hover:-translate-y-0.5"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#f4c471]">मराठी</p>
+                <h2 className="mt-2 font-heading text-2xl text-[#fff5e6]">मराठीत पुढे जा</h2>
+                <p className="mt-2 text-sm text-[#f1ddc1]">वेबसाइट मराठी मजकूरासह उघडा. नंतर हेडरमधून भाषा बदलता येईल.</p>
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
@@ -202,8 +241,10 @@ function AppShell() {
 
 export default function App() {
   return (
-    <RouterProvider>
-      <AppShell />
-    </RouterProvider>
+    <LanguageProvider>
+      <RouterProvider>
+        <AppShell />
+      </RouterProvider>
+    </LanguageProvider>
   );
 }

@@ -3,28 +3,31 @@ import { type Product, allProducts as defaultProducts } from "@/data/products";
 import { defaultCatalogueTypes, type CatalogueType } from "@/lib/catalogue-types";
 import { homeContent as defaultHomeContent } from "@/data/home-content";
 import { apiRequest } from "@/lib/api";
+import type { LocalizedText } from "@/lib/language";
+
+type Translatable = string | LocalizedText;
 
 export type HomeBanner = {
   id: string;
-  eyebrow: string;
-  titleTop: string;
-  titleBottom: string;
-  copy: string;
+  eyebrow: Translatable;
+  titleTop: Translatable;
+  titleBottom: Translatable;
+  copy: Translatable;
   image: string;
 };
 
 export type HomeReview = {
   id: string;
   authorName: string;
-  reviewText: string;
+  reviewText: Translatable;
   rating: number;
-  location: string;
+  location: Translatable;
 };
 
 export type HomeVideo = {
   id: string;
-  title: string;
-  description: string;
+  title: Translatable;
+  description: Translatable;
   videoType: "reel" | "youtube";
   videoUrl: string;
   thumbnail?: string;
@@ -63,6 +66,21 @@ function normalizeHomeVideo(video: HomeVideo): HomeVideo {
     ...video,
     videoType: inferredType,
     thumbnail: video.thumbnail ?? "",
+  };
+}
+
+function ensureArray<T>(value: unknown, fallback: T[]): T[] {
+  return Array.isArray(value) ? (value as T[]) : fallback;
+}
+
+function normalizeStoredHomeContent(value: Partial<StoredHomeContent> | null | undefined): StoredHomeContent {
+  return {
+    banners: ensureArray(value?.banners, defaultHomeContent.banners).map((banner) => ({
+      ...banner,
+      image: defaultBannerImageById.get(banner.id) ?? banner.image,
+    })),
+    reviews: ensureArray(value?.reviews, defaultHomeContent.reviews),
+    videos: ensureArray(value?.videos, defaultHomeContent.videos).map((video) => normalizeHomeVideo(video)),
   };
 }
 
@@ -202,7 +220,7 @@ function bootstrapStorefrontData() {
 }
 
 export function getStoredProducts() {
-  return readJson<Product[]>(PRODUCTS_KEY, defaultProducts);
+  return ensureArray(readJson<Product[]>(PRODUCTS_KEY, defaultProducts), defaultProducts);
 }
 
 export function saveStoredProducts(products: Product[]) {
@@ -215,7 +233,10 @@ export function resetStoredProducts() {
 }
 
 export function getStoredCatalogueTypes() {
-  return readJson<CatalogueType[]>(CATALOGUES_KEY, defaultCatalogueTypes);
+  return ensureArray(
+    readJson<CatalogueType[]>(CATALOGUES_KEY, defaultCatalogueTypes),
+    defaultCatalogueTypes,
+  );
 }
 
 export function saveStoredCatalogueTypes(catalogues: CatalogueType[]) {
@@ -228,7 +249,9 @@ export function resetStoredCatalogueTypes() {
 }
 
 export function getStoredHomeContent(): StoredHomeContent {
-  return readJson<StoredHomeContent>(HOME_CONTENT_KEY, defaultHomeContent);
+  return normalizeStoredHomeContent(
+    readJson<StoredHomeContent>(HOME_CONTENT_KEY, defaultHomeContent),
+  );
 }
 
 export function saveStoredHomeContent(content: StoredHomeContent) {

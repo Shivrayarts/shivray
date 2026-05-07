@@ -65,6 +65,10 @@ function canUseStorage() {
   return typeof window !== "undefined";
 }
 
+function ensureArray<T>(value: unknown, fallback: T[]): T[] {
+  return Array.isArray(value) ? (value as T[]) : fallback;
+}
+
 function readJson<T>(key: string, fallback: T): T {
   if (!canUseStorage()) return fallback;
   const raw = window.localStorage.getItem(key);
@@ -199,7 +203,7 @@ function upsertCustomerLocally(input: {
 }
 
 export function getStoredCustomers() {
-  return readJson<CustomerProfile[]>(CUSTOMERS_KEY, []);
+  return ensureArray(readJson<CustomerProfile[]>(CUSTOMERS_KEY, []), []);
 }
 
 export function saveStoredCustomers(customers: CustomerProfile[]) {
@@ -207,7 +211,7 @@ export function saveStoredCustomers(customers: CustomerProfile[]) {
 }
 
 export function getStoredOrders() {
-  return readJson<OrderRecord[]>(ORDERS_KEY, []);
+  return ensureArray(readJson<OrderRecord[]>(ORDERS_KEY, []), []);
 }
 
 export function saveStoredOrders(orders: OrderRecord[]) {

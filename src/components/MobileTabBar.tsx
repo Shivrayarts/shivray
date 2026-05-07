@@ -1,21 +1,22 @@
 import { Link, useLocation } from "@/lib/spa-router";
 import { Heart, ShoppingCart, Store, UserRound } from "lucide-react";
-
-const tabs = [
-  { to: "/products", label: "Shop", icon: Store },
-  { to: "/login", label: "Account", icon: UserRound },
-  { to: "/wishlist", label: "Wishlist", icon: Heart },
-  { to: "/cart", label: "Cart", icon: ShoppingCart },
-] as const;
+import { useLanguage } from "@/lib/language";
 
 export default function MobileTabBar() {
   const location = useLocation();
+  const { resolvedLocale } = useLanguage();
+  const tabs = [
+    { to: "/products", label: resolvedLocale === "mr" ? "खरेदी" : "Shop", icon: Store },
+    { to: "/login", label: resolvedLocale === "mr" ? "खाते" : "Account", icon: UserRound },
+    { to: "/wishlist", label: resolvedLocale === "mr" ? "आवडीचे" : "Wishlist", icon: Heart },
+    { to: "/cart", label: resolvedLocale === "mr" ? "कार्ट" : "Cart", icon: ShoppingCart },
+  ] as const;
 
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-50 border-t border-[#ece7df] bg-white shadow-[0_-10px_24px_-20px_rgba(0,0,0,0.3)] md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-      aria-label="Mobile navigation"
+      aria-label={resolvedLocale === "mr" ? "मोबाइल नेव्हिगेशन" : "Mobile navigation"}
     >
       <div className="grid w-full grid-cols-4 px-3 py-2">
         {tabs.map((tab) => {
