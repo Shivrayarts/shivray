@@ -74,3 +74,28 @@ export function useAdminAuthStatus() {
 
   return authenticated;
 }
+
+export function useAdminAuthState() {
+  const [authenticated, setAuthenticated] = useState(() => isAdminAuthenticated());
+  const [resolved, setResolved] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const sync = () => setAuthenticated(isAdminAuthenticated());
+
+    sync();
+    void refreshAdminAuthStatus()
+      .then(sync)
+      .finally(() => setResolved(true));
+    window.addEventListener("storage", sync);
+    window.addEventListener(ADMIN_AUTH_EVENT, sync);
+
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener(ADMIN_AUTH_EVENT, sync);
+    };
+  }, []);
+
+  return { authenticated, resolved };
+}

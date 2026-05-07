@@ -91,7 +91,9 @@ const videoTemplate: HomeVideo = {
   id: "",
   title: "",
   description: "",
+  videoType: "reel",
   videoUrl: "",
+  thumbnail: "",
 };
 
 type AdminSection =
@@ -161,6 +163,10 @@ function formatDate(value: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function isYoutubeUrl(value: string) {
+  return /(youtube\.com|youtu\.be)/i.test(value);
 }
 
 function getStatusBadgeClass(status: OrderStatus) {
@@ -424,16 +430,61 @@ function VideoForm({
         placeholder="Video title"
         className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
       />
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="space-y-2 text-sm font-medium text-[#34180e]">
+          <span>Content format</span>
+          <select
+            value={value.videoType}
+            onChange={(event) =>
+              onChange({
+                ...value,
+                videoType: event.target.value as HomeVideo["videoType"],
+              })
+            }
+            className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+          >
+            <option value="reel">Reel / Short Video</option>
+            <option value="youtube">YouTube Video</option>
+          </select>
+        </label>
+        <input
+          value={value.thumbnail ?? ""}
+          onChange={(event) => onChange({ ...value, thumbnail: event.target.value })}
+          placeholder="Thumbnail image URL (optional)"
+          className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+        />
+      </div>
+      {value.videoType === "youtube" ? (
+        <input
+          value={value.videoUrl}
+          onChange={(event) => onChange({ ...value, videoUrl: event.target.value })}
+          placeholder="Paste YouTube link"
+          className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+        />
+      ) : (
+        <input
+          value={value.videoUrl}
+          onChange={(event) => onChange({ ...value, videoUrl: event.target.value })}
+          placeholder="Direct MP4/WebM reel URL or uploaded file data"
+          className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+        />
+      )}
+      {value.videoType === "reel" ? (
       <label className="block rounded-2xl border border-dashed border-[#d8b48b] bg-[#fffaf4] p-4 text-sm text-[#6c4b33]">
         <span className="mb-2 flex items-center gap-2 font-semibold text-[#34180e]">
           <Upload className="h-4 w-4" />
-          Upload video file
+          Upload reel file
         </span>
         <p className="mb-2 text-xs text-[#8b6c52]">
-          Upload a small MP4/WebM file. Browser storage is limited on static hosting.
+          Upload a small vertical MP4/WebM file. Browser storage is limited on static hosting.
         </p>
         <input type="file" accept="video/*" onChange={onPickFile} className="mt-2 block w-full text-sm" />
       </label>
+      ) : (
+        <div className="rounded-2xl border border-dashed border-[#d8b48b] bg-[#fffaf4] p-4 text-sm text-[#6c4b33]">
+          Paste a standard YouTube watch link, share link, or embed link. It will render as an embedded player on the homepage.
+        </div>
+      )}
       <textarea
         value={value.description}
         onChange={(event) => onChange({ ...value, description: event.target.value })}
@@ -691,7 +742,12 @@ export default function AdminPage() {
   }
 
   function saveVideo() {
-    const nextVideo = { ...videoDraft, id: videoDraft.id || uniqueId("video") };
+    const normalizedType = videoDraft.videoType || (isYoutubeUrl(videoDraft.videoUrl) ? "youtube" : "reel");
+    const nextVideo = {
+      ...videoDraft,
+      id: videoDraft.id || uniqueId("video"),
+      videoType: normalizedType,
+    };
     const next = [...storedHomeContent.videos];
     const existingIndex = next.findIndex((item) => item.id === nextVideo.id);
 
@@ -733,9 +789,9 @@ export default function AdminPage() {
 
     try {
       const dataUrl = await fileToDataUrl(file, 4);
-      setVideoDraft((current) => ({ ...current, videoUrl: dataUrl }));
+      setVideoDraft((current) => ({ ...current, videoType: "reel", videoUrl: dataUrl }));
       setMediaNotice(
-        `Video file "${file.name}" loaded successfully. Keep uploaded videos small for static hosting.`,
+        `Reel file "${file.name}" loaded successfully. Keep uploaded videos small for static hosting.`,
       );
     } catch (error) {
       setMediaNotice(error instanceof Error ? error.message : "Unable to load the video file.");
@@ -1061,7 +1117,7 @@ export default function AdminPage() {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h2 className="text-2xl font-semibold text-[#34180e]">Homepage Videos</h2>
-                    <p className="mt-2 text-sm text-[#6c4b33]">Add small uploaded videos or hosted video links.</p>
+                    <p className="mt-2 text-sm text-[#6c4b33]">Post reel-format videos and YouTube videos with separate options for each type.</p>
                   </div>
                   <button
                     type="button"
@@ -1076,8 +1132,14 @@ export default function AdminPage() {
                     <div key={item.id} className="rounded-[24px] border border-[#efe1cf] bg-[#fcf8f2] p-4">
                       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-[#34180e]">{item.title}</p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-semibold text-[#34180e]">{item.title}</p>
+                            <span className="rounded-full bg-[#fff1d9] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b4d1d]">
+                              {item.videoType === "youtube" ? "YouTube" : "Reel"}
+                            </span>
+                          </div>
                           <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#6c4b33]">{item.description}</p>
+                          <p className="mt-2 truncate text-xs text-[#8b6c52]">{item.videoUrl}</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <button type="button" onClick={() => setVideoDraft(item)} className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm text-[#6c4b33]">Edit</button>
@@ -1102,7 +1164,7 @@ export default function AdminPage() {
               </div>
               <div className="rounded-[30px] bg-white p-6 shadow-[0_18px_40px_-30px_rgba(70,36,15,0.22)]">
                 <h2 className="text-2xl font-semibold text-[#34180e]">Edit Video</h2>
-                <p className="mt-2 text-sm text-[#6c4b33]">Upload a small video file to update the homepage video section.</p>
+                <p className="mt-2 text-sm text-[#6c4b33]">Choose `Reel / Short Video` for vertical clips or `YouTube Video` for embedded long-form content.</p>
                 <div className="mt-6">
                   <VideoForm
                     value={videoDraft}

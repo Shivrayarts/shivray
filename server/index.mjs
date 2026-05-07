@@ -147,7 +147,7 @@ async function fetchStorefrontPayload() {
     ),
     query(
       `
-      SELECT id, title, description, video_url
+      SELECT id, title, description, video_url, video_type, thumbnail_url
       FROM homepage_videos
       WHERE is_active = 1
       ORDER BY sort_order ASC, id ASC
@@ -198,7 +198,9 @@ async function fetchStorefrontPayload() {
         id: `video-${row.id}`,
         title: row.title,
         description: row.description,
+        videoType: row.video_type === "reel" ? "reel" : "youtube",
         videoUrl: row.video_url,
+        thumbnail: row.thumbnail_url ?? "",
       })),
     },
   };
@@ -543,11 +545,18 @@ app.put("/api/admin/home-content", requireAdmin, async (req, res) => {
         await connection.query(
           `
           INSERT INTO homepage_videos (
-            title, description, video_url, sort_order, is_active
+            title, description, video_url, video_type, thumbnail_url, sort_order, is_active
           )
-          VALUES (?, ?, ?, ?, 1)
+          VALUES (?, ?, ?, ?, ?, ?, 1)
           `,
-          [item.title || "", item.description || "", item.videoUrl || "", index + 1],
+          [
+            item.title || "",
+            item.description || "",
+            item.videoUrl || "",
+            item.videoType === "reel" ? "reel" : "youtube",
+            item.thumbnail || "",
+            index + 1,
+          ],
         );
       }
     });

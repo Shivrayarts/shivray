@@ -55,6 +55,9 @@ const SESSION_KEY = "shivray_customer_session";
 const CUSTOMERS_EVENT = "shivray-customers-updated";
 const ORDERS_EVENT = "shivray-orders-updated";
 const SESSION_EVENT = "shivray-customer-session-updated";
+const CUSTOMER_EVENTS = [CUSTOMERS_EVENT];
+const ORDER_EVENTS = [ORDERS_EVENT];
+const SESSION_EVENTS = [SESSION_EVENT];
 
 let adminCommerceBootstrapPromise: Promise<void> | null = null;
 
@@ -383,13 +386,13 @@ function useStoredValue<T>(read: () => T, events: string[], bootstrap?: () => Pr
 }
 
 export function useStoredCustomers() {
-  return useStoredValue(getStoredCustomers, [CUSTOMERS_EVENT], bootstrapAdminCommerceData);
+  return useStoredValue(getStoredCustomers, CUSTOMER_EVENTS, bootstrapAdminCommerceData);
 }
 
 export function useStoredOrders() {
-  return useStoredValue(getStoredOrders, [ORDERS_EVENT], bootstrapAdminCommerceData);
+  return useStoredValue(getStoredOrders, ORDER_EVENTS, bootstrapAdminCommerceData);
 }
 
 export function useCustomerSession() {
-  return useStoredValue(getCustomerSession, [SESSION_EVENT]);
+  return useStoredValue(getCustomerSession, SESSION_EVENTS);
 }

@@ -103,6 +103,8 @@ CREATE TABLE IF NOT EXISTS homepage_videos (
   title VARCHAR(191) NOT NULL,
   description TEXT NOT NULL,
   video_url MEDIUMTEXT NOT NULL,
+  video_type ENUM('reel', 'youtube') NOT NULL DEFAULT 'youtube',
+  thumbnail_url MEDIUMTEXT DEFAULT NULL,
   sort_order INT UNSIGNED NOT NULL DEFAULT 0,
   is_active TINYINT(1) NOT NULL DEFAULT 1,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -183,4 +185,8 @@ ALTER TABLE orders
 
 ALTER TABLE order_items
   ADD COLUMN IF NOT EXISTS product_image_snapshot MEDIUMTEXT DEFAULT NULL;
+
+ALTER TABLE homepage_videos
+  ADD COLUMN IF NOT EXISTS video_type ENUM('reel', 'youtube') NOT NULL DEFAULT 'youtube',
+  ADD COLUMN IF NOT EXISTS thumbnail_url MEDIUMTEXT DEFAULT NULL;
 

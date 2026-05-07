@@ -408,38 +408,48 @@ INSERT INTO homepage_videos (
   title,
   description,
   video_url,
+  video_type,
+  thumbnail_url,
   sort_order,
   is_active
 )
 VALUES
   (
-    1,
-    'Shivkalin Shastranche Aajche Shilpakar',
-    'Satyajit Arun Vaidya shares his journey from passion to profession in historical weapon crafting.',
-    'https://youtu.be/xh-ibz0qxaA',
-    1,
-    1
-  ),
+      1,
+      'Shivkalin Shastranche Aajche Shilpakar',
+      'Satyajit Arun Vaidya shares his journey from passion to profession in historical weapon crafting.',
+      'https://youtu.be/xh-ibz0qxaA',
+      'youtube',
+      NULL,
+      1,
+      1
+    ),
   (
     2,
-    'Bhetarupi Aitihasik Shastra Banavnare Satyajeet Vaidya',
-    'Historic weapons as gifts and display pieces that preserve traditional craftsmanship.',
-    'https://youtu.be/2alkiZgDxMI',
-    2,
-    1
-  ),
+      'Bhetarupi Aitihasik Shastra Banavnare Satyajeet Vaidya',
+      'Historic weapons as gifts and display pieces that preserve traditional craftsmanship.',
+      'https://youtu.be/2alkiZgDxMI',
+      'youtube',
+      NULL,
+      2,
+      1
+    ),
   (
     3,
-    'Puratan Shastrancha Itihas Jopasanara Kalakar Mavala',
-    'A short feature on the artisan spirit and the story behind these heritage-inspired creations.',
-    'https://youtu.be/WpBQTatwZhs',
-    3,
-    1
-  )
+      'Puratan Shastrancha Itihas Jopasanara Kalakar Mavala',
+      'A short feature on the artisan spirit and the story behind these heritage-inspired creations.',
+      'https://youtu.be/WpBQTatwZhs',
+      'youtube',
+      NULL,
+      3,
+      1
+    )
 ON DUPLICATE KEY UPDATE
   title = VALUES(title),
   description = VALUES(description),
   video_url = VALUES(video_url),
+  video_type = VALUES(video_type),
+  thumbnail_url = VALUES(thumbnail_url),
   sort_order = VALUES(sort_order),
   is_active = VALUES(is_active);
 

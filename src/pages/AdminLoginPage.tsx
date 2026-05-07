@@ -1,22 +1,23 @@
 import { Link, useNavigate } from "@/lib/spa-router";
 import { LockKeyhole, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
-import { isAdminAuthenticated, loginAdmin } from "@/lib/admin-auth";
+import { isAdminAuthenticated, loginAdmin, useAdminAuthState } from "@/lib/admin-auth";
 
 const ADMIN_EMAIL = "admin@shivray.local";
 const ADMIN_PASSWORD = "Admin@123";
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
+  const { authenticated, resolved } = useAdminAuthState();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (isAdminAuthenticated()) {
+    if (resolved && (authenticated || isAdminAuthenticated())) {
       navigate({ to: "/admin" });
     }
-  }, [navigate]);
+  }, [authenticated, navigate, resolved]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

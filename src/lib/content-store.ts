@@ -25,7 +25,9 @@ export type HomeVideo = {
   id: string;
   title: string;
   description: string;
+  videoType: "reel" | "youtube";
   videoUrl: string;
+  thumbnail?: string;
 };
 
 export type StoredHomeContent = {
@@ -52,6 +54,18 @@ const defaultBannerImageById = new Map(
   defaultHomeContent.banners.map((banner) => [banner.id, banner.image]),
 );
 
+function normalizeHomeVideo(video: HomeVideo): HomeVideo {
+  const inferredType =
+    video.videoType ??
+    (/(youtube\.com|youtu\.be)/i.test(video.videoUrl) ? "youtube" : "reel");
+
+  return {
+    ...video,
+    videoType: inferredType,
+    thumbnail: video.thumbnail ?? "",
+  };
+}
+
 function normalizeStorefrontPayload(payload: Partial<StorefrontPayload>) {
   return {
     ...payload,
@@ -70,6 +84,7 @@ function normalizeStorefrontPayload(payload: Partial<StorefrontPayload>) {
             ...banner,
             image: defaultBannerImageById.get(banner.id) ?? banner.image,
           })),
+          videos: payload.homeContent.videos.map((video) => normalizeHomeVideo(video)),
         }
       : payload.homeContent,
   };

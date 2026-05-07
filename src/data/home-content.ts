@@ -64,6 +64,7 @@ export const homeContent = {
       title: "Shivkalin Shastranche Aajche Shilpakar",
       description:
         "Shivray Arts shares its journey from passion to profession in historical weapon crafting.",
+      videoType: "youtube",
       videoUrl: "https://youtu.be/xh-ibz0qxaA",
     },
     {
@@ -71,6 +72,7 @@ export const homeContent = {
       title: "Bhetarupi Aitihasik Shastra Banavnare Shivray Arts",
       description:
         "Historic weapons as gifts and display pieces that preserve traditional craftsmanship.",
+      videoType: "youtube",
       videoUrl: "https://youtu.be/2alkiZgDxMI",
     },
     {
@@ -78,6 +80,7 @@ export const homeContent = {
       title: "Puratan Shastrancha Itihas Jopasanara Kalakar Mavala",
       description:
         "A short feature on the artisan spirit and the story behind these heritage-inspired creations.",
+      videoType: "youtube",
       videoUrl: "https://youtu.be/WpBQTatwZhs",
     },
   ],

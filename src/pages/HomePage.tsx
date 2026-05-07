@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock3,
+  ExternalLink,
   Heart,
   ShieldCheck,
   Star,
@@ -35,6 +36,27 @@ const features = [
   { icon: BookOpenText, title: "Catalogue Support", copy: "Customers can request a full catalogue and get tailored recommendations for their budget." },
 ] as const;
 
+function getYoutubeEmbedUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes("youtu.be")) {
+      const videoId = parsed.pathname.replace("/", "");
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+    }
+
+    if (parsed.hostname.includes("youtube.com")) {
+      const videoId = parsed.searchParams.get("v");
+      if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+      const match = parsed.pathname.match(/\/embed\/([^/?]+)/);
+      return match?.[1] ? `https://www.youtube.com/embed/${match[1]}` : "";
+    }
+  } catch {
+    return "";
+  }
+
+  return "";
+}
+
 export default function HomePage() {
   const products = useStoredProducts();
   const catalogueTypes = useStoredCatalogueTypes();
@@ -48,6 +70,7 @@ export default function HomePage() {
   const reviews = storedHomeContent.reviews;
   const hasHeroSlides = heroSlides.length > 0;
   const hasReviews = reviews.length > 0;
+  const featuredVideos = storedHomeContent.videos.slice(0, 6);
   const categoryCollections = catalogueTypes.filter((item) => item.isActive).slice(0, 4);
   const spotlightProductCards = spotlightProducts.map((product) => {
     const matchedProduct = products.find((item) => item.id === product.id);
@@ -266,6 +289,92 @@ export default function HomePage() {
               ))}
             </div>
           ) : null}
+        </div>
+      </section>
+
+      <section className="px-4 pb-8 md:px-6 md:pb-14">
+        <div className="layout-shell rounded-[34px] bg-[linear-gradient(180deg,#2b0b08_0%,#4d160f_100%)] px-4 py-8 text-white md:px-8 md:py-10">
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-[#e3a92b]">Videos and reels</p>
+              <h2 className="mt-2 font-heading text-3xl text-[#fbf2e2]">See our work in motion</h2>
+            </div>
+            <p className="max-w-xl text-sm leading-6 text-[#f6dbc2]">
+              Add vertical reels for quick scroll content and YouTube videos for longer storytelling directly from the admin panel.
+            </p>
+          </div>
+          {featuredVideos.length > 0 ? (
+            <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {featuredVideos.map((video) => {
+                const isYoutube = video.videoType === "youtube";
+                const embedUrl = isYoutube ? getYoutubeEmbedUrl(video.videoUrl) : "";
+
+                return (
+                  <article
+                    key={video.id}
+                    className={`overflow-hidden rounded-[28px] border border-white/10 bg-white/95 text-[#34180e] shadow-[0_26px_60px_-36px_rgba(0,0,0,0.6)] ${
+                      isYoutube ? "md:col-span-1" : ""
+                    }`}
+                  >
+                    <div className={`relative bg-[#120907] ${isYoutube ? "aspect-video" : "mx-auto aspect-[9/16] max-w-[22rem]"}`}>
+                      {isYoutube && embedUrl ? (
+                        <iframe
+                          src={embedUrl}
+                          title={video.title}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                          className="h-full w-full"
+                        />
+                      ) : isYoutube ? (
+                        <div className="flex h-full items-center justify-center px-6 text-center text-sm text-[#f6dbc2]">
+                          Invalid YouTube link. Update this video entry from the admin panel.
+                        </div>
+                      ) : (
+                        <video
+                          src={video.videoUrl}
+                          poster={video.thumbnail || undefined}
+                          controls
+                          playsInline
+                          muted
+                          loop
+                          className="h-full w-full object-cover"
+                        />
+                      )}
+                    </div>
+                    <div className="p-5">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full bg-[#fff1d9] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8b4d1d]">
+                          {isYoutube ? "YouTube" : "Reel"}
+                        </span>
+                        {!isYoutube ? (
+                          <span className="rounded-full bg-[#34180e] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white">
+                            Vertical
+                          </span>
+                        ) : null}
+                      </div>
+                      <h3 className="mt-4 font-heading text-2xl text-[#34180e]">{video.title}</h3>
+                      <p className="mt-3 text-sm leading-6 text-[#6c4b33]">{video.description}</p>
+                      {isYoutube ? (
+                        <a
+                          href={video.videoUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#8b4d1d]"
+                        >
+                          Watch on YouTube
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      ) : null}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="mt-8 rounded-[28px] border border-white/10 bg-white/10 p-6 text-[#f6dbc2]">
+              No videos added yet. You can publish reels and YouTube videos from the admin panel.
+            </div>
+          )}
         </div>
       </section>
 
