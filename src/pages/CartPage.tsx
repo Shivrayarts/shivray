@@ -3,6 +3,7 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useCart } from "@/hooks/use-cart";
 import { useStoredProducts } from "@/lib/content-store";
+import { isValidEmail, isValidName, isValidPhone, normalizeDigits } from "@/lib/form-validation";
 import { normalizeDisplayCase, parseCurrencyAmount } from "@/lib/utils";
 import {
   getStoredCustomers,
@@ -24,6 +25,12 @@ export default function CartPage() {
     paymentMethod: "Cash On Delivery" as "Cash On Delivery" | "Online Payment",
   });
   const [orderMessage, setOrderMessage] = useState("");
+  const [touched, setTouched] = useState({
+    name: false,
+    email: false,
+    phone: false,
+    address: false,
+  });
   const items = cart.map((entry) => {
     const product = catalog.find((p) => p.id === entry.id);
     return product ? { product, quantity: entry.quantity } : null;
@@ -41,15 +48,20 @@ export default function CartPage() {
       }, 0),
     [items],
   );
+  const resolvedName = (checkoutForm.name || currentCustomer?.name || customerSession?.name || "").trim();
+  const resolvedEmail = (checkoutForm.email || currentCustomer?.email || customerSession?.email || "").trim();
+  const resolvedPhone = (checkoutForm.phone || currentCustomer?.phone || "").trim();
+  const resolvedAddress = (checkoutForm.address || currentCustomer?.address || "").trim();
 
   async function handlePlaceOrder() {
-    const resolvedName = checkoutForm.name.trim() || currentCustomer?.name || customerSession?.name || "";
-    const resolvedEmail = checkoutForm.email.trim() || currentCustomer?.email || customerSession?.email || "";
-    const resolvedPhone = checkoutForm.phone.trim() || currentCustomer?.phone || "";
-    const resolvedAddress = checkoutForm.address.trim() || currentCustomer?.address || "";
-
-    if (!resolvedName || !resolvedEmail || !resolvedPhone || !resolvedAddress) {
-      setOrderMessage("Please complete name, email, phone, and address before placing the order.");
+    if (
+      !isValidName(resolvedName) ||
+      !isValidEmail(resolvedEmail) ||
+      !isValidPhone(resolvedPhone) ||
+      resolvedAddress.length < 10
+    ) {
+      setTouched({ name: true, email: true, phone: true, address: true });
+      setOrderMessage("Please enter a valid name, email, 10-digit phone number, and full address.");
       return;
     }
 
@@ -132,23 +144,32 @@ export default function CartPage() {
                   <input
                     type="text"
                     value={checkoutForm.name || currentCustomer?.name || customerSession?.name || ""}
+                    onBlur={() => setTouched((value) => ({ ...value, name: true }))}
                     onChange={(event) => setCheckoutForm((value) => ({ ...value, name: event.target.value }))}
                     placeholder="Customer name"
-                    className="rounded-md border border-border bg-background px-4 py-3 text-sm"
+                    className={`rounded-md border bg-background px-4 py-3 text-sm ${
+                      touched.name && !isValidName(resolvedName) ? "border-[#b42318]" : "border-border"
+                    }`}
                   />
                   <input
                     type="email"
                     value={checkoutForm.email || currentCustomer?.email || customerSession?.email || ""}
+                    onBlur={() => setTouched((value) => ({ ...value, email: true }))}
                     onChange={(event) => setCheckoutForm((value) => ({ ...value, email: event.target.value }))}
                     placeholder="Email"
-                    className="rounded-md border border-border bg-background px-4 py-3 text-sm"
+                    className={`rounded-md border bg-background px-4 py-3 text-sm ${
+                      touched.email && !isValidEmail(resolvedEmail) ? "border-[#b42318]" : "border-border"
+                    }`}
                   />
                   <input
                     type="tel"
                     value={checkoutForm.phone || currentCustomer?.phone || ""}
-                    onChange={(event) => setCheckoutForm((value) => ({ ...value, phone: event.target.value }))}
+                    onBlur={() => setTouched((value) => ({ ...value, phone: true }))}
+                    onChange={(event) => setCheckoutForm((value) => ({ ...value, phone: normalizeDigits(event.target.value, 10) }))}
                     placeholder="Phone number"
-                    className="rounded-md border border-border bg-background px-4 py-3 text-sm"
+                    className={`rounded-md border bg-background px-4 py-3 text-sm ${
+                      touched.phone && !isValidPhone(resolvedPhone) ? "border-[#b42318]" : "border-border"
+                    }`}
                   />
                   <select
                     value={checkoutForm.paymentMethod}
@@ -165,11 +186,20 @@ export default function CartPage() {
                   </select>
                   <textarea
                     value={checkoutForm.address || currentCustomer?.address || ""}
+                    onBlur={() => setTouched((value) => ({ ...value, address: true }))}
                     onChange={(event) => setCheckoutForm((value) => ({ ...value, address: event.target.value }))}
                     placeholder="Delivery address"
                     rows={4}
-                    className="rounded-md border border-border bg-background px-4 py-3 text-sm md:col-span-2"
+                    className={`rounded-md border bg-background px-4 py-3 text-sm md:col-span-2 ${
+                      touched.address && resolvedAddress.length < 10 ? "border-[#b42318]" : "border-border"
+                    }`}
                   />
+                </div>
+                <div className="mt-3 space-y-1 text-sm text-[#b42318]">
+                  {touched.name && !isValidName(resolvedName) ? <p>Please enter your full name.</p> : null}
+                  {touched.email && !isValidEmail(resolvedEmail) ? <p>Please enter a valid email address.</p> : null}
+                  {touched.phone && !isValidPhone(resolvedPhone) ? <p>Please enter a valid 10-digit phone number.</p> : null}
+                  {touched.address && resolvedAddress.length < 10 ? <p>Please enter a complete delivery address.</p> : null}
                 </div>
                 <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                   <p className="text-sm font-semibold text-foreground">

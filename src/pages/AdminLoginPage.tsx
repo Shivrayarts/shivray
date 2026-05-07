@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@/lib/spa-router";
 import { LockKeyhole, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
+import { isValidEmail } from "@/lib/form-validation";
 import { isAdminAuthenticated, loginAdmin, useAdminAuthState } from "@/lib/admin-auth";
 
 const ADMIN_EMAIL = "admin@shivray.local";
@@ -12,6 +13,7 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [touched, setTouched] = useState({ email: false, password: false });
 
   useEffect(() => {
     if (resolved && (authenticated || isAdminAuthenticated())) {
@@ -21,6 +23,11 @@ export default function AdminLoginPage() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!isValidEmail(email.trim()) || !password.trim()) {
+      setTouched({ email: true, password: true });
+      setError("Enter a valid admin email and password.");
+      return;
+    }
 
     try {
       await loginAdmin(email.trim().toLowerCase(), password);
@@ -56,12 +63,18 @@ export default function AdminLoginPage() {
                   id="admin-email"
                   type="email"
                   value={email}
+                  onBlur={() => setTouched((current) => ({ ...current, email: true }))}
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="admin@shivray.local"
-                  className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] py-3 pl-10 pr-4 text-sm text-[#34180e] outline-none"
+                  className={`w-full rounded-2xl border bg-[#fcf8f2] py-3 pl-10 pr-4 text-sm text-[#34180e] outline-none ${
+                    touched.email && !isValidEmail(email) ? "border-[#b42318]" : "border-[#eadbc8]"
+                  }`}
                   required
                 />
               </div>
+              {touched.email && !isValidEmail(email) ? (
+                <p className="mt-2 text-sm text-[#b42318]">Please enter a valid admin email address.</p>
+              ) : null}
             </div>
 
             <div>
@@ -74,12 +87,18 @@ export default function AdminLoginPage() {
                   id="admin-password"
                   type="password"
                   value={password}
+                  onBlur={() => setTouched((current) => ({ ...current, password: true }))}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="Enter admin password"
-                  className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] py-3 pl-10 pr-4 text-sm text-[#34180e] outline-none"
+                  className={`w-full rounded-2xl border bg-[#fcf8f2] py-3 pl-10 pr-4 text-sm text-[#34180e] outline-none ${
+                    touched.password && !password.trim() ? "border-[#b42318]" : "border-[#eadbc8]"
+                  }`}
                   required
                 />
               </div>
+              {touched.password && !password.trim() ? (
+                <p className="mt-2 text-sm text-[#b42318]">Please enter the admin password.</p>
+              ) : null}
             </div>
 
             {error ? <p className="text-sm text-[#b42318]">{error}</p> : null}

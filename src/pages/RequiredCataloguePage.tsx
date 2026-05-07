@@ -2,6 +2,7 @@ import { BookOpenText, FileCheck2, MessageCircle, Phone } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { defaultCatalogueTypes, getCatalogueTypeById } from "@/lib/catalogue-types";
 import { useStoredCatalogueTypes } from "@/lib/content-store";
+import { isValidName, isValidPhone, normalizeDigits } from "@/lib/form-validation";
 import { siteConfig } from "@/lib/site-config";
 
 export default function RequiredCataloguePage() {
@@ -13,13 +14,18 @@ export default function RequiredCataloguePage() {
     catalogueType: catalogueTypes[0].id,
     notes: "",
   });
-  const [phoneTouched, setPhoneTouched] = useState(false);
+  const [touched, setTouched] = useState<{ name: boolean; phone: boolean }>({
+    name: false,
+    phone: false,
+  });
   const [categorySlide, setCategorySlide] = useState(0);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
   const categoryCards = catalogueTypes.slice(0, 4);
   const selectedCatalogue = getCatalogueTypeById(form.catalogueType, catalogueTypes);
-  const isPhoneValid = /^\d{10}$/.test(form.phone);
-  const shouldShowPhoneError = phoneTouched && form.phone.length > 0 && !isPhoneValid;
+  const isNameValid = isValidName(form.name);
+  const isPhoneValid = isValidPhone(form.phone);
+  const shouldShowNameError = touched.name && !isNameValid;
+  const shouldShowPhoneError = touched.phone && !isPhoneValid;
 
   useEffect(() => {
     if (!catalogueTypes.some((item) => item.id === form.catalogueType)) {
@@ -43,13 +49,13 @@ export default function RequiredCataloguePage() {
   };
 
   const handlePhoneChange = (value: string) => {
-    const digitsOnly = value.replace(/\D/g, "").slice(0, 10);
+    const digitsOnly = normalizeDigits(value, 10);
     setForm((current) => ({ ...current, phone: digitsOnly }));
   };
 
   const handleWhatsappClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    setPhoneTouched(true);
-    if (!isPhoneValid) {
+    setTouched({ name: true, phone: true });
+    if (!isNameValid || !isPhoneValid) {
       event.preventDefault();
     }
   };
@@ -109,7 +115,23 @@ export default function RequiredCataloguePage() {
                   })}
                 </div>
               </div>
-              <div><label htmlFor="catalogue-name" className="text-sm font-medium text-[#34180e]">Name</label><input id="catalogue-name" type="text" value={form.name} onChange={(event) => setForm((value) => ({ ...value, name: event.target.value }))} placeholder="Your name" className="mt-2 w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e]" /></div>
+              <div>
+                <label htmlFor="catalogue-name" className="text-sm font-medium text-[#34180e]">Name</label>
+                <input
+                  id="catalogue-name"
+                  type="text"
+                  value={form.name}
+                  onBlur={() => setTouched((current) => ({ ...current, name: true }))}
+                  onChange={(event) => setForm((value) => ({ ...value, name: event.target.value }))}
+                  placeholder="Your name"
+                  className={`mt-2 w-full rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${
+                    shouldShowNameError ? "border-[#b42318]" : "border-[#eadbc8]"
+                  }`}
+                />
+                {shouldShowNameError ? (
+                  <p className="mt-2 text-sm text-[#b42318]">Please enter your full name.</p>
+                ) : null}
+              </div>
               <div>
                 <label htmlFor="catalogue-phone" className="text-sm font-medium text-[#34180e]">Phone Number</label>
                 <input
@@ -119,7 +141,7 @@ export default function RequiredCataloguePage() {
                   pattern="[0-9]{10}"
                   maxLength={10}
                   value={form.phone}
-                  onBlur={() => setPhoneTouched(true)}
+                  onBlur={() => setTouched((current) => ({ ...current, phone: true }))}
                   onChange={(event) => handlePhoneChange(event.target.value)}
                   placeholder="Enter 10-digit phone number"
                   className={`mt-2 w-full rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${

@@ -1,5 +1,6 @@
 import { Link } from "@/lib/spa-router";
 import { useState } from "react";
+import { isValidEmail } from "@/lib/form-validation";
 import {
   ChevronDown,
   Facebook,
@@ -31,9 +32,25 @@ type SectionKey = "shopping" | "information" | "newsletter";
 
 export default function Footer() {
   const [openSection, setOpenSection] = useState<SectionKey | null>(null);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterTouched, setNewsletterTouched] = useState(false);
+  const [newsletterMessage, setNewsletterMessage] = useState("");
 
   const toggleSection = (section: SectionKey) => {
     setOpenSection((current) => (current === section ? null : section));
+  };
+
+  const handleNewsletterSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setNewsletterTouched(true);
+
+    if (!isValidEmail(newsletterEmail)) {
+      setNewsletterMessage("Please enter a valid email address.");
+      return;
+    }
+
+    setNewsletterMessage("Thanks. Your email is ready for newsletter signup.");
+    setNewsletterEmail("");
   };
 
   return (
@@ -137,11 +154,16 @@ export default function Footer() {
               Become the first to know about new product drops, heritage stories, and
               featured collections.
             </p>
-            <form className="mt-7 flex gap-3" onSubmit={(event) => event.preventDefault()}>
+            <form className="mt-7 flex gap-3" onSubmit={handleNewsletterSubmit}>
               <input
                 type="email"
+                value={newsletterEmail}
+                onBlur={() => setNewsletterTouched(true)}
+                onChange={(event) => setNewsletterEmail(event.target.value)}
                 placeholder="Enter your email"
-                className="min-w-0 flex-1 rounded-full border border-white/15 bg-transparent px-6 py-4 text-base text-[#fff7ed] outline-none placeholder:text-[#cfae92]"
+                className={`min-w-0 flex-1 rounded-full border bg-transparent px-6 py-4 text-base text-[#fff7ed] outline-none placeholder:text-[#cfae92] ${
+                  newsletterTouched && !isValidEmail(newsletterEmail) ? "border-[#ffb4ab]" : "border-white/15"
+                }`}
               />
               <button
                 type="submit"
@@ -150,6 +172,11 @@ export default function Footer() {
                 Subscribe
               </button>
             </form>
+            {newsletterMessage ? (
+              <p className={`mt-3 text-sm ${newsletterMessage.startsWith("Thanks") ? "text-[#f4ddbc]" : "text-[#ffb4ab]"}`}>
+                {newsletterMessage}
+              </p>
+            ) : null}
             <p className="mt-5 text-sm leading-6 text-[#cfb097]">
               By subscribing, you agree to receive updates from Shivray Arts.
             </p>
