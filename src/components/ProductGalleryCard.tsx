@@ -17,8 +17,8 @@ export default function ProductGalleryCard({
   product,
   isWishlisted = false,
   onToggleWishlist,
-  imageClassName = "h-[10.5rem] md:h-[15rem]",
-  titleClassName = "min-h-[3.5rem] text-[1.35rem] md:min-h-[4.2rem] md:text-[1.9rem]",
+  imageClassName = "h-[14rem] md:h-[18rem] lg:h-[20rem]",
+  titleClassName = "min-h-[3rem] text-[1.2rem] md:min-h-[3.6rem] md:text-[1.6rem]",
   className = "",
 }: ProductGalleryCardProps) {
   const { resolvedLocale } = useLanguage();
@@ -51,7 +51,7 @@ export default function ProductGalleryCard({
         </Link>
       </div>
       <div className="bg-[#fffdf9] px-4 pb-5 pt-4">
-        <p className="text-sm font-medium text-[#c77628]">{getCategoryLabel(product.category, resolvedLocale)}</p>
+        <p className="text-[0.78rem] font-semibold uppercase tracking-[0.22em] text-[#c77628]">{getCategoryLabel(product.category, resolvedLocale)}</p>
         <Link
           to="/products/$productId"
           params={{ productId: product.id }}
@@ -59,7 +59,7 @@ export default function ProductGalleryCard({
         >
           <span className="line-clamp-2">{localizedName}</span>
         </Link>
-        <p className="mt-4 text-[1.5rem] font-semibold text-[#b46a16]">{product.price}</p>
+        <p className="mt-3 text-[1.15rem] font-semibold text-[#b46a16] md:text-[1.35rem]">{product.price}</p>
       </div>
     </div>
   );

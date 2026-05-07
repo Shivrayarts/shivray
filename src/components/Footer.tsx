@@ -17,6 +17,14 @@ import { siteConfig } from "@/lib/site-config";
 
 type SectionKey = "shopping" | "information" | "newsletter";
 
+function PinterestIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
+      <path d="M12 2C6.477 2 2 6.477 2 12c0 4.238 2.635 7.86 6.356 9.318-.088-.792-.167-2.008.035-2.873.183-.783 1.18-4.983 1.18-4.983s-.3-.6-.3-1.487c0-1.393.808-2.433 1.815-2.433.856 0 1.27.643 1.27 1.414 0 .861-.548 2.148-.83 3.342-.236.997.5 1.81 1.482 1.81 1.779 0 3.145-1.876 3.145-4.584 0-2.396-1.722-4.073-4.183-4.073-2.85 0-4.524 2.137-4.524 4.346 0 .861.332 1.786.747 2.288.082.1.094.188.07.289-.076.317-.244.997-.278 1.136-.044.183-.146.222-.337.134-1.255-.584-2.04-2.418-2.04-3.892 0-3.168 2.302-6.077 6.636-6.077 3.484 0 6.194 2.483 6.194 5.8 0 3.46-2.181 6.246-5.21 6.246-1.017 0-1.975-.528-2.301-1.153l-.625 2.381c-.226.87-.837 1.96-1.248 2.626.94.29 1.936.448 2.968.448 5.523 0 10-4.477 10-10S17.523 2 12 2Z" />
+    </svg>
+  );
+}
+
 export default function Footer() {
   const { resolvedLocale } = useLanguage();
   const [openSection, setOpenSection] = useState<SectionKey | null>(null);
@@ -85,10 +93,17 @@ export default function Footer() {
                 <MapPin className="mt-2 h-5 w-5 shrink-0 text-[#ffd68d]" />
                 <p>{siteConfig.address}</p>
               </div>
-              <a href={`tel:${siteConfig.phoneHref}`} className="flex items-start gap-4 transition hover:text-[#ffd68d]">
+              <div className="flex items-start gap-4">
                 <Phone className="mt-2 h-5 w-5 shrink-0 text-[#ffd68d]" />
-                <p>{siteConfig.phoneDisplay}</p>
-              </a>
+                <div className="space-y-0.5">
+                  <a href={`tel:${siteConfig.phoneHref}`} className="block transition hover:text-[#ffd68d]">
+                    {siteConfig.phoneDisplay}
+                  </a>
+                  <a href={`tel:${siteConfig.alternatePhoneHref}`} className="block transition hover:text-[#ffd68d]">
+                    {siteConfig.alternatePhoneDisplay}
+                  </a>
+                </div>
+              </div>
               <a href={`mailto:${siteConfig.email}`} className="flex items-start gap-4 transition hover:text-[#ffd68d]">
                 <Mail className="mt-2 h-5 w-5 shrink-0 text-[#ffd68d]" />
                 <p>{siteConfig.email}</p>
@@ -104,6 +119,9 @@ export default function Footer() {
               </a>
               <a href={siteConfig.socialLinks.youtube} aria-label="YouTube" className="transition hover:text-[#ffd68d]">
                 <Youtube className="h-6 w-6" />
+              </a>
+              <a href={siteConfig.socialLinks.pinterest} aria-label="Pinterest" className="transition hover:text-[#ffd68d]">
+                <PinterestIcon className="h-6 w-6" />
               </a>
             </div>
           </div>
@@ -181,10 +199,17 @@ export default function Footer() {
               <MapPin className="mt-1 h-4 w-4 shrink-0 text-[#ffd68d]" />
               <p>{siteConfig.address}</p>
             </div>
-            <a href={`tel:${siteConfig.phoneHref}`} className="flex items-start gap-3 transition hover:text-[#ffd68d]">
+            <div className="flex items-start gap-3">
               <Phone className="mt-1 h-4 w-4 shrink-0 text-[#ffd68d]" />
-              <p>{siteConfig.phoneDisplay}</p>
-            </a>
+              <div className="space-y-0.5">
+                <a href={`tel:${siteConfig.phoneHref}`} className="block transition hover:text-[#ffd68d]">
+                  {siteConfig.phoneDisplay}
+                </a>
+                <a href={`tel:${siteConfig.alternatePhoneHref}`} className="block transition hover:text-[#ffd68d]">
+                  {siteConfig.alternatePhoneDisplay}
+                </a>
+              </div>
+            </div>
             <a href={`mailto:${siteConfig.email}`} className="flex items-start gap-3 transition hover:text-[#ffd68d]">
               <Mail className="mt-1 h-4 w-4 shrink-0 text-[#ffd68d]" />
               <p>{siteConfig.email}</p>
@@ -195,6 +220,7 @@ export default function Footer() {
             <a href={siteConfig.socialLinks.facebook} aria-label="Facebook"><Facebook className="h-5 w-5" /></a>
             <a href={siteConfig.socialLinks.instagram} aria-label="Instagram"><Instagram className="h-5 w-5" /></a>
             <a href={siteConfig.socialLinks.youtube} aria-label="YouTube"><Youtube className="h-5 w-5" /></a>
+            <a href={siteConfig.socialLinks.pinterest} aria-label="Pinterest"><PinterestIcon className="h-5 w-5" /></a>
           </div>
 
           <div className="mt-8 space-y-1">

@@ -64,12 +64,12 @@ export default function RequiredCataloguePage() {
 
   return (
     <div className="bg-[#f7f1e7] pb-8 md:pb-12">
-      <section className="bg-[#2b130c] px-4 pb-8 pt-6 text-white md:px-6 md:pb-12 md:pt-10">
+      {/* <section className="bg-[#2b130c] px-4 pb-8 pt-6 text-white md:px-6 md:pb-12 md:pt-10">
         <div className="layout-shell">
           <span className="inline-flex rounded-full border border-[#f2bb64]/30 bg-[#f2bb64]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffd68d]">{resolvedLocale === "mr" ? "आवश्यक कॅटलॉग" : "Required Catalogue"}</span>
           <h1 className="mt-4 font-heading text-4xl leading-none text-[#fff5e6] md:text-6xl">{resolvedLocale === "mr" ? "योग्य कॅटलॉग प्रकार एका झटक्यात मागवा." : "Ask for the right catalogue type in one quick step."}</h1>
         </div>
-      </section>
+      </section> */}
       <section className="px-4 py-8 md:px-6 md:py-10">
         <div className="layout-shell rounded-[34px] bg-[#fffdf8] px-4 py-6 md:px-8 md:py-8">
           <div className="text-center"><h2 className="font-body text-3xl font-semibold text-[#1d150f] md:text-4xl">{resolvedLocale === "mr" ? "लोकप्रिय श्रेणी" : "Popular Categories"}</h2></div>

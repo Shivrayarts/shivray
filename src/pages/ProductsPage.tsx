@@ -1,6 +1,6 @@
 import { Link, useLocation } from "@/lib/spa-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, Heart, Search, SlidersHorizontal, Tag } from "lucide-react";
+import { ChevronDown, Search, SlidersHorizontal } from "lucide-react";
 import { categories, getCategoryLabel } from "@/data/products";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useStoredProducts } from "@/lib/content-store";
@@ -9,7 +9,7 @@ import productDhoop1 from "@/assets/product-dhoop-1.jpg";
 import productStatue1 from "@/assets/product-statue-1.jpg";
 import heroBanner3 from "@/assets/hero-banner-3.jpg";
 import productWeapon1 from "@/assets/product-weapon-1.jpg";
-import { normalizeDisplayCase, parseCurrencyAmount } from "@/lib/utils";
+import { parseCurrencyAmount } from "@/lib/utils";
 import ProductGalleryCard from "@/components/ProductGalleryCard";
 
 export default function ProductsPage() {
@@ -126,7 +126,7 @@ export default function ProductsPage() {
 
   return (
     <div className="bg-[#f5f5f5] pb-6 md:bg-[#f7f1e7] md:pb-10">
-      <section className="hidden bg-[#2b130c] px-4 pb-8 pt-6 text-white md:block md:px-6 md:pb-12 md:pt-10">
+      {/* <section className="hidden bg-[#2b130c] px-4 pb-8 pt-6 text-white md:block md:px-6 md:pb-12 md:pt-10">
         <div className="layout-shell">
           <span className="inline-flex rounded-full border border-[#f2bb64]/30 bg-[#f2bb64]/10 px-3 py-1 text-[11px] font-semibold tracking-[0.28em] text-[#ffd68d]">
             {resolvedLocale === "mr" ? "\u0909\u0924\u094d\u092a\u093e\u0926\u0928 \u0915\u0945\u091f\u0932\u0949\u0917" : "Product Catalogue"}
@@ -135,7 +135,7 @@ export default function ProductsPage() {
             {resolvedLocale === "mr" ? "\u092e\u094b\u092c\u093e\u0908\u0932\u0935\u0930 \u091c\u0932\u0926 \u0909\u0924\u094d\u092a\u093e\u0926\u0928 \u0936\u094b\u0927\u093e\u0938\u093e\u0920\u0940 \u0924\u092f\u093e\u0930." : "Built for quick mobile product discovery."}
           </h1>
         </div>
-      </section>
+      </section> */}
       <section className="hidden px-4 py-8 md:block md:px-6 md:py-10">
         <div className="layout-shell rounded-[34px] bg-[#fffdf8] px-4 py-6 md:px-8 md:py-8">
           <div className="text-center">
@@ -260,34 +260,17 @@ export default function ProductsPage() {
                 product={product}
                 isWishlisted={isWishlisted(product.id)}
                 onToggleWishlist={toggleWishlist}
-                imageClassName="h-[10rem]"
-                titleClassName="min-h-[3.2rem] text-[1.15rem]"
               />
             ))}
           </div>
           <div className="hidden grid-cols-2 gap-3 md:grid md:gap-4 xl:grid-cols-4">
             {filtered.map((product) => (
-              <div key={product.id} className="group rounded-[2.35rem] bg-white p-3 shadow-[0_24px_60px_-34px_rgba(27,32,50,0.28)]">
-                <div className="overflow-hidden rounded-[2rem] bg-[#eef3f7]">
-                  <Link to="/products/$productId" params={{ productId: product.id }}>
-                    <img src={product.image} alt={resolveLocalizedText(product.name, resolvedLocale)} loading="lazy" className="aspect-[0.9] w-full object-cover transition duration-500 group-hover:scale-105" />
-                  </Link>
-                </div>
-                <div className="px-3 pb-3 pt-5">
-                  <Link to="/products/$productId" params={{ productId: product.id }} className="block min-h-[3.2rem] line-clamp-2 text-[1.9rem] font-normal leading-[0.98] tracking-[-0.045em] text-[#181818]">{normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}</Link>
-                  <p className="mt-2 text-[1rem] font-normal text-[#b3b3b3]">{getCategoryLabel(product.category, resolvedLocale)}</p>
-                  <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 text-[0.98rem]">
-                    <div className="flex items-center gap-2 text-[#b8b8b8]"><Tag className="h-4 w-4 stroke-[1.8]" /><span className="font-normal text-[#1c1c1c]">{resolvedLocale === "mr" ? "\u0915\u093f\u0902\u092e\u0924" : "from"} {product.price}</span></div>
-                  </div>
-                  <p className="mt-4 line-clamp-2 min-h-[3.1rem] text-[0.95rem] leading-6 text-[#747474]">{resolveLocalizedText(product.shortDescription, resolvedLocale)}</p>
-                  <div className="mt-6 flex items-center gap-3">
-                    <Link to="/products/$productId" params={{ productId: product.id }} className="flex-1 rounded-full bg-[#181818] px-4 py-3.5 text-center text-sm font-medium text-white">{resolvedLocale === "mr" ? "\u0924\u092a\u0936\u0940\u0932 \u092a\u0939\u093e" : "View details"}</Link>
-                    <button type="button" onClick={() => toggleWishlist(product.id)} className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-[#ececec] bg-white text-[#ff6b77]">
-                      <Heart className={`h-5 w-5 ${isWishlisted(product.id) ? "fill-current" : ""}`} />
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <ProductGalleryCard
+                key={product.id}
+                product={product}
+                isWishlisted={isWishlisted(product.id)}
+                onToggleWishlist={toggleWishlist}
+              />
             ))}
           </div>
         </div>

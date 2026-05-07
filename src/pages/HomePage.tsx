@@ -31,11 +31,11 @@ const spotlightProducts = [
   { id: "brass-dhoop-stand", title: "Brass Dhoop Stand", price: "Rs. 2,200", image: productDhoop1 },
 ] as const;
 
-const features = [
-  { icon: ShieldCheck, title: "Trusted Craftsmanship", copy: "Hand-finished products inspired by heritage, made for display, gifting, and devotion." },
-  { icon: Clock3, title: "Fast Enquiry Flow", copy: "Designed for mobile users who want quick browsing, quick contact, and quick buying decisions." },
-  { icon: BookOpenText, title: "Catalogue Support", copy: "Customers can request a full catalogue and get tailored recommendations for their budget." },
-] as const;
+// const features = [
+//   { icon: ShieldCheck, title: "Trusted Craftsmanship", copy: "Hand-finished products inspired by heritage, made for display, gifting, and devotion." },
+//   { icon: Clock3, title: "Fast Enquiry Flow", copy: "Designed for mobile users who want quick browsing, quick contact, and quick buying decisions." },
+//   { icon: BookOpenText, title: "Catalogue Support", copy: "Customers can request a full catalogue and get tailored recommendations for their budget." },
+// ] as const;
 
 function getProductCategoryFromCatalogueId(id: string): Product["category"] | null {
   if (id.includes("statue")) return "Statues";
@@ -125,14 +125,11 @@ export default function HomePage() {
           <div className="mx-auto max-w-5xl">
             {activeHeroSlide ? (
               <>
-                <p className="text-sm font-semibold text-[#e3a92b] md:text-base">{resolveLocalizedText(activeHeroSlide.eyebrow, resolvedLocale)}</p>
-                <h1 className="mt-6 font-heading text-5xl font-semibold leading-[0.92] text-[#fbf2e2] sm:text-6xl md:text-8xl">{resolveLocalizedText(activeHeroSlide.titleTop, resolvedLocale)}</h1>
-                <h2 className="mt-2 font-heading text-5xl font-semibold leading-[0.92] text-[#e1a126] sm:text-6xl md:text-8xl">{resolveLocalizedText(activeHeroSlide.titleBottom, resolvedLocale)}</h2>
-                <p className="mx-auto mt-7 max-w-4xl text-lg leading-9 text-[#f6e6d4] md:text-[1.05rem]">{resolveLocalizedText(activeHeroSlide.copy, resolvedLocale)}</p>
+                
               </>
             ) : (
               <>
-                <p className="text-sm font-semibold text-[#e3a92b] md:text-base">Shivray Home</p>
+                
                 <h1 className="mt-6 font-heading text-5xl font-semibold leading-[0.92] text-[#fbf2e2] sm:text-6xl md:text-8xl">{resolvedLocale === "mr" ? "बॅनर" : "No banner"}</h1>
                 <h2 className="mt-2 font-heading text-5xl font-semibold leading-[0.92] text-[#e1a126] sm:text-6xl md:text-8xl">{resolvedLocale === "mr" ? "अजून सेट नाही" : "configured yet"}</h2>
                 <p className="mx-auto mt-7 max-w-4xl text-lg leading-9 text-[#f6e6d4] md:text-[1.05rem]">
@@ -140,15 +137,7 @@ export default function HomePage() {
                 </p>
               </>
             )}
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link to="/products" className="inline-flex min-w-[20rem] items-center justify-center gap-3 rounded-xl bg-[#e1a126] px-8 py-4 font-heading text-sm font-semibold text-[#331208]">
-                {resolvedLocale === "mr" ? "उत्पादने पहा" : "Explore Products"}
-                <ArrowRight className="h-5 w-5" />
-              </Link>
-              <Link to="/contact" className="inline-flex min-w-[20rem] items-center justify-center rounded-xl border border-[#d6a43c] bg-[#5a0a15]/20 px-8 py-4 font-heading text-sm font-semibold text-[#f6d37d]">
-                {resolvedLocale === "mr" ? "कस्टम डिझाइन मिळवा" : "Get Custom Design"}
-              </Link>
-            </div>
+            
           </div>
         </div>
         {heroSlides.length > 1 ? (
@@ -276,19 +265,19 @@ export default function HomePage() {
               <p className="text-sm font-semibold text-[#e3a92b]">{resolvedLocale === "mr" ? "व्हिडिओ आणि रील्स" : "Videos and reels"}</p>
               <h2 className="mt-2 font-heading text-3xl text-[#fbf2e2]">{resolvedLocale === "mr" ? "आमचे काम पाहा" : "See our work in motion"}</h2>
             </div>
-            <p className="max-w-xl text-sm leading-6 text-[#f6dbc2]">
+            <p className="hidden max-w-xl text-sm leading-6 text-[#f6dbc2]">
               {resolvedLocale === "mr" ? "जलद स्क्रोलसाठी व्हर्टिकल रील्स आणि लांब कथनासाठी YouTube व्हिडिओ अॅडमिन पॅनेलमधून जोडा." : "Add vertical reels for quick scroll content and YouTube videos for longer storytelling directly from the admin panel."}
             </p>
           </div>
           {featuredVideos.length > 0 ? (
-            <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2">
               {featuredVideos.map((video) => {
                 const isYoutube = video.videoType === "youtube";
 
                 return (
                   <article
                     key={video.id}
-                    className={`overflow-hidden rounded-[28px] border border-white/10 bg-white/95 text-[#34180e] shadow-[0_26px_60px_-36px_rgba(0,0,0,0.6)] ${
+                    className={`min-w-[85%] snap-center overflow-hidden rounded-[28px] border border-white/10 bg-white/95 text-[#34180e] shadow-[0_26px_60px_-36px_rgba(0,0,0,0.6)] md:min-w-[22rem] xl:min-w-[24rem] ${
                       isYoutube ? "md:col-span-1" : ""
                     }`}
                   >
@@ -302,7 +291,7 @@ export default function HomePage() {
                           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#f3bf56]">
                             {isYoutube ? (resolvedLocale === "mr" ? "YouTube प्लेसहोल्डर" : "YouTube placeholder") : (resolvedLocale === "mr" ? "रील प्लेसहोल्डर" : "Reel placeholder")}
                           </p>
-                          <p className="mt-3 text-sm leading-6 text-[#f6dbc2]">
+                          <p className="hidden mt-3 text-sm leading-6 text-[#f6dbc2]">
                             {resolvedLocale === "mr" ? "सध्या व्हिडिओ प्लेबॅक काढलेला आहे. हे कार्ड भविष्यातील मीडियासाठी सेक्शनचे लेआउट तयार ठेवते." : "Video playback has been removed for now. This card keeps the section layout ready for future media."}
                           </p>
                         </div>
@@ -320,8 +309,8 @@ export default function HomePage() {
                         ) : null}
                       </div>
                       <h3 className="mt-4 font-heading text-2xl text-[#34180e]">{resolveLocalizedText(video.title, resolvedLocale)}</h3>
-                      <p className="mt-3 text-sm leading-6 text-[#6c4b33]">{resolveLocalizedText(video.description, resolvedLocale)}</p>
-                      <p className="mt-5 text-sm font-semibold text-[#8b4d1d]">
+                      <p className="hidden mt-3 text-sm leading-6 text-[#6c4b33]">{resolveLocalizedText(video.description, resolvedLocale)}</p>
+                      <p className="hidden mt-5 text-sm font-semibold text-[#8b4d1d]">
                         {resolvedLocale === "mr" ? "फक्त प्लेसहोल्डर" : "Placeholder only"}
                       </p>
                     </div>
@@ -337,7 +326,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-[#f2e7d7] py-10 md:py-14">
+      {/* <section className="bg-[#f2e7d7] py-10 md:py-14">
         <div className="layout-shell grid gap-5 px-4 md:grid-cols-3 md:px-6">
           {features.map((item) => (
             <div key={item.title} className="rounded-[28px] border border-[#e1cdb5] bg-white p-5 shadow-[0_20px_45px_-35px_rgba(58,27,9,0.55)]">
@@ -355,7 +344,7 @@ export default function HomePage() {
             </div>
           ))}
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }
