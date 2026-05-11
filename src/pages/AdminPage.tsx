@@ -7,7 +7,6 @@ import {
   ImagePlus,
   LayoutPanelTop,
   LogOut,
-  MessageSquareQuote,
   Package,
   Plus,
   RefreshCcw,
@@ -118,7 +117,6 @@ const adminMenuItems: Array<{
   { id: "videos", label: "Videos", icon: Film },
   { id: "orders", label: "Orders", icon: ShoppingCart },
   { id: "customers", label: "Customers", icon: UserRound },
-  { id: "reviews", label: "Reviews", icon: MessageSquareQuote },
 ];
 
 function slugify(value: string) {

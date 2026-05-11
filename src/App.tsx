@@ -35,46 +35,46 @@ function AppShell() {
 
   const page = useMemo(() => {
     if (location.pathname === "/") {
-      return { title: "Shivray Arts", node: <HomePage /> };
+      return { title: "Shivrayart", node: <HomePage /> };
     }
     if (location.pathname === "/products") {
-      return { title: "Products - Shivray Arts", node: <ProductsPage /> };
+      return { title: "Products - Shivrayart", node: <ProductsPage /> };
     }
     if (location.pathname.startsWith("/products/")) {
       const productId = decodeURIComponent(location.pathname.replace("/products/", ""));
-      return { title: "Product Details - Shivray Arts", node: <ProductDetailPage productId={productId} /> };
+      return { title: "Product Details - Shivrayart", node: <ProductDetailPage productId={productId} /> };
     }
     if (location.pathname === "/required-catalogue") {
-      return { title: "Required Catalogue - Shivray Arts", node: <RequiredCataloguePage /> };
+      return { title: "Required Catalogue - Shivrayart", node: <RequiredCataloguePage /> };
     }
     if (location.pathname === "/contact") {
-      return { title: "Contact - Shivray Arts", node: <ContactPage /> };
+      return { title: "Contact - Shivrayart", node: <ContactPage /> };
     }
     if (location.pathname === "/cart") {
-      return { title: "Cart - Shivray Arts", node: <CartPage /> };
+      return { title: "Cart - Shivrayart", node: <CartPage /> };
     }
     if (location.pathname === "/wishlist") {
-      return { title: "Wishlist - Shivray Arts", node: <WishlistPage /> };
+      return { title: "Wishlist - Shivrayart", node: <WishlistPage /> };
     }
     if (location.pathname === "/login") {
-      return { title: "Login - Shivray Arts", node: <LoginPage /> };
+      return { title: "Login - Shivrayart", node: <LoginPage /> };
     }
     if (location.pathname === "/about") {
-      return { title: "About Us - Shivray Arts", node: <AboutPage /> };
+      return { title: "About Us - Shivrayart", node: <AboutPage /> };
     }
     if (location.pathname === "/blog") {
-      return { title: "Blog - Shivray Arts", node: <BlogPage /> };
+      return { title: "Blog - Shivrayart", node: <BlogPage /> };
     }
     if (location.pathname === "/our-team") {
-      return { title: "Our Team - Shivray Arts", node: <OurTeamPage /> };
+      return { title: "Our Team - Shivrayart", node: <OurTeamPage /> };
     }
     if (location.pathname === "/wall-of-fame") {
-      return { title: "Wall of Fame - Shivray Arts", node: <WallOfFamePage /> };
+      return { title: "Wall of Fame - Shivrayart", node: <WallOfFamePage /> };
     }
     if (location.pathname === "/admin") {
       if (!adminAuthResolved) {
         return {
-          title: "Checking Admin Session - Shivray Arts",
+          title: "Checking Admin Session - Shivrayart",
           node: (
             <div className="flex min-h-[60vh] items-center justify-center px-4 py-20">
               <div className="rounded-[28px] border border-[#eadbc8] bg-white px-8 py-10 text-center shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)]">
@@ -87,16 +87,16 @@ function AppShell() {
         };
       }
       if (!isAdminAuthed) {
-        return { title: "Admin Login - Shivray Arts", node: <AdminLoginPage /> };
+        return { title: "Admin Login - Shivrayart", node: <AdminLoginPage /> };
       }
-      return { title: "Admin - Shivray Arts", node: <AdminPage /> };
+      return { title: "Admin - Shivrayart", node: <AdminPage /> };
     }
     if (location.pathname === "/admin-login") {
-      return { title: "Admin Login - Shivray Arts", node: <AdminLoginPage /> };
+      return { title: "Admin Login - Shivrayart", node: <AdminLoginPage /> };
     }
 
     return {
-      title: "Page Not Found - Shivray Arts",
+      title: "Page Not Found - Shivrayart",
       node: (
         <div className="flex min-h-[60vh] items-center justify-center px-4 py-20">
           <div className="max-w-md text-center">
@@ -184,9 +184,9 @@ function AppShell() {
             <div className="relative flex h-36 w-36 items-center justify-center">
               <span className="absolute inset-0 animate-[spin_3.8s_linear_infinite] rounded-full border-2 border-gold/30 border-t-gold" />
               <span className="absolute inset-4 rounded-full border border-gold/25 animate-pulse" />
-              <img src={logoImg} alt="Shivray Arts" className="h-24 w-24 rounded-full object-cover ring-2 ring-gold/50 md:h-28 md:w-28" />
+              <img src={logoImg} alt="Shivrayart" className="h-24 w-24 rounded-full object-cover ring-2 ring-gold/50 md:h-28 md:w-28" />
             </div>
-            <p className="mt-5 font-heading text-sm tracking-[0.28em] text-gold/95">Shivray Arts</p>
+            <p className="mt-5 font-heading text-sm tracking-[0.28em] text-gold/95">Shivrayart</p>
             <p className="mt-2 max-w-[16rem] text-center text-[11px] font-semibold tracking-[0.08em] text-[#f8deae]">
               {siteConfig.brandTagline[resolvedLocale]}
             </p>

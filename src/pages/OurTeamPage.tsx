@@ -2,7 +2,7 @@ import { Users } from "lucide-react";
 import aboutCraftsman from "@/assets/about-craftsman.jpg";
 
 const team = [
-  { name: "Shivray Arts", role: "Founder & Managing Director", desc: "A visionary studio preserving traditional Maratha weapon craftsmanship with modern precision.", image: "https://www.rudraartsandhandicrafts.in/images/IMG-20250617-WA0027.jpg" },
+  { name: "Shivrayart", role: "Founder & Managing Director", desc: "A visionary studio preserving traditional Maratha weapon craftsmanship with modern precision.", image: "https://www.rudraartsandhandicrafts.in/images/IMG-20250617-WA0027.jpg" },
   { name: "Master Artisan Team", role: "Lead Craftsmen", desc: "Skilled artisans with decades of experience in traditional metal forging and sculpture.", image: aboutCraftsman },
   { name: "Design & Research", role: "Historical Research Wing", desc: "Ensuring every artifact is historically accurate through meticulous research.", image: "https://www.rudraartsandhandicrafts.in/images/bts21.jpg" },
 ] as const;

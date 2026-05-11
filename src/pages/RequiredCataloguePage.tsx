@@ -63,7 +63,7 @@ export default function RequiredCataloguePage() {
         <div className="layout-shell grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
-              {resolvedLocale === "mr" ? "à¤•à¤¾ à¤®à¤¾à¤—à¤µà¤¾à¤µà¥‡" : "Why request it"}
+              {resolvedLocale === "mr" ? "का मागवावे" : "Why request it"}
             </p>
             <div className="mt-5 space-y-4">
               {[
@@ -102,17 +102,17 @@ export default function RequiredCataloguePage() {
           </div>
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
-              {resolvedLocale === "mr" ? "à¤µà¤¿à¤¨à¤‚à¤¤à¥€ à¤«à¥‰à¤°à¥à¤®" : "Request Form"}
+              {resolvedLocale === "mr" ? "विनंती फॉर्म" : "Request Form"}
             </p>
             <h2 className="mt-2 font-heading text-3xl text-[#34180e]">
               {resolvedLocale === "mr"
-                ? "à¤•à¥…à¤Ÿà¤²à¥‰à¤— à¤®à¤¿à¤³à¤µà¤£à¥à¤¯à¤¾à¤¸à¤¾à¤ à¥€ à¤¤à¤ªà¤¶à¥€à¤² à¤­à¤°à¤¾"
+                ? "कॅटलॉग मिळवण्यासाठी तपशील भरा"
                 : "Fill in your details to get the catalogue"}
             </h2>
             <form className="mt-6 space-y-4" onSubmit={(event) => event.preventDefault()}>
               <div>
                 <label htmlFor="catalogue-name" className="text-sm font-medium text-[#34180e]">
-                  {resolvedLocale === "mr" ? "à¤¨à¤¾à¤µ" : "Name"}
+                  {resolvedLocale === "mr" ? "नाव" : "Name"}
                 </label>
                 <input
                   id="catalogue-name"
@@ -120,7 +120,7 @@ export default function RequiredCataloguePage() {
                   value={form.name}
                   onBlur={() => setTouched((current) => ({ ...current, name: true }))}
                   onChange={(event) => setForm((value) => ({ ...value, name: event.target.value }))}
-                  placeholder={resolvedLocale === "mr" ? "à¤¤à¥à¤®à¤šà¥‡ à¤¨à¤¾à¤µ" : "Your name"}
+                  placeholder={resolvedLocale === "mr" ? "तुमचे नाव" : "Your name"}
                   className={`mt-2 w-full rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${
                     shouldShowNameError ? "border-[#b42318]" : "border-[#eadbc8]"
                   }`}
@@ -128,7 +128,7 @@ export default function RequiredCataloguePage() {
                 {shouldShowNameError ? (
                   <p className="mt-2 text-sm text-[#b42318]">
                     {resolvedLocale === "mr"
-                      ? "à¤•à¥ƒà¤ªà¤¯à¤¾ à¤¤à¥à¤®à¤šà¥‡ à¤ªà¥‚à¤°à¥à¤£ à¤¨à¤¾à¤µ à¤Ÿà¤¾à¤•à¤¾."
+                      ? "कृपया तुमचे पूर्ण नाव टाका."
                       : "Please enter your full name."}
                   </p>
                 ) : null}
@@ -136,7 +136,7 @@ export default function RequiredCataloguePage() {
 
               <div>
                 <label htmlFor="catalogue-phone" className="text-sm font-medium text-[#34180e]">
-                  {resolvedLocale === "mr" ? "à¤«à¥‹à¤¨ à¤¨à¤‚à¤¬à¤°" : "Phone Number"}
+                  {resolvedLocale === "mr" ? "फोन नंबर" : "Phone Number"}
                 </label>
                 <input
                   id="catalogue-phone"
@@ -149,7 +149,7 @@ export default function RequiredCataloguePage() {
                   onChange={(event) => handlePhoneChange(event.target.value)}
                   placeholder={
                     resolvedLocale === "mr"
-                      ? "à¥§à¥¦ à¤…à¤‚à¤•à¥€ à¤«à¥‹à¤¨ à¤¨à¤‚à¤¬à¤° à¤Ÿà¤¾à¤•à¤¾"
+                      ? "१० अंकी फोन नंबर टाका"
                       : "Enter 10-digit phone number"
                   }
                   className={`mt-2 w-full rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${
@@ -159,7 +159,7 @@ export default function RequiredCataloguePage() {
                 {shouldShowPhoneError ? (
                   <p className="mt-2 text-sm text-[#b42318]">
                     {resolvedLocale === "mr"
-                      ? "à¤•à¥ƒà¤ªà¤¯à¤¾ à¤µà¥ˆà¤§ à¥§à¥¦ à¤…à¤‚à¤•à¥€ à¤«à¥‹à¤¨ à¤¨à¤‚à¤¬à¤° à¤Ÿà¤¾à¤•à¤¾."
+                      ? "कृपया वैध १० अंकी फोन नंबर टाका."
                       : "Please enter a valid 10-digit phone number."}
                   </p>
                 ) : null}
@@ -167,7 +167,7 @@ export default function RequiredCataloguePage() {
 
               <div>
                 <label htmlFor="catalogue-type" className="text-sm font-medium text-[#34180e]">
-                  {resolvedLocale === "mr" ? "à¤•à¥…à¤Ÿà¤²à¥‰à¤— à¤•à¥…à¤Ÿà¥‡à¤—à¤°à¥€" : "Catalogue Category"}
+                  {resolvedLocale === "mr" ? "कॅटलॉग कॅटेगरी" : "Catalogue Category"}
                 </label>
                 <select
                   id="catalogue-type"
@@ -185,14 +185,14 @@ export default function RequiredCataloguePage() {
 
               <div>
                 <label htmlFor="catalogue-address" className="text-sm font-medium text-[#34180e]">
-                  {resolvedLocale === "mr" ? "à¤ªà¤¤à¥à¤¤à¤¾" : "Address"}
+                  {resolvedLocale === "mr" ? "पत्ता" : "Address"}
                 </label>
                 <textarea
                   id="catalogue-address"
                   rows={4}
                   value={form.address}
                   onChange={(event) => setForm((value) => ({ ...value, address: event.target.value }))}
-                  placeholder={resolvedLocale === "mr" ? "à¤¤à¥à¤®à¤šà¤¾ à¤ªà¥‚à¤°à¥à¤£ à¤ªà¤¤à¥à¤¤à¤¾" : "Enter your full address"}
+                  placeholder={resolvedLocale === "mr" ? "तुमचा पूर्ण पत्ता" : "Enter your full address"}
                   className="mt-2 w-full resize-none rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e]"
                 />
               </div>
@@ -206,13 +206,13 @@ export default function RequiredCataloguePage() {
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white"
                 >
                   <MessageCircle className="h-4 w-4" />
-                  {resolvedLocale === "mr" ? "à¤•à¥…à¤Ÿà¤²à¥‰à¤— à¤¡à¤¾à¤‰à¤¨à¤²à¥‹à¤¡" : "Download Catalogue"}
+                  {resolvedLocale === "mr" ? "कॅटलॉग डाउनलोड" : "Download Catalogue"}
                 </a>
                 <a
                   href={`tel:${siteConfig.phoneHref}`}
                   className="inline-flex items-center justify-center rounded-full border border-[#d8b48b] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#34180e]"
                 >
-                  {resolvedLocale === "mr" ? "à¤†à¤¤à¤¾ à¤•à¥‰à¤² à¤•à¤°à¤¾" : "Call Now"}
+                  {resolvedLocale === "mr" ? "आता कॉल करा" : "Call Now"}
                 </a>
               </div>
             </form>

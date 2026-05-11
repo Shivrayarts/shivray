@@ -16,11 +16,11 @@ export default function Header() {
   const { wishlist } = useWishlist();
   const wishlistCount = wishlist.length;
   const navLinks = [
-    { to: "/", label: resolvedLocale === "mr" ? "à¤®à¥à¤–à¥à¤¯à¤ªà¥ƒà¤·à¥à¤ " : "Home" },
-    { to: "/products", label: resolvedLocale === "mr" ? "à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡" : "Products" },
-    { to: "/required-catalogue", label: resolvedLocale === "mr" ? "à¤•à¥…à¤Ÿà¤²à¥‰à¤—" : "Catalogue" },
-    { to: "/contact", label: resolvedLocale === "mr" ? "à¤¸à¤‚à¤ªà¤°à¥à¤•" : "Contact" },
-    { to: "/login", label: resolvedLocale === "mr" ? "à¤²à¥‰à¤—à¤¿à¤¨" : "Login" },
+    { to: "/", label: resolvedLocale === "mr" ? "मुख्यपृष्ठ" : "Home" },
+    { to: "/products", label: resolvedLocale === "mr" ? "उत्पादने" : "Products" },
+    { to: "/required-catalogue", label: resolvedLocale === "mr" ? "कॅटलॉग" : "Catalogue" },
+    { to: "/contact", label: resolvedLocale === "mr" ? "संपर्क" : "Contact" },
+    { to: "/login", label: resolvedLocale === "mr" ? "लॉगिन" : "Login" },
   ] as const;
   const desktopNavLinks = navLinks.filter((link) => link.to !== "/login");
 
@@ -39,7 +39,7 @@ export default function Header() {
       <div className="hidden border-b border-[#f2e4d4] bg-[#2b130c] px-4 py-2 text-[#f8e8cf] md:block lg:hidden md:px-6">
         <div className="layout-shell flex items-center justify-between gap-3 text-[11px]">
           <span className="truncate">
-            {resolvedLocale === "mr" ? "à¤®à¥‹à¤¬à¤¾à¤ˆà¤²à¤¸à¤¾à¤ à¥€ à¤¤à¤¯à¤¾à¤° à¤•à¥…à¤Ÿà¤²à¥‰à¤— à¤†à¤£à¤¿ à¤šà¥Œà¤•à¤¶à¥€ à¤…à¤¨à¥à¤­à¤µ" : "Mobile-first catalogue and enquiry experience"}
+            {resolvedLocale === "mr" ? "मोबाईलसाठी तयार कॅटलॉग आणि चौकशी अनुभव" : "Mobile-first catalogue and enquiry experience"}
           </span>
           <a
             href={`tel:${siteConfig.phoneHref}`}
@@ -66,12 +66,12 @@ export default function Header() {
             <Link to="/" className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-2 text-center">
               <img
                 src={logoImg}
-                alt="Shivray Arts"
+                alt="Shivrayart"
                 className="h-12 w-12 rounded-full border border-[#cfae84] object-cover"
               />
               <div className="min-w-0">
                 <p className="truncate font-heading text-lg leading-none text-[#f8ecd9]">
-                  Shivray Arts
+                  Shivrayart
                 </p>
                 <p className="mt-1 truncate text-[10px] font-semibold text-[#d8b48b]">
                   {siteConfig.brandTagline[resolvedLocale]}
@@ -90,12 +90,12 @@ export default function Header() {
             <Link to="/" className="flex min-w-0 items-center gap-4 pr-4 xl:pr-6">
               <img
                 src={logoImg}
-                alt="Shivray Arts"
+                alt="Shivrayart"
                 className="h-16 w-16 rounded-full border border-[#e3c7a5] bg-white p-1 object-cover"
               />
               <div className="min-w-0">
                 <p className="truncate font-heading text-3xl leading-none text-[#34180e]">
-                  Shivray Arts
+                  Shivrayart
                 </p>
                 <p className="mt-2 truncate text-[11px] font-semibold text-[#9b7757]">
                   {siteConfig.brandTagline[resolvedLocale]}
@@ -132,29 +132,29 @@ export default function Header() {
                     type="text"
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder={resolvedLocale === "mr" ? "à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡ à¤¶à¥‹à¤§à¤¾" : "Search products"}
+                    placeholder={resolvedLocale === "mr" ? "उत्पादने शोधा" : "Search products"}
                     className="w-full bg-transparent text-sm font-medium text-[#34180e] outline-none placeholder:text-[#9b7757]"
-                    aria-label={resolvedLocale === "mr" ? "à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡ à¤•à¤¿à¤‚à¤µà¤¾ à¤¶à¥à¤°à¥‡à¤£à¥€ à¤¶à¥‹à¤§à¤¾" : "Search products or categories"}
+                    aria-label={resolvedLocale === "mr" ? "उत्पादने किंवा श्रेणी शोधा" : "Search products or categories"}
                   />
                   <button
                     type="submit"
                     className="rounded-full bg-[#34180e] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#221008]"
                   >
-                    {resolvedLocale === "mr" ? "à¤œà¤¾" : "Go"}
+                    {resolvedLocale === "mr" ? "जा" : "Go"}
                   </button>
                 </div>
               </form>
               <Link
                 to="/login"
                 className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5]"
-                aria-label={resolvedLocale === "mr" ? "à¤–à¤¾à¤¤à¥‡ à¤‰à¤˜à¤¡à¤¾" : "Open account"}
+                aria-label={resolvedLocale === "mr" ? "खाते उघडा" : "Open account"}
               >
                 <LogIn className="h-5 w-5" />
               </Link>
               <Link
                 to="/wishlist"
                 className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5]"
-                aria-label={resolvedLocale === "mr" ? "à¤†à¤µà¤¡à¥€à¤šà¥€ à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡ à¤‰à¤˜à¤¡à¤¾" : "Open liked products"}
+                aria-label={resolvedLocale === "mr" ? "आवडीची उत्पादने उघडा" : "Open liked products"}
               >
                 <Heart className={`h-5 w-5 ${wishlistCount > 0 ? "fill-current" : ""}`} />
                 {wishlistCount > 0 ? (
@@ -177,7 +177,7 @@ export default function Header() {
               className="flex items-center gap-2 rounded-2xl border border-[#eadbc8] bg-white px-4 py-3 text-sm font-semibold text-[#5f402b] transition hover:bg-[#f7efe5]"
             >
               <Search className="h-4 w-4" />
-              {resolvedLocale === "mr" ? "à¤¶à¥‹à¤§à¤¾" : "Search"}
+              {resolvedLocale === "mr" ? "शोधा" : "Search"}
             </Link>
             {navLinks.map((link) => {
               const active = location.pathname === link.to;

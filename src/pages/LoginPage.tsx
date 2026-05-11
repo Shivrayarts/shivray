@@ -36,7 +36,7 @@ export default function LoginPage() {
 
   return (
     <div className="bg-[#f7f1e7] pb-8 md:pb-12">
-      <section className="bg-[#2b130c] px-4 pb-8 pt-6 text-white md:px-6 md:pb-12 md:pt-10"><div className="layout-shell"><span className="inline-flex rounded-full border border-[#f2bb64]/30 bg-[#f2bb64]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffd68d]">{resolvedLocale === "mr" ? "लॉगिन पृष्ठ" : "Login Page"}</span><h1 className="mt-4 font-heading text-4xl leading-none text-[#fff5e6] md:text-6xl">{resolvedLocale === "mr" ? "मोबाइल ग्राहकांसाठी स्वच्छ लॉगिन स्क्रीन." : "A cleaner login screen for mobile customers."}</h1></div></section>
+      {/* <section className="bg-[#2b130c] px-4 pb-8 pt-6 text-white md:px-6 md:pb-12 md:pt-10"><div className="layout-shell"><span className="inline-flex rounded-full border border-[#f2bb64]/30 bg-[#f2bb64]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffd68d]">{resolvedLocale === "mr" ? "लॉगिन पृष्ठ" : "Login Page"}</span><h1 className="mt-4 font-heading text-4xl leading-none text-[#fff5e6] md:text-6xl">{resolvedLocale === "mr" ? "मोबाइल ग्राहकांसाठी स्वच्छ लॉगिन स्क्रीन." : "A cleaner login screen for mobile customers."}</h1></div></section> */}
       <section className="px-4 pt-6 md:px-6">
         <div className="layout-shell grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">

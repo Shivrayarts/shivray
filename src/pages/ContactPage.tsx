@@ -25,7 +25,7 @@ export default function ContactPage() {
 
   const whatsappLink = useMemo(() => {
     const query = encodeURIComponent(
-      `Hi Shivray Arts, I am ${form.name || "interested in your products"}. ${
+      `Hi Shivrayart, I am ${form.name || "interested in your products"}. ${
         form.phone ? `My number is ${form.phone}. ` : ""
       }${form.city ? `I am from ${form.city}. ` : ""}${form.message || "Please contact me back."}`,
     );
@@ -36,7 +36,7 @@ export default function ContactPage() {
     const subject = encodeURIComponent(`New enquiry from ${form.name || "website visitor"}`);
     const body = encodeURIComponent(
       [
-        "Hello Shivray Arts,",
+        "Hello Shivrayart,",
         "",
         `Name: ${form.name || "-"}`,
         `Number: ${form.phone || "-"}`,
@@ -75,7 +75,7 @@ export default function ContactPage() {
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
-                {resolvedLocale === "mr" ? "à¤¥à¥‡à¤Ÿ à¤¸à¤¹à¤¾à¤¯à¥à¤¯" : "Direct Support"}
+                {resolvedLocale === "mr" ? "थेट सहाय्य" : "Direct Support"}
               </p>
               <div className="flex items-center gap-3">
                 <a href={siteConfig.socialLinks.facebook} aria-label="Facebook" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#eadbc8] bg-white text-[#34180e]">
@@ -98,7 +98,7 @@ export default function ContactPage() {
                 <div className="flex gap-3">
                   <Phone className="mt-0.5 h-5 w-5 shrink-0 text-[#b17024]" />
                   <div>
-                    <p className="font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "à¤†à¤®à¥à¤¹à¤¾à¤²à¤¾ à¤•à¥‰à¤² à¤•à¤°à¤¾" : "Call us"}</p>
+                    <p className="font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "आम्हाला कॉल करा" : "Call us"}</p>
                     <div className="mt-1 space-y-0.5 text-sm text-[#7e624b]">
                       <a href={`tel:${siteConfig.phoneHref}`} className="block">
                         {siteConfig.phoneDisplay}
@@ -115,7 +115,7 @@ export default function ContactPage() {
                 <div className="flex gap-3">
                   <Mail className="mt-0.5 h-5 w-5 shrink-0 text-[#b17024]" />
                   <div>
-                    <p className="font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "à¤†à¤®à¥à¤¹à¤¾à¤²à¤¾ à¤ˆà¤®à¥‡à¤² à¤•à¤°à¤¾" : "Email us"}</p>
+                    <p className="font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "आम्हाला ईमेल करा" : "Email us"}</p>
                     <a href={`mailto:${siteConfig.email}`} className="mt-1 inline-block text-sm text-[#7e624b]">
                       {siteConfig.email}
                     </a>
@@ -127,7 +127,7 @@ export default function ContactPage() {
                 <div className="flex gap-3">
                   <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[#b17024]" />
                   <div>
-                    <p className="font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "à¤†à¤®à¤šà¥à¤¯à¤¾ à¤¸à¥à¤Ÿà¥à¤¡à¤¿à¤“à¤²à¤¾ à¤­à¥‡à¤Ÿ à¤¦à¥à¤¯à¤¾" : "Visit our studio"}</p>
+                    <p className="font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "आमच्या स्टुडिओला भेट द्या" : "Visit our studio"}</p>
                     <p className="mt-1 text-sm leading-6 text-[#7e624b]">{siteConfig.address}</p>
                   </div>
                 </div>
@@ -151,16 +151,16 @@ export default function ContactPage() {
 
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
-              {resolvedLocale === "mr" ? "à¤œà¤²à¤¦ à¤šà¥Œà¤•à¤¶à¥€" : "Quick Enquiry"}
+              {resolvedLocale === "mr" ? "जलद चौकशी" : "Quick Enquiry"}
             </p>
             <h2 className="mt-2 font-heading text-3xl text-[#34180e]">
-              {resolvedLocale === "mr" ? "à¤¸à¤‚à¤ªà¤°à¥à¤• à¤¸à¤¾à¤§à¤¾" : "Contact Us"}
+              {resolvedLocale === "mr" ? "संपर्क साधा" : "Contact Us"}
             </h2>
 
             <form className="mt-6 space-y-4" onSubmit={(event) => event.preventDefault()}>
               <div>
                 <label htmlFor="contact-name" className="text-sm font-medium text-[#34180e]">
-                  {resolvedLocale === "mr" ? "à¤¨à¤¾à¤µ" : "Name"}
+                  {resolvedLocale === "mr" ? "नाव" : "Name"}
                 </label>
                 <input
                   id="contact-name"
@@ -168,17 +168,17 @@ export default function ContactPage() {
                   value={form.name}
                   onBlur={() => setTouched((value) => ({ ...value, name: true }))}
                   onChange={(event) => setForm((value) => ({ ...value, name: event.target.value }))}
-                  placeholder={resolvedLocale === "mr" ? "à¤¤à¥à¤®à¤šà¥‡ à¤¨à¤¾à¤µ" : "Your name"}
+                  placeholder={resolvedLocale === "mr" ? "तुमचे नाव" : "Your name"}
                   className={`mt-2 w-full rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${touched.name && !isNameValid ? "border-[#b42318]" : "border-[#eadbc8]"}`}
                 />
                 {touched.name && !isNameValid ? (
-                  <p className="mt-2 text-sm text-[#b42318]">{resolvedLocale === "mr" ? "à¤•à¥ƒà¤ªà¤¯à¤¾ à¤¤à¥à¤®à¤šà¥‡ à¤ªà¥‚à¤°à¥à¤£ à¤¨à¤¾à¤µ à¤Ÿà¤¾à¤•à¤¾." : "Please enter your full name."}</p>
+                  <p className="mt-2 text-sm text-[#b42318]">{resolvedLocale === "mr" ? "कृपया तुमचे पूर्ण नाव टाका." : "Please enter your full name."}</p>
                 ) : null}
               </div>
 
               <div>
                 <label htmlFor="contact-phone" className="text-sm font-medium text-[#34180e]">
-                  {resolvedLocale === "mr" ? "à¤¨à¤‚à¤¬à¤°" : "Number"}
+                  {resolvedLocale === "mr" ? "नंबर" : "Number"}
                 </label>
                 <input
                   id="contact-phone"
@@ -189,19 +189,19 @@ export default function ContactPage() {
                   value={form.phone}
                   onBlur={() => setTouched((value) => ({ ...value, phone: true }))}
                   onChange={(event) => setForm((value) => ({ ...value, phone: normalizeDigits(event.target.value, 10) }))}
-                  placeholder={resolvedLocale === "mr" ? "à¥§à¥¦ à¤…à¤‚à¤•à¥€ à¤¨à¤‚à¤¬à¤° à¤Ÿà¤¾à¤•à¤¾" : "Enter 10-digit number"}
+                  placeholder={resolvedLocale === "mr" ? "१० अंकी नंबर टाका" : "Enter 10-digit number"}
                   className={`mt-2 w-full rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${touched.phone && !isPhoneValid ? "border-[#b42318]" : "border-[#eadbc8]"}`}
                 />
                 {touched.phone && !isPhoneValid ? (
                   <p className="mt-2 text-sm text-[#b42318]">
-                    {resolvedLocale === "mr" ? "à¤•à¥ƒà¤ªà¤¯à¤¾ à¤µà¥ˆà¤§ à¥§à¥¦ à¤…à¤‚à¤•à¥€ à¤«à¥‹à¤¨ à¤¨à¤‚à¤¬à¤° à¤Ÿà¤¾à¤•à¤¾." : "Please enter a valid 10-digit phone number."}
+                    {resolvedLocale === "mr" ? "कृपया वैध १० अंकी फोन नंबर टाका." : "Please enter a valid 10-digit phone number."}
                   </p>
                 ) : null}
               </div>
 
               <div>
                 <label htmlFor="contact-city" className="text-sm font-medium text-[#34180e]">
-                  {resolvedLocale === "mr" ? "à¤¶à¤¹à¤°" : "City"}
+                  {resolvedLocale === "mr" ? "शहर" : "City"}
                 </label>
                 <input
                   id="contact-city"
@@ -209,17 +209,17 @@ export default function ContactPage() {
                   value={form.city}
                   onBlur={() => setTouched((value) => ({ ...value, city: true }))}
                   onChange={(event) => setForm((value) => ({ ...value, city: event.target.value }))}
-                  placeholder={resolvedLocale === "mr" ? "à¤¤à¥à¤®à¤šà¥‡ à¤¶à¤¹à¤°" : "Your city"}
+                  placeholder={resolvedLocale === "mr" ? "तुमचे शहर" : "Your city"}
                   className={`mt-2 w-full rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${touched.city && !isCityValid ? "border-[#b42318]" : "border-[#eadbc8]"}`}
                 />
                 {touched.city && !isCityValid ? (
-                  <p className="mt-2 text-sm text-[#b42318]">{resolvedLocale === "mr" ? "à¤•à¥ƒà¤ªà¤¯à¤¾ à¤¤à¥à¤®à¤šà¥‡ à¤¶à¤¹à¤° à¤Ÿà¤¾à¤•à¤¾." : "Please enter your city."}</p>
+                  <p className="mt-2 text-sm text-[#b42318]">{resolvedLocale === "mr" ? "कृपया तुमचे शहर टाका." : "Please enter your city."}</p>
                 ) : null}
               </div>
 
               <div>
                 <label htmlFor="contact-message" className="text-sm font-medium text-[#34180e]">
-                  {resolvedLocale === "mr" ? "à¤¸à¤‚à¤¦à¥‡à¤¶" : "Message"}
+                  {resolvedLocale === "mr" ? "संदेश" : "Message"}
                 </label>
                 <textarea
                   id="contact-message"
@@ -227,11 +227,11 @@ export default function ContactPage() {
                   value={form.message}
                   onBlur={() => setTouched((value) => ({ ...value, message: true }))}
                   onChange={(event) => setForm((value) => ({ ...value, message: event.target.value }))}
-                  placeholder={resolvedLocale === "mr" ? "à¤¤à¥à¤®à¥à¤¹à¤¾à¤²à¤¾ à¤•à¤¾à¤¯ à¤–à¤°à¥‡à¤¦à¥€ à¤•à¤°à¤¾à¤¯à¤šà¥‡ à¤†à¤¹à¥‡ à¤•à¤¿à¤‚à¤µà¤¾ à¤•à¤¾à¤¯ à¤µà¤¿à¤šà¤¾à¤°à¤¾à¤¯à¤šà¥‡ à¤†à¤¹à¥‡ à¤¤à¥‡ à¤²à¤¿à¤¹à¤¾" : "Tell us what you want to buy or ask for"}
+                  placeholder={resolvedLocale === "mr" ? "तुम्हाला काय खरेदी करायचे आहे किंवा काय विचारायचे आहे ते लिहा" : "Tell us what you want to buy or ask for"}
                   className={`mt-2 w-full resize-none rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${touched.message && !isMessageValid ? "border-[#b42318]" : "border-[#eadbc8]"}`}
                 />
                 {touched.message && !isMessageValid ? (
-                  <p className="mt-2 text-sm text-[#b42318]">{resolvedLocale === "mr" ? "à¤•à¥ƒà¤ªà¤¯à¤¾ à¤•à¤¿à¤®à¤¾à¤¨ à¥§à¥¦ à¤…à¤•à¥à¤·à¤°à¤¾à¤‚à¤šà¤¾ à¤¸à¤‚à¤¦à¥‡à¤¶ à¤Ÿà¤¾à¤•à¤¾." : "Please enter at least 10 characters in your message."}</p>
+                  <p className="mt-2 text-sm text-[#b42318]">{resolvedLocale === "mr" ? "कृपया किमान १० अक्षरांचा संदेश टाका." : "Please enter at least 10 characters in your message."}</p>
                 ) : null}
               </div>
 
@@ -244,14 +244,14 @@ export default function ContactPage() {
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white"
                 >
                   <Send className="h-4 w-4" />
-                  {resolvedLocale === "mr" ? "à¤µà¥à¤¹à¥‰à¤Ÿà¥à¤¸à¤…à¥…à¤ªà¤µà¤° à¤ªà¤¾à¤ à¤µà¤¾" : "Send on WhatsApp"}
+                  {resolvedLocale === "mr" ? "व्हॉट्सअॅपवर पाठवा" : "Send on WhatsApp"}
                 </a>
                 <a
                   href={emailLink}
                   onClick={handleEmailClick}
                   className="inline-flex items-center justify-center rounded-full border border-[#d8b48b] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#34180e]"
                 >
-                  {resolvedLocale === "mr" ? "à¤ˆà¤®à¥‡à¤² à¤ªà¤¾à¤ à¤µà¤¾" : "Send Email"}
+                  {resolvedLocale === "mr" ? "ईमेल पाठवा" : "Send Email"}
                 </a>
               </div>
             </form>

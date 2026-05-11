@@ -96,7 +96,7 @@ export default function HomePage() {
   useEffect(() => {
     setCurrentSlide((prev) => (heroSlides.length === 0 ? 0 : Math.min(prev, heroSlides.length - 1)));
   }, [heroSlides.length]);
-
+  
   useEffect(() => {
     setCurrentReview((prev) => (reviews.length === 0 ? 0 : Math.min(prev, reviews.length - 1)));
   }, [reviews.length]);
