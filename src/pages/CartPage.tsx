@@ -8,6 +8,7 @@ import { isValidEmail, isValidName, isValidPhone, normalizeDigits } from "@/lib/
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { normalizeDisplayCase, parseCurrencyAmount } from "@/lib/utils";
 import {
+  type CustomerProfile,
   getStoredCustomers,
   loginCustomer,
   placeOrder,
@@ -38,7 +39,7 @@ export default function CartPage() {
     const product = catalog.find((p) => p.id === entry.id);
     return product ? { product, quantity: entry.quantity } : null;
   }).filter((item): item is NonNullable<typeof item> => item !== null);
-  const currentCustomer = useMemo(() => {
+  const currentCustomer = useMemo<CustomerProfile | null>(() => {
     if (!customerSession) return null;
     return getStoredCustomers().find((customer) => customer.id === customerSession.customerId) ?? null;
   }, [customerSession]);

@@ -1,7 +1,7 @@
 import { Link } from "@/lib/spa-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ChevronRight, Heart, MessageCircle, ShoppingCart, Star } from "lucide-react";
-import { getCategoryLabel } from "@/data/products";
+import { ArrowLeft, ChevronLeft, ChevronRight, Heart, MessageCircle, ShoppingCart } from "lucide-react";
+import { getCategoryLabel, type Product } from "@/data/products";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { useStoredProducts } from "@/lib/content-store";
 import { siteConfig } from "@/lib/site-config";
@@ -16,7 +16,7 @@ function getRandomValue(min: number, max: number) {
 
 function getHistoricalBackground(
   product: {
-    name: unknown;
+    name: Product["name"];
   },
   locale: "en" | "mr",
 ) {
@@ -47,7 +47,8 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   const product = products.find((item) => item.id === productId);
   const [addedCount, setAddedCount] = useState(0);
   const [selectedImage, setSelectedImage] = useState("");
-  const [liveMetrics, setLiveMetrics] = useState({ soldLast7Days: 42, viewingNow: 11, reviewCount: 36 });
+  const [galleryIndex, setGalleryIndex] = useState(0);
+  const [liveMetrics, setLiveMetrics] = useState({ soldLast7Days: 7, viewingNow: 20 });
   const { addToCart } = useCart();
   const { isWishlisted, toggleWishlist } = useWishlist();
 
@@ -58,15 +59,15 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   useEffect(() => {
     if (!product) return;
     setLiveMetrics({
-      soldLast7Days: getRandomValue(18, 86),
-      viewingNow: getRandomValue(4, 23),
-      reviewCount: getRandomValue(18, 74),
+      soldLast7Days: getRandomValue(5, 9),
+      viewingNow: getRandomValue(20, 99),
     });
   }, [product?.id]);
 
   useEffect(() => {
     if (!product) return;
     setSelectedImage(product.image);
+    setGalleryIndex(0);
   }, [product]);
 
   if (!product) {
@@ -85,7 +86,10 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   const whatsappLink = `${siteConfig.whatsappHref}?text=${encodeURIComponent(
     `Hi Shivray, I want details for ${normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}. Please share price and availability.`,
   )}`;
-  const galleryImages = [product.image, ...relatedProducts.map((item) => item.image)].slice(0, 3);
+  const galleryImages = [product.image, ...relatedProducts.map((item) => item.image)].slice(0, 4);
+  const visibleGalleryImages = galleryImages.slice(galleryIndex, galleryIndex + 3);
+  const canSlideGalleryBack = galleryIndex > 0;
+  const canSlideGalleryForward = galleryIndex + 3 < galleryImages.length;
   const historicalBackground = getHistoricalBackground(product, resolvedLocale);
 
   return (
@@ -109,8 +113,8 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
       </section>
       <section className="px-4 pt-4 md:px-6 md:pt-3">
         <div className="layout-shell grid gap-6 md:items-stretch md:grid-cols-[0.95fr_1.05fr]">
-          <div className="rounded-[20px] bg-[#f5f1e8] p-4 md:flex md:h-full md:flex-col md:rounded-[24px] md:p-5">
-            <div className="overflow-hidden rounded-[24px] bg-white md:flex-1">
+          <div className="rounded-[20px] bg-[#f5f1e8] p-4 md:flex md:min-h-[51rem] md:flex-col md:rounded-[24px] md:p-5">
+            <div className="overflow-hidden rounded-[24px] bg-white md:min-h-[35rem] md:flex-1">
               <img
                 src={selectedImage || product.image}
                 alt={normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}
@@ -119,26 +123,58 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                 height={920}
               />
             </div>
-            <div className="mt-4 grid grid-cols-3 gap-3">
-              {galleryImages.map((image, index) => (
-                <button
-                  key={`${image}-${index}`}
-                  type="button"
-                  onClick={() => setSelectedImage(image)}
-                  className={`overflow-hidden rounded-[18px] border bg-white transition ${
-                    image === (selectedImage || product.image) ? "border-[#1f1f1f]" : "border-[#ddd4c5]"
-                  }`}
-                >
-                  <img
-                    src={image}
-                    alt={`${normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))} preview ${index + 1}`}
-                    className="aspect-square w-full object-cover"
-                    loading="lazy"
-                  />
-                </button>
-              ))}
+            <div className="mt-4">
+              <div className="grid grid-cols-3 gap-3">
+                {visibleGalleryImages.map((image, index) => (
+                  <button
+                    key={`${image}-${galleryIndex + index}`}
+                    type="button"
+                    onClick={() => setSelectedImage(image)}
+                    className={`overflow-hidden rounded-[18px] border bg-white transition ${
+                      image === (selectedImage || product.image) ? "border-[#1f1f1f]" : "border-[#ddd4c5]"
+                    }`}
+                  >
+                    <img
+                      src={image}
+                      alt={`${normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))} preview ${galleryIndex + index + 1}`}
+                      className="aspect-square w-full object-cover"
+                      loading="lazy"
+                    />
+                  </button>
+                ))}
+              </div>
+              {galleryImages.length > 3 ? (
+                <div className="mt-3 flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setGalleryIndex((value) => Math.max(0, value - 1))}
+                    disabled={!canSlideGalleryBack}
+                    className={`inline-flex h-10 w-10 items-center justify-center rounded-full border ${
+                      canSlideGalleryBack
+                        ? "border-[#d8b48b] bg-white text-[#34180e]"
+                        : "border-[#eadbc8] bg-[#f5f1e8] text-[#b9ab9a]"
+                    }`}
+                    aria-label="Previous gallery images"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGalleryIndex((value) => Math.min(galleryImages.length - 3, value + 1))}
+                    disabled={!canSlideGalleryForward}
+                    className={`inline-flex h-10 w-10 items-center justify-center rounded-full border ${
+                      canSlideGalleryForward
+                        ? "border-[#d8b48b] bg-white text-[#34180e]"
+                        : "border-[#eadbc8] bg-[#f5f1e8] text-[#b9ab9a]"
+                    }`}
+                    aria-label="Next gallery images"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : null}
             </div>
-            <div className="mt-6 rounded-[24px] bg-[#fff8f4] p-5">
+            <div className="mt-5 rounded-[24px] bg-[#fff8f4] p-5">
               <p className="text-xl font-semibold text-[#e53b49]">{liveMetrics.soldLast7Days} {resolvedLocale === "mr" ? "\u092e\u093e\u0917\u0940\u0932 \u096d \u0926\u093f\u0935\u0938\u093e\u0902\u0924 \u0935\u093f\u0915\u094d\u0930\u0940" : "sold in last 7 days"}</p>
               <div className="mt-4 flex items-center gap-3">
                 <div className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-black text-sm font-bold text-white">{liveMetrics.viewingNow}</div>
@@ -146,14 +182,10 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
               </div>
             </div>
           </div>
-          <div className="rounded-[32px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:h-full md:p-7">
+          <div className="rounded-[32px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
             <div className="flex items-center justify-between gap-3">
               <span className="rounded-full bg-[#fcf1dc] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#b17024]">{resolveLocalizedText(product.tag, resolvedLocale) || (resolvedLocale === "mr" ? "\u0935\u093f\u0936\u0947\u0937 \u0924\u0941\u0915\u0921\u093e" : "Featured piece")}</span>
               <p className="text-2xl font-semibold text-[#8b4d1d]">{product.price}</p>
-            </div>
-            <div className="mt-5 flex items-center gap-1 text-[#f09b21]">
-              {Array.from({ length: 5 }).map((_, index) => <Star key={index} className="h-4 w-4 fill-current" />)}
-              <span className="ml-2 text-sm text-[#6c4b33]">({liveMetrics.reviewCount} {resolvedLocale === "mr" ? "\u0905\u092d\u093f\u092a\u094d\u0930\u093e\u092f" : "reviews"})</span>
             </div>
             <p className="mt-5 text-sm leading-7 text-[#6c4b33]">{resolveLocalizedText(product.details, resolvedLocale)}</p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">

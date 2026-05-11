@@ -16,11 +16,11 @@ export default function Header() {
   const { wishlist } = useWishlist();
   const wishlistCount = wishlist.length;
   const navLinks = [
-    { to: "/", label: resolvedLocale === "mr" ? "मुख्यपृष्ठ" : "Home" },
-    { to: "/products", label: resolvedLocale === "mr" ? "उत्पादने" : "Products" },
-    { to: "/required-catalogue", label: resolvedLocale === "mr" ? "कॅटलॉग" : "Catalogue" },
-    { to: "/contact", label: resolvedLocale === "mr" ? "संपर्क" : "Contact" },
-    { to: "/login", label: resolvedLocale === "mr" ? "लॉगिन" : "Login" },
+    { to: "/", label: resolvedLocale === "mr" ? "à¤®à¥à¤–à¥à¤¯à¤ªà¥ƒà¤·à¥à¤ " : "Home" },
+    { to: "/products", label: resolvedLocale === "mr" ? "à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡" : "Products" },
+    { to: "/required-catalogue", label: resolvedLocale === "mr" ? "à¤•à¥…à¤Ÿà¤²à¥‰à¤—" : "Catalogue" },
+    { to: "/contact", label: resolvedLocale === "mr" ? "à¤¸à¤‚à¤ªà¤°à¥à¤•" : "Contact" },
+    { to: "/login", label: resolvedLocale === "mr" ? "à¤²à¥‰à¤—à¤¿à¤¨" : "Login" },
   ] as const;
   const desktopNavLinks = navLinks.filter((link) => link.to !== "/login");
 
@@ -39,7 +39,7 @@ export default function Header() {
       <div className="hidden border-b border-[#f2e4d4] bg-[#2b130c] px-4 py-2 text-[#f8e8cf] md:block lg:hidden md:px-6">
         <div className="layout-shell flex items-center justify-between gap-3 text-[11px]">
           <span className="truncate">
-            {resolvedLocale === "mr" ? "मोबाईलसाठी तयार कॅटलॉग आणि चौकशी अनुभव" : "Mobile-first catalogue and enquiry experience"}
+            {resolvedLocale === "mr" ? "à¤®à¥‹à¤¬à¤¾à¤ˆà¤²à¤¸à¤¾à¤ à¥€ à¤¤à¤¯à¤¾à¤° à¤•à¥…à¤Ÿà¤²à¥‰à¤— à¤†à¤£à¤¿ à¤šà¥Œà¤•à¤¶à¥€ à¤…à¤¨à¥à¤­à¤µ" : "Mobile-first catalogue and enquiry experience"}
           </span>
           <a
             href={`tel:${siteConfig.phoneHref}`}
@@ -132,29 +132,29 @@ export default function Header() {
                     type="text"
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder={resolvedLocale === "mr" ? "उत्पादने शोधा" : "Search products"}
+                    placeholder={resolvedLocale === "mr" ? "à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡ à¤¶à¥‹à¤§à¤¾" : "Search products"}
                     className="w-full bg-transparent text-sm font-medium text-[#34180e] outline-none placeholder:text-[#9b7757]"
-                    aria-label={resolvedLocale === "mr" ? "उत्पादने किंवा श्रेणी शोधा" : "Search products or categories"}
+                    aria-label={resolvedLocale === "mr" ? "à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡ à¤•à¤¿à¤‚à¤µà¤¾ à¤¶à¥à¤°à¥‡à¤£à¥€ à¤¶à¥‹à¤§à¤¾" : "Search products or categories"}
                   />
                   <button
                     type="submit"
                     className="rounded-full bg-[#34180e] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#221008]"
                   >
-                    {resolvedLocale === "mr" ? "जा" : "Go"}
+                    {resolvedLocale === "mr" ? "à¤œà¤¾" : "Go"}
                   </button>
                 </div>
               </form>
               <Link
                 to="/login"
                 className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5]"
-                aria-label={resolvedLocale === "mr" ? "खाते उघडा" : "Open account"}
+                aria-label={resolvedLocale === "mr" ? "à¤–à¤¾à¤¤à¥‡ à¤‰à¤˜à¤¡à¤¾" : "Open account"}
               >
                 <LogIn className="h-5 w-5" />
               </Link>
               <Link
                 to="/wishlist"
                 className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5]"
-                aria-label={resolvedLocale === "mr" ? "आवडीची उत्पादने उघडा" : "Open liked products"}
+                aria-label={resolvedLocale === "mr" ? "à¤†à¤µà¤¡à¥€à¤šà¥€ à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡ à¤‰à¤˜à¤¡à¤¾" : "Open liked products"}
               >
                 <Heart className={`h-5 w-5 ${wishlistCount > 0 ? "fill-current" : ""}`} />
                 {wishlistCount > 0 ? (
@@ -171,16 +171,13 @@ export default function Header() {
       {mobileOpen ? (
         <div className="border-t border-[#eadbc8] bg-[#fffaf4] lg:hidden">
           <nav className="layout-shell grid gap-2 px-4 py-4 md:px-6">
-            <div className="flex justify-center pb-1">
-              <LanguageSwitcher />
-            </div>
             <Link
-              to="/login"
+              to="/products"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-center gap-2 rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm font-semibold text-[#34180e]"
+              className="flex items-center gap-2 rounded-2xl border border-[#eadbc8] bg-white px-4 py-3 text-sm font-semibold text-[#5f402b] transition hover:bg-[#f7efe5]"
             >
-              <LogIn className="h-4 w-4" />
-              {resolvedLocale === "mr" ? "माझे खाते" : "My account"}
+              <Search className="h-4 w-4" />
+              {resolvedLocale === "mr" ? "à¤¶à¥‹à¤§à¤¾" : "Search"}
             </Link>
             {navLinks.map((link) => {
               const active = location.pathname === link.to;

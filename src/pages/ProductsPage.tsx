@@ -2,6 +2,14 @@ import { Link, useLocation } from "@/lib/spa-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, Search, SlidersHorizontal } from "lucide-react";
 import { categories, getCategoryLabel } from "@/data/products";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useStoredProducts } from "@/lib/content-store";
 import { getSearchableText, resolveLocalizedText, useLanguage } from "@/lib/language";
@@ -12,6 +20,8 @@ import productWeapon1 from "@/assets/product-weapon-1.jpg";
 import { parseCurrencyAmount } from "@/lib/utils";
 import ProductGalleryCard from "@/components/ProductGalleryCard";
 
+const PRODUCTS_PER_PAGE = 12;
+
 export default function ProductsPage() {
   const { resolvedLocale } = useLanguage();
   const location = useLocation();
@@ -21,12 +31,14 @@ export default function ProductsPage() {
   const initialCategory = categories.includes((categoryParam ?? "") as (typeof categories)[number])
     ? ((categoryParam ?? "All") as (typeof categories)[number])
     : "All";
+  const hasRouteCategoryFilter = initialCategory !== "All";
   const [search, setSearch] = useState(initialSearch);
   const [category, setCategory] = useState<(typeof categories)[number]>(initialCategory);
   const [sortBy, setSortBy] = useState("featured");
   const [mobileSortOpen, setMobileSortOpen] = useState(false);
   const [categorySlide, setCategorySlide] = useState(0);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
   const products = useStoredProducts();
   const { isWishlisted, toggleWishlist } = useWishlist();
@@ -75,6 +87,22 @@ export default function ProductsPage() {
     [products, resolvedLocale],
   );
 
+  const visibleCategoryCards = useMemo(
+    () =>
+      hasRouteCategoryFilter && category !== "All"
+        ? categoryCards.filter((card) => card.key === category)
+        : categoryCards,
+    [category, categoryCards, hasRouteCategoryFilter],
+  );
+
+  useEffect(() => {
+    setCategorySlide(0);
+  }, [visibleCategoryCards.length]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [category, search, sortBy]);
+
   const filtered = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
     const matchedProducts = products.filter((product) => {
@@ -100,6 +128,16 @@ export default function ProductsPage() {
     return sortedProducts;
   }, [category, products, resolvedLocale, search, sortBy]);
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PRODUCTS_PER_PAGE));
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+    return filtered.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
+  }, [currentPage, filtered]);
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
+
   const sortLabel =
     sortBy === "price-low"
       ? (resolvedLocale === "mr" ? "\u0915\u093f\u0902\u092e\u0924: \u0915\u092e\u0940 \u0924\u0947 \u091c\u093e\u0938\u094d\u0924" : "Price: Low to High")
@@ -121,7 +159,7 @@ export default function ProductsPage() {
     if (!firstCard) return;
     const cardWidth = firstCard.offsetWidth + 16;
     const nextSlide = Math.round(node.scrollLeft / cardWidth);
-    setCategorySlide(Math.max(0, Math.min(nextSlide, categoryCards.length - 1)));
+    setCategorySlide(Math.max(0, Math.min(nextSlide, visibleCategoryCards.length - 1)));
   };
 
   return (
@@ -144,7 +182,7 @@ export default function ProductsPage() {
             </h2>
           </div>
           <div ref={categoriesRef} onScroll={handleCategoriesScroll} className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-4 md:gap-x-6 md:overflow-visible md:pb-0">
-            {categoryCards.map((card) => (
+            {visibleCategoryCards.map((card) => (
               <button key={card.key} type="button" data-catalogue-category-card onClick={() => setCategory(card.key)} className="group min-w-[78%] snap-center text-center sm:min-w-[calc(50%-0.5rem)] md:min-w-0">
                 <div className="relative overflow-hidden rounded-[30px] bg-[#b65a73] shadow-[0_18px_45px_-30px_rgba(89,34,49,0.65)]">
                   <img src={card.image} alt={card.title} className="aspect-square w-full object-cover opacity-90 saturate-[0.7] transition duration-500 group-hover:scale-105" />
@@ -155,7 +193,7 @@ export default function ProductsPage() {
             ))}
           </div>
           <div className="mt-7 flex items-center justify-center gap-3">
-            {categoryCards.map((card, index) => (
+            {visibleCategoryCards.map((card, index) => (
               <span key={card.key} className={`rounded-full ${index === categorySlide ? "h-4 w-4 border border-[#1d150f] bg-white shadow-[inset_0_0_0_4px_#1d150f]" : "h-2.5 w-2.5 bg-[#a9a29c]"}`} />
             ))}
           </div>
@@ -254,7 +292,7 @@ export default function ProductsPage() {
             <Link to="/required-catalogue" className="hidden rounded-full border border-[#d8b48b] px-4 py-2 text-xs font-semibold tracking-[0.18em] text-[#34180e] md:inline-flex">{resolvedLocale === "mr" ? "\u092a\u0942\u0930\u094d\u0923 \u0915\u0945\u091f\u0932\u0949\u0917 \u092e\u093f\u0933\u0935\u093e" : "Get full catalogue"}</Link>
           </div>
           <div className="grid grid-cols-2 gap-3 md:hidden">
-            {filtered.map((product) => (
+            {paginatedProducts.map((product) => (
               <ProductGalleryCard
                 key={product.id}
                 product={product}
@@ -264,7 +302,7 @@ export default function ProductsPage() {
             ))}
           </div>
           <div className="hidden grid-cols-2 gap-3 md:grid md:gap-4 xl:grid-cols-4">
-            {filtered.map((product) => (
+            {paginatedProducts.map((product) => (
               <ProductGalleryCard
                 key={product.id}
                 product={product}
@@ -273,6 +311,47 @@ export default function ProductsPage() {
               />
             ))}
           </div>
+          {totalPages > 1 ? (
+            <Pagination className="mt-8">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setCurrentPage((page) => Math.max(1, page - 1));
+                    }}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      href="#"
+                      isActive={currentPage === page}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        setCurrentPage(page);
+                      }}
+                      className={currentPage === page ? "border-[#34180e] bg-[#34180e] text-white hover:bg-[#34180e] hover:text-white" : "text-[#34180e]"}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setCurrentPage((page) => Math.min(totalPages, page + 1));
+                    }}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          ) : null}
         </div>
       </section>
     </div>
