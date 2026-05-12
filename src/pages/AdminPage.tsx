@@ -26,6 +26,7 @@ import { productCategories } from "@/data/products";
 import type { CatalogueType } from "@/lib/catalogue-types";
 import { defaultCatalogueTypes } from "@/lib/catalogue-types";
 import { logoutAdmin } from "@/lib/admin-auth";
+import { resolveLocalizedText } from "@/lib/language";
 import { parseCurrencyAmount } from "@/lib/utils";
 import {
   saveStoredCatalogueTypes,
@@ -76,6 +77,8 @@ const bannerTemplate: HomeBanner = {
   titleBottom: "",
   copy: "",
   image: "",
+  mediaType: "image",
+  videoUrl: "",
 };
 
 const reviewTemplate: HomeReview = {
@@ -165,6 +168,10 @@ function formatDate(value: string) {
 
 function isYoutubeUrl(value: string) {
   return /(youtube\.com|youtu\.be)/i.test(value);
+}
+
+function adminText(value: string | { en?: string; mr?: string }) {
+  return typeof value === "string" ? value : value.en ?? value.mr ?? "";
 }
 
 function getStatusBadgeClass(status: OrderStatus) {
@@ -358,45 +365,36 @@ function BannerForm({
   onSave: () => void;
   onPickFile: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
+  const selectedType = value.mediaType ?? "image";
+
   return (
     <div className="space-y-4">
-      <input
-        value={value.eyebrow}
-        onChange={(event) => onChange({ ...value, eyebrow: event.target.value })}
-        placeholder="Eyebrow"
-        className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
-      />
-      <div className="grid gap-4 md:grid-cols-2">
-        <input
-          value={value.titleTop}
-          onChange={(event) => onChange({ ...value, titleTop: event.target.value })}
-          placeholder="Top title"
-          className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
-        />
-        <input
-          value={value.titleBottom}
-          onChange={(event) => onChange({ ...value, titleBottom: event.target.value })}
-          placeholder="Bottom title"
-          className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
-        />
+      <div className="grid grid-cols-2 gap-2 rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] p-1">
+        {(["image", "video"] as const).map((type) => (
+          <button
+            key={type}
+            type="button"
+            onClick={() => onChange({ ...value, mediaType: type })}
+            className={`rounded-xl px-4 py-3 text-sm font-semibold capitalize transition ${
+              selectedType === type ? "bg-[#34180e] text-white" : "text-[#6c4b33] hover:bg-white"
+            }`}
+          >
+            {type} Banner
+          </button>
+        ))}
       </div>
       <label className="block rounded-2xl border border-dashed border-[#d8b48b] bg-[#fffaf4] p-4 text-sm text-[#6c4b33]">
         <span className="mb-2 flex items-center gap-2 font-semibold text-[#34180e]">
           <Upload className="h-4 w-4" />
-          Upload banner image file
+          {selectedType === "video" ? "Upload banner video file" : "Upload banner image file"}
         </span>
         <p className="mb-2 text-xs text-[#8b6c52]">
-          Pick a single image file to replace the homepage banner.
+          {selectedType === "video"
+            ? "Pick a short MP4/WebM hero video. Large files may not save in browser storage."
+            : "Pick a single image file to replace the homepage banner."}
         </p>
-        <input type="file" accept="image/*" onChange={onPickFile} className="mt-2 block w-full text-sm" />
+        <input type="file" accept={selectedType === "video" ? "video/*" : "image/*"} onChange={onPickFile} className="mt-2 block w-full text-sm" />
       </label>
-      <textarea
-        value={value.copy}
-        onChange={(event) => onChange({ ...value, copy: event.target.value })}
-        rows={4}
-        placeholder="Banner copy"
-        className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
-      />
       <button
         type="button"
         onClick={onSave}
@@ -423,7 +421,7 @@ function VideoForm({
   return (
     <div className="space-y-4">
       <input
-        value={value.title}
+        value={adminText(value.title)}
         onChange={(event) => onChange({ ...value, title: event.target.value })}
         placeholder="Video title"
         className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
@@ -484,7 +482,7 @@ function VideoForm({
         </div>
       )}
       <textarea
-        value={value.description}
+        value={adminText(value.description)}
         onChange={(event) => onChange({ ...value, description: event.target.value })}
         rows={4}
         placeholder="Video description"
@@ -729,7 +727,11 @@ export default function AdminPage() {
   }
 
   function saveBanner() {
-    const nextBanner = { ...bannerDraft, id: bannerDraft.id || uniqueId("banner") };
+    const nextBanner = {
+      ...bannerDraft,
+      id: bannerDraft.id || uniqueId("banner"),
+      mediaType: bannerDraft.mediaType ?? (bannerDraft.videoUrl ? "video" : "image"),
+    };
     const next = [...storedHomeContent.banners];
     const existingIndex = next.findIndex((item) => item.id === nextBanner.id);
 
@@ -774,8 +776,14 @@ export default function AdminPage() {
     if (!file) return;
 
     try {
-      const dataUrl = await fileToDataUrl(file, 2);
-      setBannerDraft((current) => ({ ...current, image: dataUrl }));
+      const isVideo = file.type.startsWith("video/");
+      const dataUrl = await fileToDataUrl(file, isVideo ? 4 : 2);
+      setBannerDraft((current) => ({
+        ...current,
+        mediaType: isVideo ? "video" : "image",
+        image: isVideo ? current.image : dataUrl,
+        videoUrl: isVideo ? dataUrl : "",
+      }));
       setMediaNotice(`Banner file "${file.name}" loaded successfully.`);
     } catch (error) {
       setMediaNotice(error instanceof Error ? error.message : "Unable to load the banner file.");
@@ -1055,7 +1063,7 @@ export default function AdminPage() {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h2 className="text-2xl font-semibold text-[#34180e]">Homepage Banners</h2>
-                    <p className="mt-2 text-sm text-[#6c4b33]">These changes are reflected directly on the home hero section.</p>
+                    <p className="mt-2 text-sm text-[#6c4b33]">Upload image or video banners for the home hero section.</p>
                   </div>
                   <button
                     type="button"
@@ -1070,9 +1078,14 @@ export default function AdminPage() {
                     <div key={item.id} className="rounded-[24px] border border-[#efe1cf] bg-[#fcf8f2] p-4">
                       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs uppercase tracking-[0.24em] text-[#a86c2b]">{item.eyebrow}</p>
-                          <p className="mt-2 font-heading text-2xl text-[#34180e]">{item.titleTop} {item.titleBottom}</p>
-                          <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#6c4b33]">{item.copy}</p>
+                          <div className="flex items-center gap-3">
+                            <span className="rounded-full bg-[#fff1d9] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b4d1d]">
+                              {(item.mediaType ?? "image") === "video" ? "Video" : "Image"}
+                            </span>
+                            <p className="truncate text-sm text-[#6c4b33]">
+                              {(item.mediaType ?? "image") === "video" ? item.videoUrl || "No video selected" : item.image || "No image selected"}
+                            </p>
+                          </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <button type="button" onClick={() => setBannerDraft(item)} className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm text-[#6c4b33]">Edit</button>
@@ -1097,7 +1110,7 @@ export default function AdminPage() {
               </div>
               <div className="rounded-[30px] bg-white p-6 shadow-[0_18px_40px_-30px_rgba(70,36,15,0.22)]">
                 <h2 className="text-2xl font-semibold text-[#34180e]">Edit Banner</h2>
-                <p className="mt-2 text-sm text-[#6c4b33]">Upload an image file to update the homepage banner.</p>
+                <p className="mt-2 text-sm text-[#6c4b33]">Upload only the image or video used in the homepage hero.</p>
                 <div className="mt-6">
                   <BannerForm
                     value={bannerDraft}
@@ -1132,12 +1145,12 @@ export default function AdminPage() {
                       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-semibold text-[#34180e]">{item.title}</p>
+                            <p className="font-semibold text-[#34180e]">{resolveLocalizedText(item.title, "en")}</p>
                             <span className="rounded-full bg-[#fff1d9] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b4d1d]">
                               {item.videoType === "youtube" ? "YouTube" : "Reel"}
                             </span>
                           </div>
-                          <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#6c4b33]">{item.description}</p>
+                          <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#6c4b33]">{resolveLocalizedText(item.description, "en")}</p>
                           <p className="mt-2 truncate text-xs text-[#8b6c52]">{item.videoUrl}</p>
                         </div>
                         <div className="flex flex-wrap gap-2">

@@ -14,6 +14,8 @@ export type HomeBanner = {
   titleBottom: Translatable;
   copy: Translatable;
   image: string;
+  mediaType?: "image" | "video";
+  videoUrl?: string;
 };
 
 export type HomeReview = {
@@ -53,10 +55,6 @@ const defaultCatalogueImageById = new Map(
   defaultCatalogueTypes.map((catalogue) => [catalogue.id, catalogue.image]),
 );
 
-const defaultBannerImageById = new Map(
-  defaultHomeContent.banners.map((banner) => [banner.id, banner.image]),
-);
-
 function normalizeHomeVideo(video: HomeVideo): HomeVideo {
   const inferredType =
     video.videoType ??
@@ -69,16 +67,25 @@ function normalizeHomeVideo(video: HomeVideo): HomeVideo {
   };
 }
 
+function normalizeHomeBanner(banner: HomeBanner): HomeBanner {
+  const mediaType =
+    banner.mediaType ??
+    (banner.videoUrl || /^data:video\//i.test(banner.image) ? "video" : "image");
+
+  return {
+    ...banner,
+    mediaType,
+    videoUrl: banner.videoUrl ?? (mediaType === "video" ? banner.image : ""),
+  };
+}
+
 function ensureArray<T>(value: unknown, fallback: T[]): T[] {
   return Array.isArray(value) ? (value as T[]) : fallback;
 }
 
 function normalizeStoredHomeContent(value: Partial<StoredHomeContent> | null | undefined): StoredHomeContent {
   return {
-    banners: ensureArray(value?.banners, defaultHomeContent.banners).map((banner) => ({
-      ...banner,
-      image: defaultBannerImageById.get(banner.id) ?? banner.image,
-    })),
+    banners: ensureArray(value?.banners, defaultHomeContent.banners).map((banner) => normalizeHomeBanner(banner)),
     reviews: ensureArray(value?.reviews, defaultHomeContent.reviews),
     videos: ensureArray(value?.videos, defaultHomeContent.videos).map((video) => normalizeHomeVideo(video)),
   };
@@ -98,10 +105,7 @@ function normalizeStorefrontPayload(payload: Partial<StorefrontPayload>) {
     homeContent: payload.homeContent
       ? {
           ...payload.homeContent,
-          banners: payload.homeContent.banners.map((banner) => ({
-            ...banner,
-            image: defaultBannerImageById.get(banner.id) ?? banner.image,
-          })),
+          banners: payload.homeContent.banners.map((banner) => normalizeHomeBanner(banner)),
           videos: payload.homeContent.videos.map((video) => normalizeHomeVideo(video)),
         }
       : payload.homeContent,

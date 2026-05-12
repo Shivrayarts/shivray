@@ -479,7 +479,7 @@ app.put("/api/admin/catalogues", requireAdmin, async (req, res) => {
             item.title,
             item.shortLabel,
             item.description || "",
-            item.image,
+            item.mediaType === "video" ? item.videoUrl || item.image : item.image,
             item.itemCountLabel || "",
             item.sortOrder ?? index + 1,
             item.isActive ? 1 : 0,

@@ -1,5 +1,5 @@
 import { Link } from "@/lib/spa-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   BookOpenText,
@@ -11,7 +11,6 @@ import {
   Star,
 } from "lucide-react";
 import {
-  useStoredCatalogueTypes,
   useStoredHomeContent,
   useStoredProducts,
 } from "@/lib/content-store";
@@ -22,6 +21,7 @@ import productDhoop1 from "@/assets/product-dhoop-1.jpg";
 import productStatue1 from "@/assets/product-statue-1.jpg";
 import productShowcase1 from "@/assets/Products/product-1.png";
 import productWeapon1 from "@/assets/product-weapon-1.jpg";
+import heroBanner3 from "@/assets/hero-banner-3.jpg";
 import type { Product } from "@/data/products";
 
 const spotlightProducts = [
@@ -37,18 +37,35 @@ const spotlightProducts = [
 //   { icon: BookOpenText, title: "Catalogue Support", copy: "Customers can request a full catalogue and get tailored recommendations for their budget." },
 // ] as const;
 
-function getProductCategoryFromCatalogueId(id: string): Product["category"] | null {
-  if (id.includes("statue")) return "Statues";
-  if (id.includes("weapon")) return "Weapons";
-  if (id.includes("shield")) return "Shields";
-  if (id.includes("dhoop")) return "Dhoop";
-  return null;
+function getYoutubeEmbedUrl(value: string) {
+  if (!value.trim()) return "";
+
+  try {
+    const url = new URL(value);
+    const host = url.hostname.replace(/^www\./, "");
+    let videoId = "";
+
+    if (host === "youtu.be") {
+      videoId = url.pathname.split("/").filter(Boolean)[0] ?? "";
+    } else if (host.endsWith("youtube.com")) {
+      if (url.pathname.startsWith("/embed/")) {
+        videoId = url.pathname.split("/").filter(Boolean)[1] ?? "";
+      } else if (url.pathname.startsWith("/shorts/")) {
+        videoId = url.pathname.split("/").filter(Boolean)[1] ?? "";
+      } else {
+        videoId = url.searchParams.get("v") ?? "";
+      }
+    }
+
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+  } catch {
+    return "";
+  }
 }
 
 export default function HomePage() {
   const { resolvedLocale } = useLanguage();
   const products = useStoredProducts();
-  const catalogueTypes = useStoredCatalogueTypes();
   const storedHomeContent = useStoredHomeContent();
   const { isWishlisted, toggleWishlist } = useWishlist();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -60,7 +77,35 @@ export default function HomePage() {
   const hasHeroSlides = heroSlides.length > 0;
   const hasReviews = reviews.length > 0;
   const featuredVideos = storedHomeContent.videos.slice(0, 6);
-  const categoryCollections = catalogueTypes.filter((item) => item.isActive).slice(0, 4);
+  const homeCategoryCards = useMemo(
+    () => [
+      {
+        title: resolvedLocale === "mr" ? "महाराज मूर्ती" : "Maharaj Statues",
+        key: "Statues" as const,
+        count: `${products.filter((product) => product.category === "Statues").length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
+        image: productStatue1,
+      },
+      {
+        title: resolvedLocale === "mr" ? "योद्धा शस्त्रे" : "Warrior Weapons",
+        key: "Weapons" as const,
+        count: `${products.filter((product) => product.category === "Weapons").length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
+        image: productWeapon1,
+      },
+      {
+        title: resolvedLocale === "mr" ? "प्रीमियम ढाली" : "Premium Shields",
+        key: "Shields" as const,
+        count: `${products.filter((product) => product.category === "Shields").length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
+        image: heroBanner3,
+      },
+      {
+        title: resolvedLocale === "mr" ? "धूप संग्रह" : "Dhoop Collection",
+        key: "Dhoop" as const,
+        count: `${products.filter((product) => product.category === "Dhoop").length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
+        image: productDhoop1,
+      },
+    ],
+    [products, resolvedLocale],
+  );
   const spotlightProductCards = spotlightProducts.map((product) => {
     const matchedProduct = products.find((item) => item.id === product.id);
     return {
@@ -111,22 +156,64 @@ export default function HomePage() {
     if (!firstCard) return;
     const cardWidth = firstCard.offsetWidth + 16;
     const nextSlide = Math.round(node.scrollLeft / cardWidth);
-    setCategorySlide(Math.max(0, Math.min(nextSlide, categoryCollections.length - 1)));
+    setCategorySlide(Math.max(0, Math.min(nextSlide, homeCategoryCards.length - 1)));
   };
 
   return (
     <div className="bg-[#f7f1e7]">
       <section className="relative isolate overflow-hidden bg-[#2b0b08] text-white">
-        {heroSlides.map((slide, index) => (
-          <img key={slide.id} src={slide.image} alt={slide.titleTop} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${index === currentSlide ? "opacity-100" : "opacity-0"}`} />
-        ))}
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(28,4,4,0.58)_0%,rgba(57,7,11,0.86)_38%,rgba(42,5,8,0.92)_100%)]" />
+        {heroSlides.map((slide, index) => {
+          const mediaType = slide.mediaType ?? (slide.videoUrl ? "video" : "image");
+          const mediaUrl = mediaType === "video" ? slide.videoUrl || slide.image : slide.image;
+          if (!mediaUrl) return null;
+
+          return mediaType === "video" ? (
+            <video
+              key={slide.id}
+              src={mediaUrl}
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${index === currentSlide ? "opacity-100" : "opacity-0"}`}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+            />
+          ) : (
+            <img
+              key={slide.id}
+              src={mediaUrl}
+              alt={resolveLocalizedText(slide.titleTop, resolvedLocale) || "Homepage banner"}
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${index === currentSlide ? "opacity-100" : "opacity-0"}`}
+            />
+          );
+        })}
+        <div className="absolute inset-0 bg-black/10" />
         <div className="layout-shell relative flex min-h-[560px] items-center justify-center px-5 py-16 text-center md:min-h-[720px] md:px-8 md:py-24">
           <div className="mx-auto max-w-5xl">
             {activeHeroSlide ? (
-              <>
-                
-              </>
+              <div className="hidden">
+                <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#e3a92b]">
+                  {resolveLocalizedText(activeHeroSlide.eyebrow, resolvedLocale)}
+                </p>
+                <h1 className="mt-6 font-heading text-5xl font-semibold leading-[0.92] text-[#fbf2e2] sm:text-6xl md:text-8xl">
+                  {resolveLocalizedText(activeHeroSlide.titleTop, resolvedLocale)}
+                </h1>
+                <h2 className="mt-2 font-heading text-5xl font-semibold leading-[0.92] text-[#e1a126] sm:text-6xl md:text-8xl">
+                  {resolveLocalizedText(activeHeroSlide.titleBottom, resolvedLocale)}
+                </h2>
+                <p className="mx-auto mt-7 max-w-4xl text-lg leading-9 text-[#f6e6d4] md:text-[1.05rem]">
+                  {resolveLocalizedText(activeHeroSlide.copy, resolvedLocale)}
+                </p>
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                  <Link to="/products" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#e1a126] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#2b0b08]">
+                    {resolvedLocale === "mr" ? "उत्पादने पहा" : "View Products"}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <Link to="/required-catalogue" className="inline-flex items-center justify-center rounded-full border border-[#e1a126]/70 bg-[#2b0b08]/30 px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#fbf2e2]">
+                    {resolvedLocale === "mr" ? "कॅटलॉग मागवा" : "Request Catalogue"}
+                  </Link>
+                </div>
+              </div>
             ) : (
               <>
                 
@@ -158,32 +245,25 @@ export default function HomePage() {
             <h2 className="font-body text-3xl font-semibold text-[#1d150f] md:text-4xl">{resolvedLocale === "mr" ? "लोकप्रिय श्रेणी" : "Popular Categories"}</h2>
           </div>
           <div ref={categoriesRef} onScroll={handleCategoriesScroll} className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-4 md:gap-x-6 md:overflow-visible md:pb-0">
-            {categoryCollections.map((collection) => {
-              const productCategory = getProductCategoryFromCatalogueId(collection.id);
-
-              return (
+            {homeCategoryCards.map((card) => (
               <Link
-                key={collection.id}
-                to={productCategory ? "/products" : "/required-catalogue"}
-                search={productCategory ? { category: productCategory } : undefined}
+                key={card.key}
+                to="/products"
+                search={{ category: card.key }}
                 data-category-card
-                className="group min-w-[78%] snap-center rounded-[2.3rem] bg-white p-3 text-left shadow-[0_24px_55px_-32px_rgba(80,40,20,0.38)] sm:min-w-[calc(50%-0.5rem)] md:min-w-0"
+                className="group min-w-[78%] snap-center text-center sm:min-w-[calc(50%-0.5rem)] md:min-w-0"
               >
-                <div className="relative overflow-hidden rounded-[2rem] bg-[#b65a73]">
-                  <img src={collection.image} alt={resolveLocalizedText(collection.title, resolvedLocale)} className="aspect-[0.92] w-full object-cover opacity-90 saturate-[0.7] transition duration-500 group-hover:scale-105" width={420} height={420} />
+                <div className="relative overflow-hidden rounded-[30px] bg-[#b65a73] shadow-[0_18px_45px_-30px_rgba(89,34,49,0.65)]">
+                  <img src={card.image} alt={card.title} className="aspect-square w-full object-cover opacity-90 saturate-[0.7] transition duration-500 group-hover:scale-105" />
                 </div>
-                <div className="px-2 pb-2 pt-5">
-                  <h3 className="font-body text-[2rem] font-semibold leading-none tracking-[-0.04em] text-[#1c140f] md:text-[2.1rem]">{resolveLocalizedText(collection.shortLabel, resolvedLocale)}</h3>
-                  <p className="mt-2 text-[1.02rem] text-[#a09a93]">{resolveLocalizedText(collection.itemCountLabel, resolvedLocale)}</p>
-                  <p className="mt-4 line-clamp-2 text-sm leading-6 text-[#635d57]">{resolveLocalizedText(collection.description, resolvedLocale)}</p>
-                </div>
+                <h3 className="mt-4 font-body text-xl font-semibold text-[#1c140f] md:text-2xl">{card.title}</h3>
+                <p className="mt-1 text-base text-[#7d766f]">{card.count}</p>
               </Link>
-              );
-            })}
+            ))}
           </div>
           <div className="mt-7 flex items-center justify-center gap-3">
-            {categoryCollections.map((collection, index) => (
-              <span key={collection.id} className={`rounded-full ${index === categorySlide ? "h-4 w-4 border border-[#1d150f] bg-white shadow-[inset_0_0_0_4px_#1d150f]" : "h-2.5 w-2.5 bg-[#a9a29c]"}`} />
+            {homeCategoryCards.map((card, index) => (
+              <span key={card.key} className={`rounded-full ${index === categorySlide ? "h-4 w-4 border border-[#1d150f] bg-white shadow-[inset_0_0_0_4px_#1d150f]" : "h-2.5 w-2.5 bg-[#a9a29c]"}`} />
             ))}
           </div>
         </div>
@@ -273,6 +353,8 @@ export default function HomePage() {
             <div className="mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2">
               {featuredVideos.map((video) => {
                 const isYoutube = video.videoType === "youtube";
+                const embedUrl = isYoutube ? getYoutubeEmbedUrl(video.videoUrl) : "";
+                const hasPlayableMedia = Boolean(embedUrl || (!isYoutube && video.videoUrl));
 
                 return (
                   <article
@@ -282,8 +364,26 @@ export default function HomePage() {
                     }`}
                   >
                     <div className={`relative bg-[#120907] ${isYoutube ? "aspect-video" : "mx-auto aspect-[9/16] max-w-[22rem]"}`}>
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(227,169,43,0.32),transparent_45%),linear-gradient(180deg,rgba(12,5,4,0.22)_0%,rgba(12,5,4,0.88)_100%)]" />
-                      <div className="relative flex h-full w-full flex-col items-center justify-center gap-4 px-6 text-center text-[#f6dbc2]">
+                      {embedUrl ? (
+                        <iframe
+                          src={embedUrl}
+                          title={resolveLocalizedText(video.title, resolvedLocale)}
+                          className="h-full w-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                      ) : !isYoutube && video.videoUrl ? (
+                        <video
+                          src={video.videoUrl}
+                          poster={video.thumbnail || undefined}
+                          className="h-full w-full object-cover"
+                          controls
+                          preload="metadata"
+                          playsInline
+                        />
+                      ) : null}
+                      <div className={`absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(227,169,43,0.32),transparent_45%),linear-gradient(180deg,rgba(12,5,4,0.22)_0%,rgba(12,5,4,0.88)_100%)] ${hasPlayableMedia ? "hidden" : ""}`} />
+                      <div className={`relative flex h-full w-full flex-col items-center justify-center gap-4 px-6 text-center text-[#f6dbc2] ${hasPlayableMedia ? "hidden" : ""}`}>
                         <span className="inline-flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/10">
                           <Play className="h-7 w-7 text-[#f3bf56]" />
                         </span>
@@ -309,7 +409,7 @@ export default function HomePage() {
                         ) : null}
                       </div>
                       <h3 className="mt-4 font-heading text-2xl text-[#34180e]">{resolveLocalizedText(video.title, resolvedLocale)}</h3>
-                      <p className="hidden mt-3 text-sm leading-6 text-[#6c4b33]">{resolveLocalizedText(video.description, resolvedLocale)}</p>
+                      <p className="mt-3 text-sm leading-6 text-[#6c4b33]">{resolveLocalizedText(video.description, resolvedLocale)}</p>
                       <p className="hidden mt-5 text-sm font-semibold text-[#8b4d1d]">
                         {resolvedLocale === "mr" ? "फक्त प्लेसहोल्डर" : "Placeholder only"}
                       </p>
