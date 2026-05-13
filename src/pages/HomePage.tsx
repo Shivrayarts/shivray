@@ -25,10 +25,10 @@ import heroBanner3 from "@/assets/hero-banner-3.jpg";
 import type { Product } from "@/data/products";
 
 const spotlightProducts = [
-  { id: "shastradhari-maharaj-coloured", title: "Shastradhari Maharaj", price: "Rs. 5,100", image: productStatue1 },
-  { id: "roudra-shambhu-chatrapati", title: "Roudra Shambhu Chatrapati", price: "Rs. 5,100", image: productShowcase1 },
-  { id: "royal-khanjar-with-sheath", title: "Royal Khanjar", price: "Rs. 8,500", image: productWeapon1 },
-  { id: "brass-dhoop-stand", title: "Brass Dhoop Stand", price: "Rs. 2,200", image: productDhoop1 },
+  { id: "shastradhari-maharaj-coloured", title: "Shastradhari Maharaj", price: "Rs. 12,500", image: productStatue1 },
+  { id: "roudra-shambhu-chatrapati", title: "Roudra Shambhu Chatrapati", price: "Rs. 12,600", image: productShowcase1 },
+  { id: "royal-khanjar-with-sheath", title: "Royal Khanjar", price: "Rs. 13,200", image: productWeapon1 },
+  { id: "brass-dhoop-stand", title: "Brass Dhoop Stand", price: "Rs. 12,100", image: productDhoop1 },
 ] as const;
 
 // const features = [

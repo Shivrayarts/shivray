@@ -46,7 +46,7 @@ export const allProducts: Product[] = [
   {
     id: "shastradhari-maharaj-coloured",
     name: { en: "Shastradhari Maharaj - coloured", mr: "शस्त्रधारी महाराज - रंगीत" },
-    price: "Rs. 5,100",
+    price: "Rs. 12,500",
     image: productStatue1,
     category: "Statues",
     tag: { en: "Featured", mr: "विशेष" },
@@ -70,7 +70,7 @@ export const allProducts: Product[] = [
   {
     id: "roudra-shambhu-chatrapati",
     name: { en: "Roudra Shambhu Chatrapati", mr: "रौद्र शंभू छत्रपती" },
-    price: "Rs. 5,100",
+    price: "Rs. 12,600",
     image: productStatue3,
     category: "Statues",
     tag: { en: "", mr: "" },
@@ -82,7 +82,7 @@ export const allProducts: Product[] = [
   {
     id: "royal-khanjar-with-sheath",
     name: { en: "Royal Khanjar with sheath", mr: "म्यानसह रॉयल खंजीर" },
-    price: "Rs. 8,500",
+    price: "Rs. 13,200",
     image: productWeapon1,
     category: "Weapons",
     tag: { en: "Popular", mr: "लोकप्रिय" },
@@ -94,7 +94,7 @@ export const allProducts: Product[] = [
   {
     id: "vita-battle-axe",
     name: { en: "Vita (battle axe)", mr: "वीटा (युद्ध कुऱ्हाड)" },
-    price: "Rs. 6,200",
+    price: "Rs. 12,800",
     image: productWeapon2,
     category: "Weapons",
     tag: { en: "", mr: "" },
@@ -106,7 +106,7 @@ export const allProducts: Product[] = [
   {
     id: "ceremonial-gada",
     name: { en: "Ceremonial Gada", mr: "समारंभिक गदा" },
-    price: "Rs. 9,800",
+    price: "Rs. 13,400",
     image: productWeapon3,
     category: "Weapons",
     tag: { en: "New", mr: "नवीन" },
@@ -118,7 +118,7 @@ export const allProducts: Product[] = [
   {
     id: "brass-dhoop-stand",
     name: { en: "Brass Dhoop stand", mr: "पितळी धूप स्टँड" },
-    price: "Rs. 2,200",
+    price: "Rs. 12,100",
     image: productDhoop1,
     category: "Dhoop",
     tag: { en: "New", mr: "नवीन" },
@@ -130,7 +130,7 @@ export const allProducts: Product[] = [
   {
     id: "maratha-war-shield",
     name: { en: "Maratha war shield", mr: "मराठा युद्ध ढाल" },
-    price: "Rs. 7,500",
+    price: "Rs. 12,900",
     image: productShield1,
     category: "Shields",
     tag: { en: "", mr: "" },
@@ -142,7 +142,7 @@ export const allProducts: Product[] = [
   {
     id: "talwar-curved-sword",
     name: { en: "Talwar - curved sword", mr: "तलवार - वक्र शस्त्र" },
-    price: "Rs. 11,000",
+    price: "Rs. 13,600",
     image: productTalwar1,
     category: "Weapons",
     tag: { en: "Featured", mr: "विशेष" },
@@ -154,7 +154,7 @@ export const allProducts: Product[] = [
   {
     id: "saffron-straight-sword",
     name: { en: "Saffron straight sword", mr: "केशरी सरळ तलवार" },
-    price: "Rs. 6,800",
+    price: "Rs. 12,700",
     image: productWeapon4,
     category: "Weapons",
     tag: { en: "New", mr: "नवीन" },
@@ -166,7 +166,7 @@ export const allProducts: Product[] = [
   {
     id: "black-curved-talwar",
     name: { en: "Black curved talwar", mr: "काळी वक्र तलवार" },
-    price: "Rs. 7,400",
+    price: "Rs. 13,100",
     image: productWeapon5,
     category: "Weapons",
     tag: { en: "New", mr: "नवीन" },
@@ -178,7 +178,7 @@ export const allProducts: Product[] = [
   {
     id: "decorated-talwar-with-sheath",
     name: { en: "Decorated talwar with sheath", mr: "म्यानसह सजावटी तलवार" },
-    price: "Rs. 9,500",
+    price: "Rs. 13,800",
     image: productWeapon6,
     category: "Weapons",
     tag: { en: "Featured", mr: "विशेष" },
@@ -190,7 +190,7 @@ export const allProducts: Product[] = [
   {
     id: "royal-straight-blade",
     name: { en: "Royal straight blade", mr: "रॉयल सरळ तलवार" },
-    price: "Rs. 8,200",
+    price: "Rs. 13,300",
     image: productWeapon7,
     category: "Weapons",
     tag: { en: "Popular", mr: "लोकप्रिय" },

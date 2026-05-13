@@ -40,7 +40,9 @@ export default function Header() {
       <div className="hidden border-b border-[#f2e4d4] bg-[#2b130c] px-4 py-2 text-[#f8e8cf] md:block lg:hidden md:px-6">
         <div className="layout-shell flex items-center justify-between gap-3 text-[11px]">
           <span className="truncate">
-            {resolvedLocale === "mr" ? "मोबाईलसाठी तयार कॅटलॉग आणि चौकशी अनुभव" : "Mobile-first catalogue and enquiry experience"}
+            {resolvedLocale === "mr"
+              ? "मोबाईलसाठी तयार कॅटलॉग आणि चौकशी अनुभव"
+              : "Mobile-first catalogue and enquiry experience"}
           </span>
           <a
             href={`tel:${siteConfig.phoneHref}`}
@@ -191,14 +193,6 @@ export default function Header() {
       {mobileOpen ? (
         <div className="border-t border-[#eadbc8] bg-[#fffaf4] lg:hidden">
           <nav className="layout-shell grid gap-2 px-4 py-4 md:px-6">
-            <Link
-              to="/products"
-              onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-2 rounded-2xl border border-[#eadbc8] bg-white px-4 py-3 text-sm font-semibold text-[#5f402b] transition hover:bg-[#f7efe5]"
-            >
-              <Search className="h-4 w-4" />
-              {resolvedLocale === "mr" ? "शोधा" : "Search"}
-            </Link>
             {navLinks.map((link) => {
               const active = location.pathname === link.to;
 

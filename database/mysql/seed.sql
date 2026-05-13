@@ -32,7 +32,7 @@ VALUES
   (
     'shastradhari-maharaj-coloured',
     'Shastradhari Maharaj - Coloured',
-    5100.00,
+    12500.00,
     '/assets/product-statue-1.jpg',
     'Statues',
     'Featured',
@@ -62,7 +62,7 @@ VALUES
   (
     'roudra-shambhu-chatrapati',
     'Roudra shambhu chatrapati',
-    5100.00,
+    12600.00,
     '/assets/product-statue-3.jpg',
     'Statues',
     '',
@@ -77,7 +77,7 @@ VALUES
   (
     'royal-khanjar-with-sheath',
     'Royal Khanjar with Sheath',
-    8500.00,
+    13200.00,
     '/assets/product-weapon-1.jpg',
     'Weapons',
     'Popular',
@@ -92,7 +92,7 @@ VALUES
   (
     'vita-battle-axe',
     'Vita (battle axe)',
-    6200.00,
+    12800.00,
     '/assets/product-weapon-2.jpg',
     'Weapons',
     '',
@@ -107,7 +107,7 @@ VALUES
   (
     'ceremonial-gada',
     'Ceremonial gada',
-    9800.00,
+    13400.00,
     '/assets/product-weapon-3.jpg',
     'Weapons',
     'New',
@@ -122,7 +122,7 @@ VALUES
   (
     'brass-dhoop-stand',
     'Brass Dhoop Stand',
-    2200.00,
+    12100.00,
     '/assets/product-dhoop-1.jpg',
     'Dhoop',
     'New',
@@ -137,7 +137,7 @@ VALUES
   (
     'maratha-war-shield',
     'Maratha war shield',
-    7500.00,
+    12900.00,
     '/assets/product-shield-1.jpg',
     'Shields',
     '',
@@ -152,7 +152,7 @@ VALUES
   (
     'talwar-curved-sword',
     'Talwar - curved sword',
-    11000.00,
+    13600.00,
     '/assets/product-talwar-1.jpg',
     'Weapons',
     'Featured',
@@ -167,7 +167,7 @@ VALUES
   (
     'saffron-straight-sword',
     'Saffron straight sword',
-    6800.00,
+    12700.00,
     '/assets/product-2-Cpp2Ti8D.jpeg',
     'Weapons',
     'New',
@@ -182,7 +182,7 @@ VALUES
   (
     'black-curved-talwar',
     'Black curved talwar',
-    7400.00,
+    13100.00,
     '/assets/product-3-C820CibQ.jpeg',
     'Weapons',
     'New',
@@ -197,7 +197,7 @@ VALUES
   (
     'decorated-talwar-with-sheath',
     'Decorated talwar with sheath',
-    9500.00,
+    13800.00,
     '/assets/product-4-CiEPJh0Z.jpeg',
     'Weapons',
     'Featured',
@@ -212,7 +212,7 @@ VALUES
   (
     'royal-straight-blade',
     'Royal straight blade',
-    8200.00,
+    13300.00,
     '/assets/product-5-DHYO5lNW.jpeg',
     'Weapons',
     'Popular',

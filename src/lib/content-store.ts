@@ -127,7 +127,7 @@ function normalizeStorefrontPayload(payload: Partial<StorefrontPayload>) {
   };
 }
 
-const PRODUCTS_KEY = "shivray_products_store_v2";
+const PRODUCTS_KEY = "shivray_products_store_v3";
 const CATALOGUES_KEY = "shivray_catalogues_store_v1";
 const HOME_CONTENT_KEY = "shivray_home_content_store_v1";
 

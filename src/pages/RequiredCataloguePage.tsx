@@ -61,7 +61,7 @@ export default function RequiredCataloguePage() {
     <div className="bg-[#f7f1e7] pb-8 md:pb-12">
       <section className="px-4 pt-6 md:px-6">
         <div className="layout-shell grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
+          <div className="order-2 rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:order-1 md:p-7">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
               {resolvedLocale === "mr" ? "का मागवावे" : "Why request it"}
             </p>
@@ -100,7 +100,7 @@ export default function RequiredCataloguePage() {
               ))}
             </div>
           </div>
-          <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
+          <div className="order-1 rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:order-2 md:p-7">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
               {resolvedLocale === "mr" ? "विनंती फॉर्म" : "Request Form"}
             </p>
