@@ -76,7 +76,7 @@ export default function HomePage() {
   const reviews = storedHomeContent.reviews;
   const hasHeroSlides = heroSlides.length > 0;
   const hasReviews = reviews.length > 0;
-  const featuredVideos = storedHomeContent.videos.slice(0, 6);
+  const featuredVideos = storedHomeContent.videos;
   const homeCategoryCards = useMemo(
     () => [
       {
@@ -359,7 +359,7 @@ export default function HomePage() {
                 return (
                   <article
                     key={video.id}
-                    className={`min-w-[85%] snap-center overflow-hidden rounded-[28px] border border-white/10 bg-white/95 text-[#34180e] shadow-[0_26px_60px_-36px_rgba(0,0,0,0.6)] md:min-w-[22rem] xl:min-w-[24rem] ${
+                    className={`min-w-[78%] snap-center overflow-hidden rounded-[28px] border border-white/10 bg-[#120907] text-[#34180e] shadow-[0_26px_60px_-36px_rgba(0,0,0,0.6)] sm:min-w-[20rem] md:min-w-[22rem] xl:min-w-[24rem] ${
                       isYoutube ? "md:col-span-1" : ""
                     }`}
                   >
@@ -397,7 +397,7 @@ export default function HomePage() {
                         </div>
                       </div>
                     </div>
-                    <div className="p-5">
+                    <div className="hidden">
                       <div className="flex items-center gap-2">
                         <span className="rounded-full bg-[#fff1d9] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8b4d1d]">
                           {isYoutube ? "YouTube" : (resolvedLocale === "mr" ? "रील" : "Reel")}

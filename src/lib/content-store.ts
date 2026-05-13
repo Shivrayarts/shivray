@@ -55,15 +55,30 @@ const defaultCatalogueImageById = new Map(
   defaultCatalogueTypes.map((catalogue) => [catalogue.id, catalogue.image]),
 );
 
+const legacyHomeVideoUrls = new Set([
+  "https://youtu.be/xh-ibz0qxaA",
+  "https://youtu.be/2alkiZgDxMI",
+  "https://youtu.be/WpBQTatwZhs",
+]);
+
 function normalizeHomeVideo(video: HomeVideo): HomeVideo {
+  const defaultVideo = defaultHomeContent.videos.find((item) => item.id === video.id);
+  const migratedVideo =
+    defaultVideo && legacyHomeVideoUrls.has(video.videoUrl)
+      ? {
+          ...video,
+          videoType: defaultVideo.videoType,
+          videoUrl: defaultVideo.videoUrl,
+        }
+      : video;
   const inferredType =
-    video.videoType ??
-    (/(youtube\.com|youtu\.be)/i.test(video.videoUrl) ? "youtube" : "reel");
+    migratedVideo.videoType ??
+    (/(youtube\.com|youtu\.be)/i.test(migratedVideo.videoUrl) ? "youtube" : "reel");
 
   return {
-    ...video,
+    ...migratedVideo,
     videoType: inferredType,
-    thumbnail: video.thumbnail ?? "",
+    thumbnail: migratedVideo.thumbnail ?? "",
   };
 }
 

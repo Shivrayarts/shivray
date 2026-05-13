@@ -2,6 +2,9 @@ import type { LocalizedText } from "@/lib/language";
 import heroBanner1 from "@/assets/products-poster.jpg";
 import heroBanner2 from "@/assets/hero-banner-2.jpg";
 import heroBanner3 from "@/assets/hero-banner-3.jpg";
+import pasalkarVideo from "@/assets/videos/Pasalkar.mp4";
+import studioVideo from "@/assets/videos/Studio 01.mp4";
+import talwarVideo from "@/assets/videos/Talwar.mp4";
 
 type Translatable = string | LocalizedText;
 
@@ -69,22 +72,22 @@ export const homeContent = {
       id: "video-1",
       title: { en: "Shivkalin Shastranche Aajche Shilpakar", mr: "à¤¶à¤¿à¤µà¤•à¤¾à¤²à¥€à¤¨ à¤¶à¤¸à¥à¤¤à¥à¤°à¤¾à¤‚à¤šà¥‡ à¤†à¤œà¤šà¥‡ à¤¶à¤¿à¤²à¥à¤ªà¤•à¤¾à¤°" } as Translatable,
       description: { en: "Shivray Arts shares its journey from passion to profession in historical weapon crafting.", mr: "à¤à¤¤à¤¿à¤¹à¤¾à¤¸à¤¿à¤• à¤¶à¤¸à¥à¤¤à¥à¤°à¤¨à¤¿à¤°à¥à¤®à¤¿à¤¤à¥€à¤¤ à¤†à¤µà¤¡à¥€à¤¤à¥‚à¤¨ à¤µà¥à¤¯à¤µà¤¸à¤¾à¤¯à¤¾à¤ªà¤°à¥à¤¯à¤‚à¤¤à¤šà¤¾ à¤ªà¥à¤°à¤µà¤¾à¤¸ à¤¶à¤¿à¤µà¤°à¤¾à¤¯ à¤†à¤°à¥à¤Ÿà¥à¤¸ à¤¸à¤¾à¤‚à¤—à¤¤à¥‡." } as Translatable,
-      videoType: "youtube",
-      videoUrl: "https://youtu.be/xh-ibz0qxaA",
+      videoType: "reel",
+      videoUrl: pasalkarVideo,
     },
     {
       id: "video-2",
       title: { en: "Bhetarupi Aitihasik Shastra Banavnare Shivray Arts", mr: "à¤­à¥‡à¤Ÿà¤°à¥‚à¤ªà¥€ à¤à¤¤à¤¿à¤¹à¤¾à¤¸à¤¿à¤• à¤¶à¤¸à¥à¤¤à¥à¤°à¥‡ à¤¬à¤¨à¤µà¤£à¤¾à¤°à¥‡ à¤¶à¤¿à¤µà¤°à¤¾à¤¯ à¤†à¤°à¥à¤Ÿà¥à¤¸" } as Translatable,
       description: { en: "Historic weapons as gifts and display pieces that preserve traditional craftsmanship.", mr: "à¤ªà¤¾à¤°à¤‚à¤ªà¤°à¤¿à¤• à¤•à¤¾à¤°à¤¾à¤—à¤¿à¤°à¥€ à¤œà¤ªà¤£à¤¾à¤°à¥€ à¤­à¥‡à¤Ÿà¤µà¤¸à¥à¤¤à¥‚ à¤†à¤£à¤¿ à¤ªà¥à¤°à¤¦à¤°à¥à¤¶à¤¨à¤¾à¤¸à¤¾à¤ à¥€ à¤¯à¥‹à¤—à¥à¤¯ à¤à¤¤à¤¿à¤¹à¤¾à¤¸à¤¿à¤• à¤¶à¤¸à¥à¤¤à¥à¤°à¥‡." } as Translatable,
-      videoType: "youtube",
-      videoUrl: "https://youtu.be/2alkiZgDxMI",
+      videoType: "reel",
+      videoUrl: studioVideo,
     },
     {
       id: "video-3",
       title: { en: "Puratan Shastrancha Itihas Jopasanara Kalakar Mavala", mr: "à¤ªà¥à¤°à¤¾à¤¤à¤¨ à¤¶à¤¸à¥à¤¤à¥à¤°à¤¾à¤‚à¤šà¤¾ à¤‡à¤¤à¤¿à¤¹à¤¾à¤¸ à¤œà¤ªà¤£à¤¾à¤°à¤¾ à¤•à¤²à¤¾à¤•à¤¾à¤° à¤®à¤¾à¤µà¤³à¤¾" } as Translatable,
       description: { en: "A short feature on the artisan spirit and the story behind these heritage-inspired creations.", mr: "à¤•à¤¾à¤°à¤¾à¤—à¤¿à¤°à¤¾à¤‚à¤šà¤¾ à¤†à¤¤à¥à¤®à¤¾ à¤†à¤£à¤¿ à¤¯à¤¾ à¤µà¤¾à¤°à¤¸à¤¾-à¤ªà¥à¤°à¥‡à¤°à¤¿à¤¤ à¤¨à¤¿à¤°à¥à¤®à¤¿à¤¤à¥€à¤‚à¤šà¥€ à¤•à¤¥à¤¾ à¤¸à¤¾à¤‚à¤—à¤£à¤¾à¤°à¤¾ à¤›à¥‹à¤Ÿà¤¾ à¤ªà¤°à¤¿à¤šà¤¯." } as Translatable,
-      videoType: "youtube",
-      videoUrl: "https://youtu.be/WpBQTatwZhs",
+      videoType: "reel",
+      videoUrl: talwarVideo,
     },
   ],
 } as const;
