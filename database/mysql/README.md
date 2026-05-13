@@ -1,21 +1,13 @@
 # MySQL Setup (Shivray)
 
-## 1) Create schema
-Run:
-
-```sql
-SOURCE database/mysql/schema.sql;
-```
-
-If you already created the database earlier, run the schema file again.
-It now includes `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` statements for the backend fields used by the current React app.
+## 1) Import schema in Hostinger phpMyAdmin
+1. Create a database named `shivray_arts` in Hostinger if it does not already exist.
+2. Open that database in phpMyAdmin.
+3. Use the `Import` tab and upload `database/mysql/schema.sql`.
 
 ## 2) Seed demo data
-Run:
-
-```sql
-SOURCE database/mysql/seed.sql;
-```
+1. Stay inside the same `shivray_arts` database in phpMyAdmin.
+2. Use the `Import` tab and upload `database/mysql/seed.sql`.
 
 ## Dummy admin login (seeded)
 - Email: `admin@shivray.local`

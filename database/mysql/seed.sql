@@ -1,4 +1,4 @@
-USE shivray_arts;
+-- Import this file after selecting the `shivray_arts` database in phpMyAdmin.
 
 INSERT INTO users (full_name, email, password_hash, role, is_active)
 VALUES

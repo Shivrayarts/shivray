@@ -1,8 +1,6 @@
-CREATE DATABASE IF NOT EXISTS shivray_arts
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-USE shivray_arts;
+-- Hostinger phpMyAdmin import:
+-- 1. Create/select the `shivray_arts` database from phpMyAdmin first.
+-- 2. Then import this file inside that selected database.
 
 CREATE TABLE IF NOT EXISTS users (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -170,23 +168,4 @@ CREATE TABLE IF NOT EXISTS inquiries (
   PRIMARY KEY (id),
   KEY idx_inquiries_status (status)
 ) ENGINE=InnoDB;
-
-ALTER TABLE users
-  ADD COLUMN IF NOT EXISTS phone VARCHAR(30) DEFAULT NULL,
-  ADD COLUMN IF NOT EXISTS address TEXT DEFAULT NULL,
-  ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP NULL DEFAULT NULL;
-
-ALTER TABLE products
-  ADD COLUMN IF NOT EXISTS sort_order INT UNSIGNED NOT NULL DEFAULT 0;
-
-ALTER TABLE orders
-  ADD COLUMN IF NOT EXISTS payment_method ENUM('Cash On Delivery', 'Online Payment') NOT NULL DEFAULT 'Cash On Delivery',
-  ADD COLUMN IF NOT EXISTS payment_info VARCHAR(120) NOT NULL DEFAULT 'Cash On Delivery Pending';
-
-ALTER TABLE order_items
-  ADD COLUMN IF NOT EXISTS product_image_snapshot MEDIUMTEXT DEFAULT NULL;
-
-ALTER TABLE homepage_videos
-  ADD COLUMN IF NOT EXISTS video_type ENUM('reel', 'youtube') NOT NULL DEFAULT 'youtube',
-  ADD COLUMN IF NOT EXISTS thumbnail_url MEDIUMTEXT DEFAULT NULL;
 
