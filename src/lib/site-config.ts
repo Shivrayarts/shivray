@@ -7,7 +7,7 @@ export const siteConfig = {
   whatsappHref: "https://wa.me/917410077777",
   email: "shivrayart@gmail.com",
   brandTagline: {
-    en: "Let us shape history again",
+    en: "Lets create history again",
     mr: "चला घडवूया इतिहास पुन्हा",
   },
   socialLinks: {
