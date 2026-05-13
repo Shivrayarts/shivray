@@ -26,7 +26,7 @@ export default function CartPage() {
     email: "",
     phone: "",
     address: "",
-    paymentMethod: "Cash On Delivery" as "Cash On Delivery" | "Online Payment",
+    paymentMethod: "Online Payment" as "Online Payment",
   });
   const [orderMessage, setOrderMessage] = useState("");
   const [touched, setTouched] = useState({
@@ -106,7 +106,7 @@ export default function CartPage() {
       });
 
       clearCart();
-      setOrderMessage(`Order ${order.id} placed successfully. It now appears in admin orders.`);
+      setOrderMessage(`Order ${order.id} placed successfully. We will contact you shortly.`);
     } catch (error) {
       setOrderMessage(error instanceof Error ? error.message : "Unable to place the order right now.");
     }
@@ -146,7 +146,7 @@ export default function CartPage() {
               <div className="rounded-lg border border-border bg-card p-5">
                 <h2 className="font-heading text-2xl font-semibold text-foreground">Place Order</h2>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  This creates an order record that appears in the admin `Orders` section.
+                  Share your details and we will confirm payment and availability with you.
                 </p>
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
                   <input
@@ -179,19 +179,6 @@ export default function CartPage() {
                       touched.phone && !isValidPhone(resolvedPhone) ? "border-[#b42318]" : "border-border"
                     }`}
                   />
-                  <select
-                    value={checkoutForm.paymentMethod}
-                    onChange={(event) =>
-                      setCheckoutForm((value) => ({
-                        ...value,
-                        paymentMethod: event.target.value as "Cash On Delivery" | "Online Payment",
-                      }))
-                    }
-                    className="rounded-md border border-border bg-background px-4 py-3 text-sm"
-                  >
-                    <option value="Cash On Delivery">Cash On Delivery</option>
-                    <option value="Online Payment">Online Payment</option>
-                  </select>
                   <textarea
                     value={checkoutForm.address || currentCustomer?.address || ""}
                     onBlur={() => setTouched((value) => ({ ...value, address: true }))}

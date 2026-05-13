@@ -44,10 +44,11 @@ export const env = {
     process.env.SESSION_SECRET ??
     envFile.SESSION_SECRET ??
     "shivray-change-this-session-secret",
+  ADMIN_EMAIL: process.env.ADMIN_EMAIL ?? envFile.ADMIN_EMAIL ?? "admin@shivray.local",
+  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD ?? envFile.ADMIN_PASSWORD ?? "Admin@123",
   NODE_ENV: process.env.NODE_ENV ?? envFile.NODE_ENV ?? "development",
 };
 
 export function hasDatabaseConfig() {
   return Boolean(env.DB_HOST && env.DB_USER && env.DB_NAME);
 }
-

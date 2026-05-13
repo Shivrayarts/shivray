@@ -1,8 +1,9 @@
 import { Link, useLocation, useNavigate } from "@/lib/spa-router";
 import { FormEvent, useState } from "react";
-import { Heart, LogIn, Menu, Phone, Search, X } from "lucide-react";
+import { Heart, LogIn, Menu, Phone, Search, ShoppingCart, X } from "lucide-react";
 import logoImg from "@/assets/logo-dark.jpg";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useLanguage } from "@/lib/language";
 import { siteConfig } from "@/lib/site-config";
@@ -14,7 +15,9 @@ export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const { wishlist } = useWishlist();
+  const { getTotalItems } = useCart();
   const wishlistCount = wishlist.length;
+  const cartCount = getTotalItems();
   const navLinks = [
     { to: "/", label: resolvedLocale === "mr" ? "मुख्यपृष्ठ" : "Home" },
     { to: "/products", label: resolvedLocale === "mr" ? "उत्पादने" : "Products" },
@@ -178,6 +181,18 @@ export default function Header() {
                 {wishlistCount > 0 ? (
                   <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#34180e] px-1 text-[10px] font-bold text-white">
                     {wishlistCount > 9 ? "9+" : wishlistCount}
+                  </span>
+                ) : null}
+              </Link>
+              <Link
+                to="/cart"
+                className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5]"
+                aria-label={resolvedLocale === "mr" ? "कार्ट उघडा" : "Open cart"}
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {cartCount > 0 ? (
+                  <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#34180e] px-1 text-[10px] font-bold text-white">
+                    {cartCount > 9 ? "9+" : cartCount}
                   </span>
                 ) : null}
               </Link>

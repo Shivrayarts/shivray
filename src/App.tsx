@@ -28,8 +28,7 @@ function AppShell() {
   const { resolvedLocale } = useLanguage();
   const { authenticated: isAdminAuthed, resolved: adminAuthResolved } = useAdminAuthState();
   const [preloaderPhase, setPreloaderPhase] = useState<"show" | "exit" | "hidden">("show");
-  const isAdminRoute =
-    location.pathname === "/admin" || location.pathname === "/admin-login";
+  const isAdminRoute = location.pathname === "/admin";
   const hideFooter = isAdminRoute;
   const shouldRenderPreloader = !isAdminRoute && preloaderPhase !== "hidden";
 
@@ -91,10 +90,6 @@ function AppShell() {
       }
       return { title: "Admin - Shivrayart", node: <AdminPage /> };
     }
-    if (location.pathname === "/admin-login") {
-      return { title: "Admin Login - Shivrayart", node: <AdminLoginPage /> };
-    }
-
     return {
       title: "Page Not Found - Shivrayart",
       node: (

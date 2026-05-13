@@ -20,7 +20,7 @@ export type HomeBanner = {
 
 export type HomeReview = {
   id: string;
-  authorName: string;
+  authorName: Translatable;
   reviewText: Translatable;
   rating: number;
   location: Translatable;
@@ -63,6 +63,42 @@ const legacyHomeVideoUrls = new Set([
 
 const defaultHomeVideoIds = new Set(defaultHomeContent.videos.map((video) => video.id));
 
+const fixedDefaultReviews = new Map<string, Pick<HomeReview, "authorName" | "reviewText" | "location">>([
+  [
+    "review-1",
+    {
+      authorName: { en: "Prasad Jadhav", mr: "प्रसाद जाधव" },
+      reviewText: {
+        en: "The murti quality is excellent and the finishing feels premium. Delivery and support were both smooth.",
+        mr: "मूर्तीची गुणवत्ता उत्कृष्ट आहे आणि फिनिशिंग खूप प्रीमियम वाटते. डिलिव्हरी आणि सपोर्ट दोन्ही छान होते.",
+      },
+      location: { en: "Pune", mr: "पुणे" },
+    },
+  ],
+  [
+    "review-2",
+    {
+      authorName: { en: "Snehal Patil", mr: "स्नेहल पाटील" },
+      reviewText: {
+        en: "We ordered a heritage gift piece for our office and it looked even better in person than in the photos.",
+        mr: "आम्ही ऑफिससाठी वारसा-शैलीतील भेटवस्तू मागवली आणि ती प्रत्यक्षात फोटोपेक्षा अधिक सुंदर दिसली.",
+      },
+      location: { en: "Kolhapur", mr: "कोल्हापूर" },
+    },
+  ],
+  [
+    "review-3",
+    {
+      authorName: { en: "Amit Deshmukh", mr: "अमित देशमुख" },
+      reviewText: {
+        en: "Very responsive team, great craftsmanship, and clear updates throughout the order process.",
+        mr: "टीम खूप प्रतिसाद देणारी आहे, कारागिरी सुंदर आहे आणि संपूर्ण ऑर्डर प्रक्रियेत स्पष्ट अपडेट्स मिळाले.",
+      },
+      location: { en: "Mumbai", mr: "मुंबई" },
+    },
+  ],
+]);
+
 function normalizeHomeVideo(video: HomeVideo): HomeVideo {
   const defaultVideo = defaultHomeContent.videos.find((item) => item.id === video.id);
   const migratedVideo =
@@ -103,6 +139,31 @@ function normalizeHomeBanner(banner: HomeBanner): HomeBanner {
   };
 }
 
+function getEnglishText(value: Translatable) {
+  return typeof value === "string" ? value : value.en;
+}
+
+function isDefaultText(value: Translatable, fixedValue: Translatable) {
+  return getEnglishText(value) === getEnglishText(fixedValue);
+}
+
+function normalizeHomeReview(review: HomeReview): HomeReview {
+  const defaultReview = fixedDefaultReviews.get(review.id);
+
+  if (!defaultReview) return review;
+
+  return {
+    ...review,
+    authorName: isDefaultText(review.authorName, defaultReview.authorName)
+      ? defaultReview.authorName
+      : review.authorName,
+    reviewText: isDefaultText(review.reviewText, defaultReview.reviewText)
+      ? defaultReview.reviewText
+      : review.reviewText,
+    location: isDefaultText(review.location, defaultReview.location) ? defaultReview.location : review.location,
+  };
+}
+
 function ensureArray<T>(value: unknown, fallback: T[]): T[] {
   return Array.isArray(value) ? (value as T[]) : fallback;
 }
@@ -110,7 +171,7 @@ function ensureArray<T>(value: unknown, fallback: T[]): T[] {
 function normalizeStoredHomeContent(value: Partial<StoredHomeContent> | null | undefined): StoredHomeContent {
   return {
     banners: ensureArray(value?.banners, defaultHomeContent.banners).map((banner) => normalizeHomeBanner(banner)),
-    reviews: ensureArray(value?.reviews, defaultHomeContent.reviews),
+    reviews: ensureArray(value?.reviews, defaultHomeContent.reviews).map((review) => normalizeHomeReview(review)),
     videos: ensureArray(value?.videos, defaultHomeContent.videos).map((video) => normalizeHomeVideo(video)),
   };
 }
@@ -130,6 +191,7 @@ function normalizeStorefrontPayload(payload: Partial<StorefrontPayload>) {
       ? {
           ...payload.homeContent,
           banners: payload.homeContent.banners.map((banner) => normalizeHomeBanner(banner)),
+          reviews: payload.homeContent.reviews.map((review) => normalizeHomeReview(review)),
           videos: payload.homeContent.videos.map((video) => normalizeHomeVideo(video)),
         }
       : payload.homeContent,

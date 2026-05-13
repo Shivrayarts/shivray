@@ -1,6 +1,6 @@
 import { Link } from "@/lib/spa-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, Heart, MessageCircle, ShoppingCart } from "lucide-react";
+import { ArrowLeft, ChevronRight, Heart, MessageCircle, ShoppingCart } from "lucide-react";
 import { getCategoryLabel, type Product } from "@/data/products";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { useStoredProducts } from "@/lib/content-store";
@@ -68,7 +68,6 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   const product = products.find((item) => item.id === productId);
   const [addedCount, setAddedCount] = useState(0);
   const [selectedImage, setSelectedImage] = useState("");
-  const [galleryIndex, setGalleryIndex] = useState(0);
   const [liveMetrics, setLiveMetrics] = useState({ soldLast7Days: 7, viewingNow: 20 });
   const { addToCart } = useCart();
   const { isWishlisted, toggleWishlist } = useWishlist();
@@ -88,7 +87,6 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   useEffect(() => {
     if (!product) return;
     setSelectedImage(product.image);
-    setGalleryIndex(0);
   }, [product]);
 
   if (!product) {
@@ -108,19 +106,11 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
     `Hi Shivray, I want details for ${normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}. Please share price and availability.`,
   )}`;
   const galleryImages = [product.image, ...relatedProducts.map((item) => item.image)].slice(0, 4);
-  const visibleGalleryImages = galleryImages.slice(galleryIndex, galleryIndex + 3);
-  const canSlideGalleryBack = galleryIndex > 0;
-  const canSlideGalleryForward = galleryIndex + 3 < galleryImages.length;
-  const selectedGalleryIndex = Math.max(
-    0,
-    galleryImages.findIndex((image) => image === (selectedImage || product.image)),
-  );
+  const visibleGalleryImages = galleryImages;
   const selectGalleryImage = (index: number) => {
     if (!galleryImages.length) return;
     const nextIndex = (index + galleryImages.length) % galleryImages.length;
-    const maxStart = Math.max(0, galleryImages.length - 3);
     setSelectedImage(galleryImages[nextIndex]);
-    setGalleryIndex(Math.min(Math.max(nextIndex - 1, 0), maxStart));
   };
   const historicalBackground = [
     ...getHistoricalBackground(product, resolvedLocale),
@@ -157,77 +147,27 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                 width={900}
                 height={920}
               />
-              {galleryImages.length > 1 ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => selectGalleryImage(selectedGalleryIndex - 1)}
-                    className="absolute left-3 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-[#eadbc8] bg-white/90 text-[#34180e] shadow-[0_12px_28px_-20px_rgba(52,24,14,0.8)] backdrop-blur transition hover:bg-white md:left-4"
-                    aria-label="Previous product image"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => selectGalleryImage(selectedGalleryIndex + 1)}
-                    className="absolute right-3 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-[#eadbc8] bg-white/90 text-[#34180e] shadow-[0_12px_28px_-20px_rgba(52,24,14,0.8)] backdrop-blur transition hover:bg-white md:right-4"
-                    aria-label="Next product image"
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
-                </>
-              ) : null}
             </div>
             <div className="mt-4">
-              <div className="grid grid-cols-3 gap-3">
+              <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">
                 {visibleGalleryImages.map((image, index) => (
                   <button
-                    key={`${image}-${galleryIndex + index}`}
+                    key={`${image}-${index}`}
                     type="button"
-                    onClick={() => selectGalleryImage(galleryIndex + index)}
-                    className={`overflow-hidden rounded-[18px] border bg-white transition ${
+                    onClick={() => selectGalleryImage(index)}
+                    className={`aspect-square w-[31%] min-w-[31%] snap-start overflow-hidden rounded-[18px] border bg-white transition md:w-[30%] md:min-w-[30%] ${
                       image === (selectedImage || product.image) ? "border-[#1f1f1f]" : "border-[#ddd4c5]"
                     }`}
                   >
                     <img
                       src={image}
-                      alt={`${normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))} preview ${galleryIndex + index + 1}`}
+                      alt={`${normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))} preview ${index + 1}`}
                       className="aspect-square w-full object-cover"
                       loading="lazy"
                     />
                   </button>
                 ))}
               </div>
-              {galleryImages.length > 3 ? (
-                <div className="mt-3 flex items-center justify-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setGalleryIndex((value) => Math.max(0, value - 1))}
-                    disabled={!canSlideGalleryBack}
-                    className={`inline-flex h-10 w-10 items-center justify-center rounded-full border ${
-                      canSlideGalleryBack
-                        ? "border-[#d8b48b] bg-white text-[#34180e]"
-                        : "border-[#eadbc8] bg-[#f5f1e8] text-[#b9ab9a]"
-                    }`}
-                    aria-label="Previous gallery images"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setGalleryIndex((value) => Math.min(galleryImages.length - 3, value + 1))}
-                    disabled={!canSlideGalleryForward}
-                    className={`inline-flex h-10 w-10 items-center justify-center rounded-full border ${
-                      canSlideGalleryForward
-                        ? "border-[#d8b48b] bg-white text-[#34180e]"
-                        : "border-[#eadbc8] bg-[#f5f1e8] text-[#b9ab9a]"
-                    }`}
-                    aria-label="Next gallery images"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
-              ) : null}
             </div>
             <div className="mt-5 rounded-[24px] bg-[#fff8f4] p-5">
               <p className="text-xl font-semibold text-[#e53b49]">{liveMetrics.soldLast7Days} {resolvedLocale === "mr" ? "\u092e\u093e\u0917\u0940\u0932 \u096d \u0926\u093f\u0935\u0938\u093e\u0902\u0924 \u0935\u093f\u0915\u094d\u0930\u0940" : "sold in last 7 days"}</p>

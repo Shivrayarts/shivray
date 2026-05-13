@@ -513,7 +513,7 @@ function ReviewForm({
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
         <input
-          value={value.authorName}
+          value={resolveLocalizedText(value.authorName, "en")}
           onChange={(event) => onChange({ ...value, authorName: event.target.value })}
           placeholder="Author name"
           className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
@@ -687,7 +687,7 @@ export default function AdminPage() {
 
   function handleLogout() {
     logoutAdmin();
-    navigate({ to: "/admin-login" });
+    navigate({ to: "/admin" });
   }
 
   function saveProduct() {
@@ -1350,11 +1350,11 @@ export default function AdminPage() {
                     <div key={item.id} className="rounded-[24px] border border-[#efe1cf] bg-[#fcf8f2] p-4">
                       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-[#34180e]">{item.authorName}</p>
+                          <p className="font-semibold text-[#34180e]">{resolveLocalizedText(item.authorName, "en")}</p>
                           <p className="mt-1 text-sm text-[#8b6c52]">
-                            {item.location} • {item.rating}/5
+                            {resolveLocalizedText(item.location, "en")} • {item.rating}/5
                           </p>
-                          <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#6c4b33]">{item.reviewText}</p>
+                          <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#6c4b33]">{resolveLocalizedText(item.reviewText, "en")}</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <button type="button" onClick={() => setReviewDraft(item)} className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm text-[#6c4b33]">Edit</button>

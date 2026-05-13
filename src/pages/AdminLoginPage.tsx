@@ -4,9 +4,6 @@ import { useEffect, useState } from "react";
 import { isValidEmail } from "@/lib/form-validation";
 import { isAdminAuthenticated, loginAdmin, useAdminAuthState } from "@/lib/admin-auth";
 
-const ADMIN_EMAIL = "admin@shivray.local";
-const ADMIN_PASSWORD = "Admin@123";
-
 export default function AdminLoginPage() {
   const navigate = useNavigate();
   const { authenticated, resolved } = useAdminAuthState();
@@ -48,7 +45,7 @@ export default function AdminLoginPage() {
             </div>
             <h1 className="mt-4 font-heading text-3xl text-[#34180e]">Admin Login</h1>
             <p className="mt-2 text-sm text-[#7e624b]">
-              Admin login works only when the backend API is deployed. A static Vercel or Hostinger site alone will not support admin access.
+              Enter your admin email and password to manage products, orders, customers, and homepage content.
             </p>
           </div>
 
@@ -110,15 +107,6 @@ export default function AdminLoginPage() {
               Login as Admin
             </button>
           </form>
-
-          <div className="mt-6 rounded-[24px] border border-dashed border-[#d8b48b] bg-[#fff9f2] p-4">
-            <p className="text-xs uppercase tracking-[0.24em] text-[#a86c2b]">Local development credentials</p>
-            <p className="mt-2 text-sm font-medium text-[#34180e]">Email: {ADMIN_EMAIL}</p>
-            <p className="mt-1 text-sm font-medium text-[#34180e]">Password: {ADMIN_PASSWORD}</p>
-            <p className="mt-3 text-xs leading-5 text-[#7e624b]">
-              If the live site shows errors like 405, the frontend is deployed without the required admin server routes.
-            </p>
-          </div>
 
           <Link
             to="/"

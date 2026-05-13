@@ -23,6 +23,10 @@ export default function ProductGalleryCard({
 }: ProductGalleryCardProps) {
   const { resolvedLocale } = useLanguage();
   const localizedName = normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale), "sentence");
+  const isMarathi = resolvedLocale === "mr";
+  const marathiTextStyle = isMarathi
+    ? { fontFamily: '"Nirmala UI", "Noto Sans Devanagari", Mangal, Arial, sans-serif' }
+    : undefined;
 
   return (
     <div
@@ -50,16 +54,22 @@ export default function ProductGalleryCard({
           />
         </Link>
       </div>
-      <div className="bg-[#fffdf9] px-4 pb-5 pt-4">
-        <p className="text-[0.78rem] font-semibold uppercase tracking-[0.22em] text-[#c77628]">{getCategoryLabel(product.category, resolvedLocale)}</p>
+      <div className={`bg-[#fffdf9] px-4 ${isMarathi ? "pb-4 pt-3" : "pb-5 pt-4"}`}>
+        <p
+          className={`text-[0.78rem] font-semibold text-[#c77628] ${isMarathi ? "leading-5 tracking-normal" : "uppercase tracking-[0.22em]"}`}
+          style={marathiTextStyle}
+        >
+          {getCategoryLabel(product.category, resolvedLocale)}
+        </p>
         <Link
           to="/products/$productId"
           params={{ productId: product.id }}
-          className={`mt-2 block font-heading leading-[0.96] tracking-[-0.03em] text-[#6f2d06] ${titleClassName}`.trim()}
+          className={`block tracking-normal text-[#6f2d06] ${isMarathi ? "mt-1 font-semibold leading-[1.28]" : `mt-2 font-heading leading-[0.96] ${titleClassName}`}`.trim()}
+          style={marathiTextStyle}
         >
-          <span className="line-clamp-2">{localizedName}</span>
+          <span className={isMarathi ? "block pb-1" : "line-clamp-2"}>{localizedName}</span>
         </Link>
-        <p className="mt-3 text-[1.15rem] font-semibold text-[#b46a16] md:text-[1.35rem]">{product.price}</p>
+        <p className={`${isMarathi ? "mt-2" : "mt-3"} text-[1.15rem] font-semibold text-[#b46a16] md:text-[1.35rem]`}>{product.price}</p>
       </div>
     </div>
   );

@@ -17,6 +17,8 @@ import { siteConfig } from "@/lib/site-config";
 
 type SectionKey = "shopping" | "information" | "newsletter";
 
+const footerBrandName = "Shivray Art And Handcraft";
+
 function PinterestIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
@@ -79,9 +81,9 @@ export default function Footer() {
         <div className="hidden gap-10 lg:grid lg:grid-cols-[1.2fr_0.75fr_0.75fr_1.1fr]">
           <div>
             <div className="flex items-start gap-4">
-              <img src={logoImg} alt="Shivrayart" className="h-20 w-20 rounded-full object-cover" />
+              <img src={logoImg} alt={footerBrandName} className="h-20 w-20 rounded-full object-cover" />
               <div className="pt-1">
-                <p className="font-heading text-3xl leading-none text-[#ffd68d]">Shivrayart</p>
+                <p className="font-heading text-3xl leading-none text-[#ffd68d]">{footerBrandName}</p>
                 <p className="mt-3 text-xs font-semibold tracking-[0.08em] text-[#d7b28f]">
                   {siteConfig.brandTagline[resolvedLocale]}
                 </p>
@@ -178,16 +180,16 @@ export default function Footer() {
             <p className="mt-5 text-sm leading-6 text-[#cfb097]">
               {resolvedLocale === "mr"
                 ? "सदस्यत्व घेतल्याने तुम्ही शिवराय आर्ट्सकडून अपडेट्स स्वीकारण्यास सहमती देता."
-                : "By subscribing, you agree to receive updates from Shivrayart."}
+                : `By subscribing, you agree to receive updates from ${footerBrandName}.`}
             </p>
           </div>
         </div>
 
         <div className="lg:hidden">
           <div className="flex items-start gap-3">
-            <img src={logoImg} alt="Shivrayart" className="h-16 w-16 rounded-full object-cover" />
+            <img src={logoImg} alt={footerBrandName} className="h-16 w-16 rounded-full object-cover" />
             <div className="pt-1">
-              <p className="font-heading text-2xl leading-none text-[#ffd68d]">Shivrayart</p>
+              <p className="font-heading text-2xl leading-none text-[#ffd68d]">{footerBrandName}</p>
               <p className="mt-2 text-xs font-semibold tracking-[0.08em] text-[#d7b28f]">
                 {siteConfig.brandTagline[resolvedLocale]}
               </p>
@@ -237,7 +239,7 @@ export default function Footer() {
                       <p className="text-sm leading-6 text-[#eedbc7]">
                         {resolvedLocale === "mr"
                           ? "नवीन उत्पादने, परंपरेच्या कथा आणि कॅटलॉग अपडेट्ससाठी शिवराय आर्ट्सशी जोडलेले राहा."
-                          : "Stay connected for new product drops, heritage stories, and catalogue updates from Shivrayart."}
+                          : `Stay connected for new product drops, heritage stories, and catalogue updates from ${footerBrandName}.`}
                       </p>
                     </div>
                   ) : (
@@ -260,7 +262,7 @@ export default function Footer() {
             {resolvedLocale === "mr" ? "मदत आणि प्रश्नोत्तरे" : "Help & FAQs"}
           </Link>
           <p className="mt-4 text-sm leading-6 lg:mt-0">
-            {resolvedLocale === "mr" ? "© 2026 शिवराय आर्ट्स. सर्व हक्क राखीव." : "© 2026 Shivrayart. All rights reserved."}
+            {resolvedLocale === "mr" ? "© 2026 शिवराय आर्ट अँड हँडक्राफ्ट. सर्व हक्क राखीव." : `© 2026 ${footerBrandName}. All rights reserved.`}
           </p>
         </div>
       </div>

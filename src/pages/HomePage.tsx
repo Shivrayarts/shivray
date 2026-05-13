@@ -324,7 +324,7 @@ export default function HomePage() {
             <div className="rounded-[26px] bg-white p-6 text-left shadow-[0_20px_45px_-38px_rgba(79,40,16,0.45)] md:p-8">
               {activeReview ? (
                 <>
-                  <p className="text-[1.6rem] font-semibold leading-none text-[#1f1711] md:text-[1.8rem]">{activeReview.authorName}</p>
+                  <p className="text-[1.6rem] font-semibold leading-none text-[#1f1711] md:text-[1.8rem]">{resolveLocalizedText(activeReview.authorName, resolvedLocale)}</p>
                   <p className="mt-2 text-sm text-[#8c8177]">{resolveLocalizedText(activeReview.location, resolvedLocale)}</p>
                   <div className="mt-3 flex items-center gap-1 text-[#f4bc12]">
                     {Array.from({ length: 5 }).map((_, starIndex) => (

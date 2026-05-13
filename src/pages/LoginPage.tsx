@@ -1,36 +1,131 @@
 import { Link, useNavigate } from "@/lib/spa-router";
-import { ArrowRight, LockKeyhole, Mail, ShieldCheck, ShoppingBag, Smartphone } from "lucide-react";
+import { ArrowRight, LockKeyhole, Mail, ShieldCheck, ShoppingBag, Smartphone, UserRound } from "lucide-react";
 import { useState } from "react";
-import { isValidEmail } from "@/lib/form-validation";
+import { isValidEmail, isValidName } from "@/lib/form-validation";
 import { useLanguage } from "@/lib/language";
 import { loginCustomer } from "@/lib/customer-orders";
+
+type AuthMode = "login" | "create";
+
+const CUSTOMER_ACCOUNTS_KEY = "shivray_customer_accounts_v1";
+
+type CustomerAccount = {
+  name: string;
+  email: string;
+  password: string;
+};
+
+function getCustomerAccounts() {
+  if (typeof window === "undefined") return [];
+  const raw = window.localStorage.getItem(CUSTOMER_ACCOUNTS_KEY);
+  if (!raw) return [];
+
+  try {
+    const parsed = JSON.parse(raw) as CustomerAccount[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomerAccount(account: CustomerAccount) {
+  if (typeof window === "undefined") return;
+  const normalizedEmail = account.email.trim().toLowerCase();
+  const accounts = getCustomerAccounts().filter((item) => item.email.toLowerCase() !== normalizedEmail);
+  window.localStorage.setItem(
+    CUSTOMER_ACCOUNTS_KEY,
+    JSON.stringify([{ ...account, email: normalizedEmail }, ...accounts]),
+  );
+}
 
 export default function LoginPage() {
   const { resolvedLocale } = useLanguage();
   const navigate = useNavigate();
+  const [mode, setMode] = useState<AuthMode>("login");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-  const [touched, setTouched] = useState({ email: false, password: false });
+  const [touched, setTouched] = useState({ name: false, email: false, password: false });
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!isValidEmail(email.trim()) || password.trim().length < 6) {
-      setTouched({ email: true, password: true });
-      setMessage(resolvedLocale === "mr" ? "वैध ईमेल आणि किमान ६ अक्षरांचा पासवर्ड टाका." : "Enter a valid email and a password with at least 6 characters.");
+    const normalizedEmail = email.trim().toLowerCase();
+    const trimmedName = name.trim();
+    const isCreateMode = mode === "create";
+
+    if (
+      !isValidEmail(normalizedEmail) ||
+      password.trim().length < 6 ||
+      (isCreateMode && !isValidName(trimmedName))
+    ) {
+      setTouched({ name: isCreateMode, email: true, password: true });
+      setMessage(
+        resolvedLocale === "mr"
+          ? "कृपया वैध माहिती भरा. पासवर्ड किमान ६ अक्षरांचा असावा."
+          : "Please enter valid details. Password must be at least 6 characters.",
+      );
       return;
     }
 
     try {
+      const accounts = getCustomerAccounts();
+      const existingAccount = accounts.find((account) => account.email.toLowerCase() === normalizedEmail);
+
+      if (isCreateMode) {
+        saveCustomerAccount({
+          name: trimmedName,
+          email: normalizedEmail,
+          password,
+        });
+      } else if (!existingAccount || existingAccount.password !== password) {
+        setMessage(
+          resolvedLocale === "mr"
+            ? "खाते सापडले नाही किंवा पासवर्ड चुकीचा आहे. आधी खाते तयार करा."
+            : "Account not found or password is incorrect. Please create an account first.",
+        );
+        return;
+      }
+
       await loginCustomer({
-        name: email.split("@")[0],
-        email,
+        name: isCreateMode ? trimmedName : existingAccount?.name || normalizedEmail.split("@")[0],
+        email: normalizedEmail,
       });
 
-      setMessage(resolvedLocale === "mr" ? "ग्राहक लॉगिन जतन झाले आणि अॅडमिन ग्राहक यादीत दिसेल." : "Customer login saved and visible in admin customers.");
+      setMessage(resolvedLocale === "mr" ? "लॉगिन यशस्वी झाले." : "Login successful.");
       navigate({ to: "/" });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : (resolvedLocale === "mr" ? "ग्राहक लॉगिन पूर्ण करता आले नाही." : "Unable to complete customer login."));
+    }
+  }
+
+  async function handleGoogleContinue() {
+    const normalizedEmail = email.trim().toLowerCase();
+    const trimmedName = name.trim() || normalizedEmail.split("@")[0];
+
+    if (!isValidEmail(normalizedEmail)) {
+      setTouched((value) => ({ ...value, email: true }));
+      setMessage(
+        resolvedLocale === "mr"
+          ? "Google पर्यायासाठी तुमचा Gmail पत्ता टाका."
+          : "Enter your Google email address to continue.",
+      );
+      return;
+    }
+
+    try {
+      saveCustomerAccount({
+        name: trimmedName,
+        email: normalizedEmail,
+        password: "google",
+      });
+      await loginCustomer({
+        name: trimmedName,
+        email: normalizedEmail,
+      });
+      navigate({ to: "/" });
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to continue with Google.");
     }
   }
 
@@ -50,16 +145,25 @@ export default function LoginPage() {
           </div>
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
             <div className="mx-auto max-w-md">
-              <div className="flex items-center gap-3"><div className="rounded-2xl bg-[#fff1d9] p-3 text-[#b17024]"><LockKeyhole className="h-5 w-5" /></div><div><p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">{resolvedLocale === "mr" ? "साइन इन" : "Sign In"}</p><h2 className="mt-1 font-heading text-3xl text-[#34180e]">{resolvedLocale === "mr" ? "पुन्हा स्वागत आहे" : "Welcome back"}</h2></div></div>
+              <div className="flex items-center gap-3"><div className="rounded-2xl bg-[#fff1d9] p-3 text-[#b17024]"><LockKeyhole className="h-5 w-5" /></div><div><p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">{mode === "create" ? (resolvedLocale === "mr" ? "खाते तयार करा" : "Create Account") : (resolvedLocale === "mr" ? "साइन इन" : "Sign In")}</p><h2 className="mt-1 font-heading text-3xl text-[#34180e]">{mode === "create" ? (resolvedLocale === "mr" ? "नवीन खाते" : "Create your account") : (resolvedLocale === "mr" ? "पुन्हा स्वागत आहे" : "Welcome back")}</h2></div></div>
+              <div className="mt-5 grid grid-cols-2 rounded-full bg-[#fcf8f2] p-1 text-sm font-semibold text-[#6c4b33]">
+                <button type="button" onClick={() => setMode("login")} className={`rounded-full px-4 py-2 ${mode === "login" ? "bg-[#34180e] text-white" : ""}`}>{resolvedLocale === "mr" ? "लॉगिन" : "Login"}</button>
+                <button type="button" onClick={() => setMode("create")} className={`rounded-full px-4 py-2 ${mode === "create" ? "bg-[#34180e] text-white" : ""}`}>{resolvedLocale === "mr" ? "खाते तयार करा" : "Create account"}</button>
+              </div>
               <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+                {mode === "create" ? (
+                  <div><label htmlFor="login-name" className="text-sm font-medium text-[#34180e]">{resolvedLocale === "mr" ? "नाव" : "Name"}</label><div className="relative mt-2"><UserRound className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#927863]" /><input id="login-name" type="text" value={name} onBlur={() => setTouched((value) => ({ ...value, name: true }))} onChange={(event) => setName(event.target.value)} placeholder={resolvedLocale === "mr" ? "तुमचे नाव" : "Your name"} className={`w-full rounded-2xl border bg-[#fcf8f2] py-3 pl-11 pr-4 text-sm text-[#34180e] ${touched.name && !isValidName(name) ? "border-[#b42318]" : "border-[#eadbc8]"}`} /></div>{touched.name && !isValidName(name) ? <p className="mt-2 text-sm text-[#b42318]">{resolvedLocale === "mr" ? "कृपया तुमचे नाव टाका." : "Please enter your name."}</p> : null}</div>
+                ) : null}
                 <div><label htmlFor="login-email" className="text-sm font-medium text-[#34180e]">{resolvedLocale === "mr" ? "ईमेल" : "Email"}</label><div className="relative mt-2"><Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#927863]" /><input id="login-email" type="email" value={email} onBlur={() => setTouched((value) => ({ ...value, email: true }))} onChange={(event) => setEmail(event.target.value)} placeholder="your@email.com" className={`w-full rounded-2xl border bg-[#fcf8f2] py-3 pl-11 pr-4 text-sm text-[#34180e] ${touched.email && !isValidEmail(email) ? "border-[#b42318]" : "border-[#eadbc8]"}`} /></div>{touched.email && !isValidEmail(email) ? <p className="mt-2 text-sm text-[#b42318]">{resolvedLocale === "mr" ? "कृपया वैध ईमेल पत्ता टाका." : "Please enter a valid email address."}</p> : null}</div>
                 <div><label htmlFor="login-password" className="text-sm font-medium text-[#34180e]">{resolvedLocale === "mr" ? "पासवर्ड" : "Password"}</label><div className="relative mt-2"><LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#927863]" /><input id="login-password" type="password" value={password} onBlur={() => setTouched((value) => ({ ...value, password: true }))} onChange={(event) => setPassword(event.target.value)} placeholder={resolvedLocale === "mr" ? "पासवर्ड टाका" : "Enter password"} className={`w-full rounded-2xl border bg-[#fcf8f2] py-3 pl-11 pr-4 text-sm text-[#34180e] ${touched.password && password.trim().length < 6 ? "border-[#b42318]" : "border-[#eadbc8]"}`} /></div>{touched.password && password.trim().length < 6 ? <p className="mt-2 text-sm text-[#b42318]">{resolvedLocale === "mr" ? "पासवर्ड किमान ६ अक्षरांचा असावा." : "Password must be at least 6 characters."}</p> : null}</div>
-                <button type="submit" className="inline-flex w-full items-center justify-center rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white">{resolvedLocale === "mr" ? "लॉगिन" : "Login"}</button>
+                <button type="submit" className="inline-flex w-full items-center justify-center rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white">{mode === "create" ? (resolvedLocale === "mr" ? "खाते तयार करा" : "Create Account") : (resolvedLocale === "mr" ? "लॉगिन" : "Login")}</button>
               </form>
+              <button type="button" onClick={handleGoogleContinue} className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-[#d8b48b] bg-white px-5 py-3 text-sm font-semibold text-[#34180e]">
+                {resolvedLocale === "mr" ? "Google ईमेलने पुढे जा" : "Continue with Google email"}
+              </button>
               {message ? <p className="mt-3 text-sm font-medium text-[#7a4d20]">{message}</p> : null}
               <div className="mt-5 flex flex-col gap-3 text-center text-sm text-[#7e624b]">
                 <Link to="/contact" className="transition hover:text-[#34180e]">{resolvedLocale === "mr" ? "तुमच्या खात्यासाठी मदत हवी आहे?" : "Need help with your account?"}</Link>
-                <Link to="/admin-login" className="transition hover:text-[#34180e]">{resolvedLocale === "mr" ? "अॅडमिन लॉगिन" : "Admin login"}</Link>
               </div>
             </div>
           </div>
