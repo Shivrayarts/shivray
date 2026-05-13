@@ -111,6 +111,17 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   const visibleGalleryImages = galleryImages.slice(galleryIndex, galleryIndex + 3);
   const canSlideGalleryBack = galleryIndex > 0;
   const canSlideGalleryForward = galleryIndex + 3 < galleryImages.length;
+  const selectedGalleryIndex = Math.max(
+    0,
+    galleryImages.findIndex((image) => image === (selectedImage || product.image)),
+  );
+  const selectGalleryImage = (index: number) => {
+    if (!galleryImages.length) return;
+    const nextIndex = (index + galleryImages.length) % galleryImages.length;
+    const maxStart = Math.max(0, galleryImages.length - 3);
+    setSelectedImage(galleryImages[nextIndex]);
+    setGalleryIndex(Math.min(Math.max(nextIndex - 1, 0), maxStart));
+  };
   const historicalBackground = [
     ...getHistoricalBackground(product, resolvedLocale),
     ...getMoreBackgroundInfo(product, resolvedLocale),
@@ -136,16 +147,36 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
         </div>
       </section>
       <section className="px-4 pt-4 md:px-6 md:pt-3">
-        <div className="layout-shell grid gap-6 md:items-stretch md:grid-cols-[0.95fr_1.05fr]">
-          <div className="flex flex-col rounded-[20px] bg-[#f5f1e8] p-4 md:min-h-[51rem] md:rounded-[24px] md:px-5 md:pb-5 md:pt-0">
-            <div className="overflow-hidden rounded-[24px] bg-white md:min-h-[35rem] md:flex-1">
+        <div className="layout-shell grid gap-6 md:items-start md:grid-cols-[0.95fr_1.05fr]">
+          <div className="flex flex-col rounded-[20px] bg-[#f5f1e8] p-4 md:rounded-[24px] md:px-5 md:pb-5 md:pt-0">
+            <div className="relative overflow-hidden rounded-[24px] bg-white md:aspect-square">
               <img
                 src={selectedImage || product.image}
                 alt={normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}
-                className="aspect-[1/1.02] w-full object-cover md:h-full md:aspect-auto"
+                className="aspect-[1/1.02] w-full object-contain md:aspect-square"
                 width={900}
                 height={920}
               />
+              {galleryImages.length > 1 ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => selectGalleryImage(selectedGalleryIndex - 1)}
+                    className="absolute left-3 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-[#eadbc8] bg-white/90 text-[#34180e] shadow-[0_12px_28px_-20px_rgba(52,24,14,0.8)] backdrop-blur transition hover:bg-white md:left-4"
+                    aria-label="Previous product image"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => selectGalleryImage(selectedGalleryIndex + 1)}
+                    className="absolute right-3 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-[#eadbc8] bg-white/90 text-[#34180e] shadow-[0_12px_28px_-20px_rgba(52,24,14,0.8)] backdrop-blur transition hover:bg-white md:right-4"
+                    aria-label="Next product image"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              ) : null}
             </div>
             <div className="mt-4">
               <div className="grid grid-cols-3 gap-3">
@@ -153,7 +184,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                   <button
                     key={`${image}-${galleryIndex + index}`}
                     type="button"
-                    onClick={() => setSelectedImage(image)}
+                    onClick={() => selectGalleryImage(galleryIndex + index)}
                     className={`overflow-hidden rounded-[18px] border bg-white transition ${
                       image === (selectedImage || product.image) ? "border-[#1f1f1f]" : "border-[#ddd4c5]"
                     }`}
@@ -206,7 +237,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
               </div>
             </div>
           </div>
-          <div className="flex flex-col rounded-[32px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:min-h-[51rem] md:px-7 md:pb-7 md:pt-5">
+          <div className="flex flex-col rounded-[32px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:px-7 md:pb-7 md:pt-5">
             <div className="flex items-center justify-between gap-3">
               <span className="rounded-full bg-[#fcf1dc] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#b17024]">{resolveLocalizedText(product.tag, resolvedLocale) || (resolvedLocale === "mr" ? "\u0935\u093f\u0936\u0947\u0937 \u0924\u0941\u0915\u0921\u093e" : "Featured piece")}</span>
               <p className="text-2xl font-semibold text-[#8b4d1d]">{product.price}</p>
@@ -228,9 +259,9 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                 <MessageCircle className="h-4 w-4" />{resolvedLocale === "mr" ? "\u0906\u0924\u093e \u091a\u094c\u0915\u0936\u0940 \u0915\u0930\u093e" : "Enquire Now"}
               </a>
             </div>
-            <div className="mt-6 rounded-[24px] bg-[#fcf8f2] p-5 md:flex md:flex-1 md:flex-col">
+            <div className="mt-6 flex flex-col rounded-[28px] bg-[#fcf8f2] px-5 py-5 sm:px-6">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">{resolvedLocale === "mr" ? "\u0907\u0924\u093f\u0939\u093e\u0938\u093f\u0915 \u092a\u093e\u0930\u094d\u0936\u094d\u0935\u092d\u0942\u092e\u0940" : "Historical Background"}</p>
-              <div className="history-scroll mt-4 min-h-[360px] flex-1 space-y-4 overflow-y-auto pr-4 text-sm leading-7 text-[#6c4b33]">
+              <div className="history-scroll mt-4 h-[22rem] space-y-5 overflow-y-auto pr-6 text-[15px] leading-8 text-[#6c4b33] sm:h-[26rem] md:h-[26rem] md:pr-7 lg:h-[28rem]">
                 {historicalBackground.map((paragraph, index) => (
                   <p key={`${product.id}-history-${index}`}>{paragraph}</p>
                 ))}

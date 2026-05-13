@@ -24,15 +24,23 @@ export default function Header() {
   ] as const;
   const desktopNavLinks = navLinks.filter((link) => link.to !== "/login");
 
-  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const query = searchQuery.trim();
-
+  const navigateToSearch = (value: string) => {
+    const query = value.trim();
     setMobileOpen(false);
     navigate({
       to: "/products",
       search: query ? { q: query } : {},
     });
+  };
+
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    navigateToSearch(searchQuery);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    navigateToSearch(value);
   };
 
   return (
@@ -92,17 +100,11 @@ export default function Header() {
               <input
                 type="search"
                 value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
+                onChange={(event) => handleSearchChange(event.target.value)}
                 placeholder={resolvedLocale === "mr" ? "उत्पादने शोधा" : "Search products"}
                 className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#34180e] outline-none placeholder:text-[#9b7757]"
                 aria-label={resolvedLocale === "mr" ? "उत्पादने किंवा श्रेणी शोधा" : "Search products or categories"}
               />
-              <button
-                type="submit"
-                className="shrink-0 rounded-full bg-[#34180e] px-3 py-1.5 text-[11px] font-semibold text-white"
-              >
-                {resolvedLocale === "mr" ? "जा" : "Go"}
-              </button>
             </div>
           </form>
         </div>
@@ -153,17 +155,11 @@ export default function Header() {
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(event) => setSearchQuery(event.target.value)}
+                    onChange={(event) => handleSearchChange(event.target.value)}
                     placeholder={resolvedLocale === "mr" ? "उत्पादने शोधा" : "Search products"}
                     className="w-full bg-transparent text-sm font-medium text-[#34180e] outline-none placeholder:text-[#9b7757]"
                     aria-label={resolvedLocale === "mr" ? "उत्पादने किंवा श्रेणी शोधा" : "Search products or categories"}
                   />
-                  <button
-                    type="submit"
-                    className="rounded-full bg-[#34180e] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#221008]"
-                  >
-                    {resolvedLocale === "mr" ? "जा" : "Go"}
-                  </button>
                 </div>
               </form>
               <Link

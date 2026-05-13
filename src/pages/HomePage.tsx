@@ -63,6 +63,18 @@ function getYoutubeEmbedUrl(value: string) {
   }
 }
 
+function isYoutubeShortUrl(value: string) {
+  if (!value.trim()) return false;
+
+  try {
+    const url = new URL(value);
+    const host = url.hostname.replace(/^www\./, "");
+    return host.endsWith("youtube.com") && url.pathname.startsWith("/shorts/");
+  } catch {
+    return false;
+  }
+}
+
 export default function HomePage() {
   const { resolvedLocale } = useLanguage();
   const products = useStoredProducts();
@@ -353,6 +365,7 @@ export default function HomePage() {
             <div className="mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2">
               {featuredVideos.map((video) => {
                 const isYoutube = video.videoType === "youtube";
+                const isShort = isYoutube && isYoutubeShortUrl(video.videoUrl);
                 const embedUrl = isYoutube ? getYoutubeEmbedUrl(video.videoUrl) : "";
                 const hasPlayableMedia = Boolean(embedUrl || (!isYoutube && video.videoUrl));
 
@@ -363,7 +376,7 @@ export default function HomePage() {
                       isYoutube ? "md:col-span-1" : ""
                     }`}
                   >
-                    <div className={`relative bg-[#120907] ${isYoutube ? "aspect-video" : "mx-auto aspect-[9/16] max-w-[22rem]"}`}>
+                    <div className={`relative bg-[#120907] ${isShort || !isYoutube ? "mx-auto aspect-[9/16] max-w-[22rem]" : "aspect-video"}`}>
                       {embedUrl ? (
                         <iframe
                           src={embedUrl}

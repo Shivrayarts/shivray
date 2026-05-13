@@ -61,10 +61,19 @@ const legacyHomeVideoUrls = new Set([
   "https://youtu.be/WpBQTatwZhs",
 ]);
 
+const defaultHomeVideoIds = new Set(defaultHomeContent.videos.map((video) => video.id));
+
 function normalizeHomeVideo(video: HomeVideo): HomeVideo {
   const defaultVideo = defaultHomeContent.videos.find((item) => item.id === video.id);
   const migratedVideo =
-    defaultVideo && legacyHomeVideoUrls.has(video.videoUrl)
+    defaultVideo && defaultHomeVideoIds.has(video.id) && video.videoType === "reel"
+      ? {
+          ...video,
+          videoType: defaultVideo.videoType,
+          videoUrl: defaultVideo.videoUrl,
+          thumbnail: defaultVideo.thumbnail,
+        }
+      : defaultVideo && legacyHomeVideoUrls.has(video.videoUrl)
       ? {
           ...video,
           videoType: defaultVideo.videoType,

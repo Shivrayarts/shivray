@@ -165,19 +165,41 @@
     border-image: linear-gradient(135deg, oklch(0.75 0.14 75), oklch(0.85 0.12 80)) 1;
   }
   .history-scroll {
+    scrollbar-gutter: stable;
     scrollbar-width: thin;
-    scrollbar-color: #8d8377 #fff8ef;
+    scrollbar-color: #8b837c #fff8ef;
+    overscroll-behavior: contain;
   }
   .history-scroll::-webkit-scrollbar {
-    width: 0.7rem;
+    width: 1rem;
   }
   .history-scroll::-webkit-scrollbar-track {
     background: #fff8ef;
     border-radius: 999px;
   }
   .history-scroll::-webkit-scrollbar-thumb {
-    background: #8d8377;
-    border: 3px solid #fff8ef;
+    min-height: 4rem;
+    background: #8b837c;
+    border: 4px solid #fff8ef;
     border-radius: 999px;
+  }
+  .history-scroll::-webkit-scrollbar-button:single-button {
+    display: block;
+    height: 1.05rem;
+    background-color: #fff8ef;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 0.5rem 0.5rem;
+  }
+  .history-scroll::-webkit-scrollbar-button:single-button:vertical:decrement {
+    border-radius: 999px 999px 0 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='8' height='8' viewBox='0 0 8 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 1 7 5H1z' fill='%238b837c'/%3E%3C/svg%3E");
+  }
+  .history-scroll::-webkit-scrollbar-button:single-button:vertical:increment {
+    border-radius: 0 0 999px 999px;
+    background-image: url("data:image/svg+xml,%3Csvg width='8' height='8' viewBox='0 0 8 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 7 1 3h6z' fill='%238b837c'/%3E%3C/svg%3E");
+  }
+  .history-scroll::-webkit-scrollbar-corner {
+    background: transparent;
   }
 }
