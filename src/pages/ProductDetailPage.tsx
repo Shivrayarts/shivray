@@ -41,6 +41,27 @@ function getHistoricalBackground(
   ];
 }
 
+function getMoreBackgroundInfo(product: Product, locale: "en" | "mr") {
+  const productName = normalizeDisplayCase(resolveLocalizedText(product.name, locale));
+  const categoryLabel = getCategoryLabel(product.category, locale).toLowerCase();
+
+  if (locale === "mr") {
+    return [
+      `${productName} सारखी कलाकृती घरातील मुख्य भिंत, प्रवेशद्वाराजवळील सजावट, कार्यालयातील रिसेप्शन किंवा स्टुडिओ डिस्प्ले यांसाठी उठून दिसते. तिच्या आकारामुळे आणि पारंपरिक भावनेमुळे जागेला मजबूत सांस्कृतिक ओळख मिळते.`,
+      `या ${categoryLabel} संग्रहातील वस्तू निवडताना रंगछटा, धातूचा फिनिश, आकृतीचा समतोल आणि जवळून दिसणारे तपशील महत्त्वाचे मानले आहेत. त्यामुळे वस्तू फक्त फोटोमध्येच नव्हे, प्रत्यक्ष पाहतानाही आकर्षक वाटते.`,
+      `वारसा जपणाऱ्या भेटवस्तू म्हणून अशा वस्तूला वेगळे महत्त्व असते. वाढदिवस, गृहप्रवेश, कार्यालय उद्घाटन, सांस्कृतिक कार्यक्रम किंवा सन्मानचिन्ह म्हणून ती लक्षात राहणारी निवड ठरू शकते.`,
+      `दीर्घकाळ चांगला लुक टिकवण्यासाठी कोरड्या मऊ कापडाने हलके स्वच्छ करा. थेट पाणी, ओलावा किंवा तीव्र रसायने टाळा. वेळोवेळी धूळ काढल्यास फिनिश आणि रंगछटा अधिक काळ सुंदर राहतात.`,
+    ];
+  }
+
+  return [
+    `${productName} works well as a focal display for a feature wall, entrance area, reception space, studio, or curated heritage corner. Its form gives the space a stronger cultural and ceremonial identity.`,
+    `Pieces in the ${categoryLabel} collection are selected for finish, proportion, tone, and close-up detailing. The aim is for the item to feel premium in real use, not only in photographs.`,
+    `As a gift, this type of piece feels more personal than a regular decor object. It suits housewarming, office openings, cultural events, collector displays, and heritage-themed gifting.`,
+    `For care, wipe gently with a dry soft cloth and avoid direct moisture or harsh cleaning chemicals. Regular dusting helps preserve the finish, color tone, and display quality over time.`,
+  ];
+}
+
 export default function ProductDetailPage({ productId }: { productId: string }) {
   const { resolvedLocale } = useLanguage();
   const products = useStoredProducts();
@@ -90,7 +111,10 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   const visibleGalleryImages = galleryImages.slice(galleryIndex, galleryIndex + 3);
   const canSlideGalleryBack = galleryIndex > 0;
   const canSlideGalleryForward = galleryIndex + 3 < galleryImages.length;
-  const historicalBackground = getHistoricalBackground(product, resolvedLocale);
+  const historicalBackground = [
+    ...getHistoricalBackground(product, resolvedLocale),
+    ...getMoreBackgroundInfo(product, resolvedLocale),
+  ];
 
   return (
     <div className="bg-[#f7f1e7] pb-8 md:pb-12">
@@ -112,8 +136,8 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
         </div>
       </section>
       <section className="px-4 pt-4 md:px-6 md:pt-3">
-        <div className="layout-shell grid gap-6 md:items-start md:grid-cols-[0.95fr_1.05fr]">
-          <div className="rounded-[20px] bg-[#f5f1e8] p-4 md:flex md:min-h-[51rem] md:flex-col md:rounded-[24px] md:p-5">
+        <div className="layout-shell grid gap-6 md:items-stretch md:grid-cols-[0.95fr_1.05fr]">
+          <div className="flex flex-col rounded-[20px] bg-[#f5f1e8] p-4 md:min-h-[51rem] md:rounded-[24px] md:px-5 md:pb-5 md:pt-0">
             <div className="overflow-hidden rounded-[24px] bg-white md:min-h-[35rem] md:flex-1">
               <img
                 src={selectedImage || product.image}
@@ -182,7 +206,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
               </div>
             </div>
           </div>
-          <div className="rounded-[32px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:px-7 md:pb-7 md:pt-5">
+          <div className="flex flex-col rounded-[32px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:min-h-[51rem] md:px-7 md:pb-7 md:pt-5">
             <div className="flex items-center justify-between gap-3">
               <span className="rounded-full bg-[#fcf1dc] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#b17024]">{resolveLocalizedText(product.tag, resolvedLocale) || (resolvedLocale === "mr" ? "\u0935\u093f\u0936\u0947\u0937 \u0924\u0941\u0915\u0921\u093e" : "Featured piece")}</span>
               <p className="text-2xl font-semibold text-[#8b4d1d]">{product.price}</p>
@@ -204,9 +228,9 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                 <MessageCircle className="h-4 w-4" />{resolvedLocale === "mr" ? "\u0906\u0924\u093e \u091a\u094c\u0915\u0936\u0940 \u0915\u0930\u093e" : "Enquire Now"}
               </a>
             </div>
-            <div className="mt-6 rounded-[24px] bg-[#fcf8f2] p-5">
+            <div className="mt-6 rounded-[24px] bg-[#fcf8f2] p-5 md:flex md:flex-1 md:flex-col">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">{resolvedLocale === "mr" ? "\u0907\u0924\u093f\u0939\u093e\u0938\u093f\u0915 \u092a\u093e\u0930\u094d\u0936\u094d\u0935\u092d\u0942\u092e\u0940" : "Historical Background"}</p>
-              <div className="mt-4 h-[360px] space-y-4 overflow-y-auto pr-2 text-sm leading-7 text-[#6c4b33]">
+              <div className="history-scroll mt-4 min-h-[360px] flex-1 space-y-4 overflow-y-auto pr-4 text-sm leading-7 text-[#6c4b33]">
                 {historicalBackground.map((paragraph, index) => (
                   <p key={`${product.id}-history-${index}`}>{paragraph}</p>
                 ))}
