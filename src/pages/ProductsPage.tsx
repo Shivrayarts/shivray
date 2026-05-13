@@ -201,6 +201,16 @@ export default function ProductsPage() {
       </section>
       <section className="px-4 pt-3 md:hidden">
         <div className="layout-shell sticky top-[4.45rem] z-20 rounded-[18px] border border-[#e9e5df] bg-white px-4 py-3 shadow-[0_10px_30px_-24px_rgba(0,0,0,0.45)]">
+          <div className="relative mb-3">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b6c52]" />
+            <input
+              type="search"
+              placeholder={resolvedLocale === "mr" ? "\u092e\u0942\u0930\u094d\u0924\u0940, \u0924\u0932\u0935\u093e\u0930, \u0922\u093e\u0932 \u0936\u094b\u0927\u093e..." : "Search statue, sword, shield..."}
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              className="w-full rounded-full border border-[#ebddcb] bg-[#fcf8f2] py-3 pl-11 pr-4 text-sm text-[#34180e] outline-none focus:border-[#d6a35c]"
+            />
+          </div>
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -249,10 +259,6 @@ export default function ProductsPage() {
           ) : null}
           {mobileFiltersOpen ? (
             <div className="mt-4 space-y-3 border-t border-[#f0ece6] pt-4">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b6c52]" />
-                <input type="text" placeholder={resolvedLocale === "mr" ? "\u092e\u0942\u0930\u094d\u0924\u0940, \u0924\u0932\u0935\u093e\u0930, \u0922\u093e\u0932 \u0936\u094b\u0927\u093e..." : "Search statue, sword, shield..."} value={search} onChange={(event) => setSearch(event.target.value)} className="w-full rounded-full border border-[#ebddcb] bg-[#fcf8f2] py-3 pl-11 pr-4 text-sm text-[#34180e]" />
-              </div>
               <div className="flex items-center gap-2 overflow-x-auto pb-1">
                 {categories.map((cat) => (
                   <button key={cat} type="button" onClick={() => setCategory(cat)} className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold tracking-[0.18em] ${category === cat ? "bg-[#34180e] text-white" : "border border-[#eadbc8] bg-white text-[#6c4b33]"}`}>
