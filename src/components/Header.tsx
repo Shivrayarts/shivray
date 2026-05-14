@@ -18,6 +18,12 @@ export default function Header() {
   const { getTotalItems } = useCart();
   const wishlistCount = wishlist.length;
   const cartCount = getTotalItems();
+  const brandName = siteConfig.brandName[resolvedLocale];
+  const brandNameClass =
+    resolvedLocale === "mr"
+      ? "font-['Noto_Sans_Devanagari'] font-bold tracking-normal leading-[1.35]"
+      : "font-heading font-bold";
+  const brandNameWrapClass = resolvedLocale === "mr" ? "whitespace-nowrap overflow-visible" : "truncate";
   const navLinks = [
     { to: "/", label: resolvedLocale === "mr" ? "मुख्यपृष्ठ" : "Home" },
     { to: "/products", label: resolvedLocale === "mr" ? "उत्पादने" : "Products" },
@@ -65,7 +71,7 @@ export default function Header() {
         </div>
       </div>
 
-      <div className="w-full md:px-6">
+      <div className="w-full">
         <div className="layout-shell lg:hidden">
           <div className="flex items-center justify-between gap-3 bg-[#34180e] px-4 py-3 text-[#f7e7cf] shadow-[0_16px_40px_-28px_rgba(52,24,14,0.9)]">
             <button
@@ -80,12 +86,12 @@ export default function Header() {
             <Link to="/" className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-2 text-center">
               <img
                 src={logoImg}
-                alt="Shivrayart"
+                alt={brandName}
                 className="h-12 w-12 rounded-full border border-[#cfae84] object-cover"
               />
               <div className="min-w-0">
-                <p className="truncate font-heading text-lg leading-none text-[#f8ecd9]">
-                  Shivrayart
+                <p className={`${brandNameWrapClass} text-lg text-[#f8ecd9] ${brandNameClass}`}>
+                  {brandName}
                 </p>
                 <p className="mt-1 truncate text-[10px] font-semibold text-[#d8b48b]">
                   {siteConfig.brandTagline[resolvedLocale]}
@@ -112,25 +118,25 @@ export default function Header() {
           </form>
         </div>
 
-        <div className="hidden lg:block">
-          <div className="flex w-full items-center gap-4 bg-[#fffaf4] px-6 py-5 text-[#34180e]">
-            <Link to="/" className="flex min-w-0 items-center gap-4 pr-4 xl:pr-6">
+        <div className="hidden bg-[#fffaf4] lg:block">
+          <div className="flex h-24 w-full min-w-0 items-center gap-3 px-5 text-[#34180e] xl:h-28 xl:gap-5 xl:px-8 2xl:h-[122px] 2xl:px-[58px]">
+            <Link to="/" className="flex min-w-0 w-[250px] shrink-0 items-center gap-3 xl:w-[340px] xl:gap-4 2xl:w-[410px]">
               <img
                 src={logoImg}
-                alt="Shivrayart"
-                className="h-16 w-16 rounded-full border border-[#e3c7a5] bg-white p-1 object-cover"
+                alt={brandName}
+                className="h-16 w-16 rounded-full border border-[#e3c7a5] bg-white p-1 object-cover xl:h-[72px] xl:w-[72px] 2xl:h-20 2xl:w-20"
               />
               <div className="min-w-0">
-                <p className="truncate font-heading text-3xl leading-none text-[#34180e]">
-                  Shivrayart
+                <p className={`${brandNameWrapClass} text-3xl text-[#34180e] 2xl:text-[34px] ${brandNameClass}`}>
+                  {brandName}
                 </p>
-                <p className="mt-2 truncate text-[11px] font-semibold text-[#9b7757]">
+                <p className="mt-2 truncate text-[11px] font-semibold text-[#9b7757] xl:text-xs 2xl:mt-3 2xl:text-[13px]">
                   {siteConfig.brandTagline[resolvedLocale]}
                 </p>
               </div>
             </Link>
 
-            <nav className="flex flex-1 items-center justify-center gap-1 xl:gap-1.5">
+            <nav className="flex min-w-0 items-center gap-1 xl:gap-2 2xl:gap-4">
               {desktopNavLinks.map((link) => {
                 const active = location.pathname === link.to;
 
@@ -138,7 +144,7 @@ export default function Header() {
                   <Link
                     key={link.to}
                     to={link.to}
-                    className={`rounded-full px-3 py-3 text-sm font-semibold transition xl:px-4 ${
+                    className={`rounded-full px-3 py-3 text-sm font-semibold transition xl:px-4 2xl:px-6 2xl:py-3.5 2xl:text-base ${
                       active
                         ? "bg-[#34180e] text-white"
                         : "text-[#5f402b] hover:bg-[#f5ecdf] hover:text-[#34180e]"
@@ -150,34 +156,34 @@ export default function Header() {
               })}
             </nav>
 
-            <div className="flex items-center gap-3 pl-4">
+            <div className="ml-auto flex min-w-0 items-center gap-2 pl-2 xl:gap-3 xl:pl-4 2xl:gap-5 2xl:pl-5">
               <LanguageSwitcher />
               <form onSubmit={handleSearchSubmit} className="flex items-center">
-                <div className="flex min-w-[14rem] items-center gap-2 rounded-2xl border border-[#eadbc8] bg-white px-4 py-2.5 focus-within:border-[#d6a35c] focus-within:bg-[#fffdf9] xl:min-w-[16rem]">
-                  <Search className="h-4 w-4 text-[#7a4d27]" />
+                <div className="flex h-12 w-36 items-center gap-2 rounded-[18px] border border-[#eadbc8] bg-white px-4 focus-within:border-[#d6a35c] focus-within:bg-[#fffdf9] xl:w-56 2xl:h-[52px] 2xl:w-[20rem] 2xl:gap-3 2xl:px-5">
+                  <Search className="h-5 w-5 shrink-0 text-[#7a4d27]" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(event) => handleSearchChange(event.target.value)}
                     placeholder={resolvedLocale === "mr" ? "उत्पादने शोधा" : "Search products"}
-                    className="w-full bg-transparent text-sm font-medium text-[#34180e] outline-none placeholder:text-[#9b7757]"
+                    className="w-full bg-transparent text-sm font-medium text-[#34180e] outline-none placeholder:text-[#9b7757] 2xl:text-base"
                     aria-label={resolvedLocale === "mr" ? "उत्पादने किंवा श्रेणी शोधा" : "Search products or categories"}
                   />
                 </div>
               </form>
               <Link
                 to="/login"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5]"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5]"
                 aria-label={resolvedLocale === "mr" ? "खाते उघडा" : "Open account"}
               >
-                <LogIn className="h-5 w-5" />
+                <LogIn className="h-6 w-6" />
               </Link>
               <Link
                 to="/wishlist"
-                className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5]"
+                className="relative inline-flex h-12 w-12 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5]"
                 aria-label={resolvedLocale === "mr" ? "आवडीची उत्पादने उघडा" : "Open liked products"}
               >
-                <Heart className={`h-5 w-5 ${wishlistCount > 0 ? "fill-current" : ""}`} />
+                <Heart className={`h-6 w-6 ${wishlistCount > 0 ? "fill-current" : ""}`} />
                 {wishlistCount > 0 ? (
                   <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#34180e] px-1 text-[10px] font-bold text-white">
                     {wishlistCount > 9 ? "9+" : wishlistCount}
@@ -186,10 +192,10 @@ export default function Header() {
               </Link>
               <Link
                 to="/cart"
-                className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5]"
+                className="relative inline-flex h-12 w-12 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5]"
                 aria-label={resolvedLocale === "mr" ? "कार्ट उघडा" : "Open cart"}
               >
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="h-6 w-6" />
                 {cartCount > 0 ? (
                   <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#34180e] px-1 text-[10px] font-bold text-white">
                     {cartCount > 9 ? "9+" : cartCount}

@@ -6,8 +6,12 @@ export const siteConfig = {
   alternatePhoneHref: "+917410077777",
   whatsappHref: "https://wa.me/917410077777",
   email: "shivrayart@gmail.com",
+  brandName: {
+    en: "Shivray Art",
+    mr: "शिवराय आर्ट",
+  },
   brandTagline: {
-    en: "Lets create history again",
+    en: "Lets create the history again",
     mr: "चला घडवूया इतिहास पुन्हा",
   },
   socialLinks: {

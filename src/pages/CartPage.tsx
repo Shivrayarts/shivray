@@ -52,10 +52,10 @@ export default function CartPage() {
       }, 0),
     [items],
   );
-  const resolvedName = (checkoutForm.name || currentCustomer?.name || customerSession?.name || "").trim();
-  const resolvedEmail = (checkoutForm.email || currentCustomer?.email || customerSession?.email || "").trim();
-  const resolvedPhone = (checkoutForm.phone || currentCustomer?.phone || "").trim();
-  const resolvedAddress = (checkoutForm.address || currentCustomer?.address || "").trim();
+  const resolvedName = checkoutForm.name.trim();
+  const resolvedEmail = checkoutForm.email.trim();
+  const resolvedPhone = checkoutForm.phone.trim();
+  const resolvedAddress = checkoutForm.address.trim();
 
   async function handlePlaceOrder() {
     if (
@@ -151,7 +151,7 @@ export default function CartPage() {
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
                   <input
                     type="text"
-                    value={checkoutForm.name || currentCustomer?.name || customerSession?.name || ""}
+                    value={checkoutForm.name}
                     onBlur={() => setTouched((value) => ({ ...value, name: true }))}
                     onChange={(event) => setCheckoutForm((value) => ({ ...value, name: event.target.value }))}
                     placeholder="Customer name"
@@ -161,7 +161,7 @@ export default function CartPage() {
                   />
                   <input
                     type="email"
-                    value={checkoutForm.email || currentCustomer?.email || customerSession?.email || ""}
+                    value={checkoutForm.email}
                     onBlur={() => setTouched((value) => ({ ...value, email: true }))}
                     onChange={(event) => setCheckoutForm((value) => ({ ...value, email: event.target.value }))}
                     placeholder="Email"
@@ -171,7 +171,7 @@ export default function CartPage() {
                   />
                   <input
                     type="tel"
-                    value={checkoutForm.phone || currentCustomer?.phone || ""}
+                    value={checkoutForm.phone}
                     onBlur={() => setTouched((value) => ({ ...value, phone: true }))}
                     onChange={(event) => setCheckoutForm((value) => ({ ...value, phone: normalizeDigits(event.target.value, 10) }))}
                     placeholder="Phone number"
@@ -180,7 +180,7 @@ export default function CartPage() {
                     }`}
                   />
                   <textarea
-                    value={checkoutForm.address || currentCustomer?.address || ""}
+                    value={checkoutForm.address}
                     onBlur={() => setTouched((value) => ({ ...value, address: true }))}
                     onChange={(event) => setCheckoutForm((value) => ({ ...value, address: event.target.value }))}
                     placeholder="Delivery address"
