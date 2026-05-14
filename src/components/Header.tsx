@@ -72,7 +72,7 @@ export default function Header() {
       </div>
 
       <div className="w-full">
-        <div className="layout-shell lg:hidden">
+        <div className="layout-shell xl:hidden">
           <div className="flex items-center justify-between gap-3 bg-[#34180e] px-4 py-3 text-[#f7e7cf] shadow-[0_16px_40px_-28px_rgba(52,24,14,0.9)]">
             <button
               type="button"
@@ -118,13 +118,13 @@ export default function Header() {
           </form>
         </div>
 
-        <div className="hidden bg-[#fffaf4] lg:block">
-          <div className="flex h-24 w-full min-w-0 items-center gap-3 px-5 text-[#34180e] xl:h-28 xl:gap-5 xl:px-8 2xl:h-[122px] 2xl:px-[58px]">
-            <Link to="/" className="flex min-w-0 w-[250px] shrink-0 items-center gap-3 xl:w-[340px] xl:gap-4 2xl:w-[410px]">
+        <div className="hidden bg-[#fffaf4] xl:block">
+          <div className="flex h-28 w-full min-w-0 items-center gap-4 px-8 text-[#34180e] 2xl:h-[122px] 2xl:px-12">
+            <Link to="/" className="flex min-w-0 w-[310px] shrink-0 items-center gap-4 2xl:w-[350px]">
               <img
                 src={logoImg}
                 alt={brandName}
-                className="h-16 w-16 rounded-full border border-[#e3c7a5] bg-white p-1 object-cover xl:h-[72px] xl:w-[72px] 2xl:h-20 2xl:w-20"
+                className="h-[72px] w-[72px] rounded-full border border-[#e3c7a5] bg-white p-1 object-cover 2xl:h-20 2xl:w-20"
               />
               <div className="min-w-0">
                 <p className={`${brandNameWrapClass} text-3xl text-[#34180e] 2xl:text-[34px] ${brandNameClass}`}>
@@ -136,7 +136,7 @@ export default function Header() {
               </div>
             </Link>
 
-            <nav className="flex min-w-0 items-center gap-1 xl:gap-2 2xl:gap-4">
+            <nav className="flex min-w-0 flex-1 items-center justify-center gap-1 2xl:gap-2">
               {desktopNavLinks.map((link) => {
                 const active = location.pathname === link.to;
 
@@ -144,7 +144,7 @@ export default function Header() {
                   <Link
                     key={link.to}
                     to={link.to}
-                    className={`rounded-full px-3 py-3 text-sm font-semibold transition xl:px-4 2xl:px-6 2xl:py-3.5 2xl:text-base ${
+                    className={`rounded-full px-4 py-3 text-sm font-semibold transition 2xl:px-5 2xl:py-3.5 2xl:text-base ${
                       active
                         ? "bg-[#34180e] text-white"
                         : "text-[#5f402b] hover:bg-[#f5ecdf] hover:text-[#34180e]"
@@ -156,10 +156,10 @@ export default function Header() {
               })}
             </nav>
 
-            <div className="ml-auto flex min-w-0 items-center gap-2 pl-2 xl:gap-3 xl:pl-4 2xl:gap-5 2xl:pl-5">
+            <div className="flex shrink-0 items-center gap-2 pl-2 2xl:gap-3 2xl:pl-4">
               <LanguageSwitcher />
               <form onSubmit={handleSearchSubmit} className="flex items-center">
-                <div className="flex h-12 w-36 items-center gap-2 rounded-[18px] border border-[#eadbc8] bg-white px-4 focus-within:border-[#d6a35c] focus-within:bg-[#fffdf9] xl:w-56 2xl:h-[52px] 2xl:w-[20rem] 2xl:gap-3 2xl:px-5">
+                <div className="flex h-12 w-52 items-center gap-2 rounded-[18px] border border-[#eadbc8] bg-white px-4 focus-within:border-[#d6a35c] focus-within:bg-[#fffdf9] 2xl:h-[52px] 2xl:w-72 2xl:gap-3 2xl:px-5">
                   <Search className="h-5 w-5 shrink-0 text-[#7a4d27]" />
                   <input
                     type="text"
@@ -173,17 +173,17 @@ export default function Header() {
               </form>
               <Link
                 to="/login"
-                className="inline-flex h-12 w-12 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5]"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5] 2xl:h-12 2xl:w-12"
                 aria-label={resolvedLocale === "mr" ? "खाते उघडा" : "Open account"}
               >
-                <LogIn className="h-6 w-6" />
+                <LogIn className="h-5 w-5 2xl:h-6 2xl:w-6" />
               </Link>
               <Link
                 to="/wishlist"
-                className="relative inline-flex h-12 w-12 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5]"
+                className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5] 2xl:h-12 2xl:w-12"
                 aria-label={resolvedLocale === "mr" ? "आवडीची उत्पादने उघडा" : "Open liked products"}
               >
-                <Heart className={`h-6 w-6 ${wishlistCount > 0 ? "fill-current" : ""}`} />
+                <Heart className={`h-5 w-5 2xl:h-6 2xl:w-6 ${wishlistCount > 0 ? "fill-current" : ""}`} />
                 {wishlistCount > 0 ? (
                   <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#34180e] px-1 text-[10px] font-bold text-white">
                     {wishlistCount > 9 ? "9+" : wishlistCount}
@@ -192,10 +192,10 @@ export default function Header() {
               </Link>
               <Link
                 to="/cart"
-                className="relative inline-flex h-12 w-12 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5]"
+                className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5] 2xl:h-12 2xl:w-12"
                 aria-label={resolvedLocale === "mr" ? "कार्ट उघडा" : "Open cart"}
               >
-                <ShoppingCart className="h-6 w-6" />
+                <ShoppingCart className="h-5 w-5 2xl:h-6 2xl:w-6" />
                 {cartCount > 0 ? (
                   <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#34180e] px-1 text-[10px] font-bold text-white">
                     {cartCount > 9 ? "9+" : cartCount}
@@ -208,7 +208,7 @@ export default function Header() {
       </div>
 
       {mobileOpen ? (
-        <div className="border-t border-[#eadbc8] bg-[#fffaf4] lg:hidden">
+        <div className="border-t border-[#eadbc8] bg-[#fffaf4] xl:hidden">
           <nav className="layout-shell grid gap-2 px-4 py-4 md:px-6">
             {navLinks.map((link) => {
               const active = location.pathname === link.to;
