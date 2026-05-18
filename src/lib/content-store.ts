@@ -58,6 +58,7 @@ const defaultCatalogueImageById = new Map(
 const defaultBannerImageById = new Map(
   defaultHomeContent.banners.map((banner) => [banner.id, banner.image]),
 );
+const defaultBannerImages = defaultHomeContent.banners.map((banner) => banner.image);
 
 const apiAssetBaseUrl = String(import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
 
@@ -72,6 +73,15 @@ function normalizeAssetUrl(value: string) {
   }
   if (raw.startsWith("/") && apiAssetBaseUrl) return `${apiAssetBaseUrl}${raw}`;
   return raw;
+}
+
+function resolveLegacyBannerAssetPath(rawPath: string) {
+  const fileName = rawPath.split("/").pop() || "";
+  const stem = fileName.replace(/\.[^.]+$/, "").toLowerCase();
+  if (!stem) return "";
+  return (
+    defaultBannerImages.find((imageUrl) => imageUrl.toLowerCase().includes(stem)) || ""
+  );
 }
 
 const legacyHomeVideoUrls = new Set([
@@ -152,8 +162,11 @@ function normalizeHomeBanner(banner: HomeBanner): HomeBanner {
   const looksLikeUnhashedLegacyAsset =
     /^\/assets\/[^?#]+\.(jpg|jpeg|png|webp|gif|svg)$/i.test(rawImage) &&
     !/-[A-Za-z0-9]{6,}\.[A-Za-z0-9]+$/i.test(rawImage);
+  const legacyResolvedImage = looksLikeUnhashedLegacyAsset
+    ? resolveLegacyBannerAssetPath(rawImage)
+    : "";
   const normalizedImage = looksLikeUnhashedLegacyAsset
-    ? defaultImage
+    ? legacyResolvedImage || defaultImage
     : normalizeAssetUrl(rawImage || defaultImage);
   const mediaType =
     banner.mediaType ??
