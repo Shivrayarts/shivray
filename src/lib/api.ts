@@ -4,8 +4,17 @@ type ApiOptions = {
   headers?: HeadersInit;
 };
 
+const API_BASE_URL = String(import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
+
+function buildApiUrl(path: string) {
+  if (/^https?:\/\//i.test(path)) return path;
+  if (!API_BASE_URL) return path;
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${API_BASE_URL}${normalizedPath}`;
+}
+
 export async function apiRequest<T>(path: string, options: ApiOptions = {}): Promise<T> {
-  const response = await fetch(path, {
+  const response = await fetch(buildApiUrl(path), {
     method: options.method ?? "GET",
     credentials: "include",
     headers: {

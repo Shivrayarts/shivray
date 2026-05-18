@@ -46,6 +46,10 @@ export const env = {
     "shivray-change-this-session-secret",
   ADMIN_EMAIL: process.env.ADMIN_EMAIL ?? envFile.ADMIN_EMAIL ?? "admin@shivray.local",
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD ?? envFile.ADMIN_PASSWORD ?? "Admin@123",
+  CORS_ORIGIN:
+    process.env.CORS_ORIGIN ??
+    envFile.CORS_ORIGIN ??
+    "https://shivrayart.in,https://www.shivrayart.in",
   NODE_ENV: process.env.NODE_ENV ?? envFile.NODE_ENV ?? "development",
 };
 
