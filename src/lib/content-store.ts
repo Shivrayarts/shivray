@@ -148,7 +148,13 @@ function normalizeHomeVideo(video: HomeVideo): HomeVideo {
 
 function normalizeHomeBanner(banner: HomeBanner): HomeBanner {
   const defaultImage = defaultBannerImageById.get(banner.id) ?? banner.image;
-  const normalizedImage = normalizeAssetUrl(banner.image || defaultImage);
+  const rawImage = String(banner.image || "").trim();
+  const looksLikeUnhashedLegacyAsset =
+    /^\/assets\/[^?#]+\.(jpg|jpeg|png|webp|gif|svg)$/i.test(rawImage) &&
+    !/-[A-Za-z0-9]{6,}\.[A-Za-z0-9]+$/i.test(rawImage);
+  const normalizedImage = looksLikeUnhashedLegacyAsset
+    ? defaultImage
+    : normalizeAssetUrl(rawImage || defaultImage);
   const mediaType =
     banner.mediaType ??
     (banner.videoUrl || /^data:video\//i.test(normalizedImage) ? "video" : "image");
