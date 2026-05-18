@@ -87,6 +87,29 @@ function getEnglishText(value) {
   return value || "";
 }
 
+function encodeLocalizedValue(value) {
+  if (!value || typeof value !== "object") return String(value || "");
+  const en = String(value.en || "").trim();
+  const mr = String(value.mr || "").trim();
+  if (!en && !mr) return "";
+  return JSON.stringify({ en, mr });
+}
+
+function decodeLocalizedValue(value) {
+  const raw = String(value || "").trim();
+  if (!raw || !raw.startsWith("{")) return raw;
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return raw;
+    const en = String(parsed.en || "").trim();
+    const mr = String(parsed.mr || "").trim();
+    if (!en && !mr) return raw;
+    return { en, mr };
+  } catch {
+    return raw;
+  }
+}
+
 function buildOrderNumber() {
   return `#order-${Date.now().toString().slice(-6)}`;
 }
@@ -283,7 +306,7 @@ async function fetchStorefrontPayload() {
   return {
     products: products.map((row) => ({
       id: row.slug,
-      name: row.name,
+      name: decodeLocalizedValue(row.name),
       price: formatCurrency(row.price),
       image: row.image_url,
       category: row.category,
@@ -544,7 +567,7 @@ app.put("/api/admin/products", requireAdmin, async (req, res) => {
 
       for (let index = 0; index < products.length; index += 1) {
         const product = products[index];
-        const slug = slugify(product.id || product.name, "product");
+        const slug = slugify(product.id || getEnglishText(product.name), "product");
         keepSlugs.push(slug);
 
         await connection.query(
@@ -568,7 +591,7 @@ app.put("/api/admin/products", requireAdmin, async (req, res) => {
           `,
           [
             slug,
-            product.name,
+            encodeLocalizedValue(product.name),
             parseCurrencyAmount(product.price),
             product.image,
             product.category,

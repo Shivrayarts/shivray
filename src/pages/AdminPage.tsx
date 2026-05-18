@@ -174,6 +174,11 @@ function adminText(value: string | { en?: string; mr?: string }) {
   return typeof value === "string" ? value : value.en ?? value.mr ?? "";
 }
 
+function adminLocalizedText(value: string | { en?: string; mr?: string }) {
+  if (typeof value === "string") return { en: value, mr: "" };
+  return { en: value.en ?? "", mr: value.mr ?? "" };
+}
+
 function getStatusBadgeClass(status: OrderStatus) {
   if (status === "Pending") return "bg-[#eef2ff] text-[#4b4bc1]";
   if (status === "Processing") return "bg-[#fff1d0] text-[#a26f12]";
@@ -204,15 +209,35 @@ function ProductForm({
   onChange: (value: Product) => void;
   onSave: () => void;
 }) {
+  const localizedName = adminLocalizedText(value.name);
+
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
         <input
-          value={value.name}
-          onChange={(event) => onChange({ ...value, name: event.target.value })}
-          placeholder="Product name"
+          value={localizedName.en}
+          onChange={(event) =>
+            onChange({
+              ...value,
+              name: { ...localizedName, en: event.target.value },
+            })
+          }
+          placeholder="Product name (English)"
           className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
         />
+        <input
+          value={localizedName.mr}
+          onChange={(event) =>
+            onChange({
+              ...value,
+              name: { ...localizedName, mr: event.target.value },
+            })
+          }
+          placeholder="Product name (Marathi)"
+          className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+        />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
         <input
           value={value.price}
           onChange={(event) => onChange({ ...value, price: event.target.value })}
@@ -691,9 +716,12 @@ export default function AdminPage() {
   }
 
   function saveProduct() {
+    const englishName = adminText(productDraft.name).trim();
+    const marathiName = adminLocalizedText(productDraft.name).mr.trim();
     const nextProduct: Product = {
       ...productDraft,
-      id: productDraft.id || slugify(productDraft.name) || uniqueId("product"),
+      name: { en: englishName, mr: marathiName },
+      id: productDraft.id || slugify(englishName) || uniqueId("product"),
     };
 
     const next = [...products];
