@@ -55,6 +55,25 @@ const defaultCatalogueImageById = new Map(
   defaultCatalogueTypes.map((catalogue) => [catalogue.id, catalogue.image]),
 );
 
+const defaultBannerImageById = new Map(
+  defaultHomeContent.banners.map((banner) => [banner.id, banner.image]),
+);
+
+const apiAssetBaseUrl = String(import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
+
+function normalizeAssetUrl(value: string) {
+  const raw = String(value || "").trim();
+  if (!raw) return raw;
+  if (/^(data:|blob:|https?:\/\/)/i.test(raw)) {
+    if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(raw) && apiAssetBaseUrl) {
+      return raw.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i, apiAssetBaseUrl);
+    }
+    return raw;
+  }
+  if (raw.startsWith("/") && apiAssetBaseUrl) return `${apiAssetBaseUrl}${raw}`;
+  return raw;
+}
+
 const legacyHomeVideoUrls = new Set([
   "https://youtu.be/xh-ibz0qxaA",
   "https://youtu.be/2alkiZgDxMI",
@@ -128,14 +147,17 @@ function normalizeHomeVideo(video: HomeVideo): HomeVideo {
 }
 
 function normalizeHomeBanner(banner: HomeBanner): HomeBanner {
+  const defaultImage = defaultBannerImageById.get(banner.id) ?? banner.image;
+  const normalizedImage = normalizeAssetUrl(banner.image || defaultImage);
   const mediaType =
     banner.mediaType ??
-    (banner.videoUrl || /^data:video\//i.test(banner.image) ? "video" : "image");
+    (banner.videoUrl || /^data:video\//i.test(normalizedImage) ? "video" : "image");
 
   return {
     ...banner,
+    image: normalizedImage,
     mediaType,
-    videoUrl: banner.videoUrl ?? (mediaType === "video" ? banner.image : ""),
+    videoUrl: banner.videoUrl ? normalizeAssetUrl(banner.videoUrl) : mediaType === "video" ? normalizedImage : "",
   };
 }
 
