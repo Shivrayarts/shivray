@@ -393,6 +393,47 @@ function mapOrderStatusToDb(status) {
   return "pending";
 }
 
+async function sendOrderLeadToPrivyr(order) {
+  const webhookUrl = String(env.PRIVYR_WEBHOOK_URL || "").trim();
+  if (!webhookUrl) return;
+
+  const itemSummary = (Array.isArray(order.items) ? order.items : [])
+    .map((item) => `${item.productName || "Product"} x${item.quantity || 1}`)
+    .join(", ");
+
+  const payload = {
+    source: "Shivray Arts Website",
+    campaign: "Website Order",
+    name: order.customerName || "Website Customer",
+    phone: order.customerPhone || "",
+    email: order.customerEmail || "",
+    city: "",
+    country: "India",
+    notes: [
+      `Order ID: ${order.id || ""}`,
+      `Payment: ${order.paymentMethod || ""}`,
+      `Amount: ${order.totalPrice || ""}`,
+      `Address: ${order.customerAddress || ""}`,
+      `Items: ${itemSummary || "N/A"}`,
+    ].join("\n"),
+  };
+
+  try {
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      console.error("Privyr webhook failed:", response.status, body);
+    }
+  } catch (error) {
+    console.error("Privyr webhook error:", error);
+  }
+}
+
 async function fetchOrdersPayload() {
   const orderRows = await query(
     `
@@ -1008,10 +1049,13 @@ app.post("/api/orders", async (req, res) => {
       };
     });
 
+    void sendOrderLeadToPrivyr(order);
     res.json({ order });
   } catch (error) {
     console.error("Unable to place order in database. Using memory fallback.", error);
-    res.json({ order: createMemoryOrder(payload, paymentMethod) });
+    const fallbackOrder = createMemoryOrder(payload, paymentMethod);
+    void sendOrderLeadToPrivyr(fallbackOrder);
+    res.json({ order: fallbackOrder });
   }
 });
 
