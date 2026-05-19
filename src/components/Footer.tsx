@@ -83,7 +83,7 @@ export default function Footer() {
             <div className="flex items-start gap-4">
               <img src={logoImg} alt={footerBrandName} className="h-20 w-20 rounded-full object-cover" />
               <div className="pt-1">
-                <p className="font-heading text-3xl leading-none text-[#ffd68d]">{footerBrandName}</p>
+                <p className="max-w-[16rem] font-heading text-3xl leading-none text-[#ffd68d]">{footerBrandName}</p>
                 <p className="mt-3 text-xs font-semibold tracking-[0.08em] text-[#d7b28f]">
                   {siteConfig.brandTagline[resolvedLocale]}
                 </p>
@@ -189,7 +189,7 @@ export default function Footer() {
           <div className="flex items-start gap-3">
             <img src={logoImg} alt={footerBrandName} className="h-16 w-16 rounded-full object-cover" />
             <div className="pt-1">
-              <p className="font-heading text-2xl leading-none text-[#ffd68d]">{footerBrandName}</p>
+              <p className="max-w-[15rem] font-heading text-2xl leading-none text-[#ffd68d]">{footerBrandName}</p>
               <p className="mt-2 text-xs font-semibold tracking-[0.08em] text-[#d7b28f]">
                 {siteConfig.brandTagline[resolvedLocale]}
               </p>

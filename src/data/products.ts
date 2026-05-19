@@ -27,6 +27,7 @@ export type Product = {
   details: Translatable;
   material: Translatable;
   dimensions: Translatable;
+  historicalBackground?: Translatable;
 };
 
 export const productCategories = ["Statues", "Weapons", "Shields", "Dhoop"] as const;

@@ -9,6 +9,7 @@ import { normalizeDisplayCase } from "@/lib/utils";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
 import ProductGalleryCard from "@/components/ProductGalleryCard";
+import { toast } from "sonner";
 
 function getRandomValue(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -66,10 +67,9 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   const { resolvedLocale } = useLanguage();
   const products = useStoredProducts();
   const product = products.find((item) => item.id === productId);
-  const [addedCount, setAddedCount] = useState(0);
   const [selectedImage, setSelectedImage] = useState("");
   const [liveMetrics, setLiveMetrics] = useState({ soldLast7Days: 7, viewingNow: 20 });
-  const { addToCart } = useCart();
+  const { cart, addToCart, removeFromCart } = useCart();
   const { isWishlisted, toggleWishlist } = useWishlist();
 
   const relatedProducts = useMemo(
@@ -113,9 +113,19 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
     setSelectedImage(galleryImages[nextIndex]);
   };
   const historicalBackground = [
-    ...getHistoricalBackground(product, resolvedLocale),
-    ...getMoreBackgroundInfo(product, resolvedLocale),
+    ...(String(resolveLocalizedText(product.historicalBackground ?? "", resolvedLocale)).trim()
+      ? String(resolveLocalizedText(product.historicalBackground ?? "", resolvedLocale))
+          .split(/\n+/)
+          .map((line) => line.trim())
+          .filter(Boolean)
+      : [
+          ...getHistoricalBackground(product, resolvedLocale),
+          ...getMoreBackgroundInfo(product, resolvedLocale),
+        ]),
   ];
+  const addToCartLabel = resolvedLocale === "mr" ? "कार्टमध्ये जोडा" : "Add to Cart";
+  const removeFromCartLabel = resolvedLocale === "mr" ? "कार्टमधून काढा" : "Remove from Cart";
+  const isInCart = cart.some((item) => item.id === product.id);
 
   return (
     <div className="bg-[#f7f1e7] pb-8 md:pb-12">
@@ -188,8 +198,37 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
               <div className="rounded-[24px] bg-[#fcf8f2] p-4"><p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">{resolvedLocale === "mr" ? "\u092a\u0930\u093f\u092e\u093e\u0923" : "Dimensions"}</p><p className="mt-2 text-sm text-[#34180e]">{resolveLocalizedText(product.dimensions, resolvedLocale)}</p></div>
             </div>
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              <button type="button" onClick={() => { addToCart(product.id); setAddedCount((value) => value + 1); }} className="inline-flex items-center justify-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white">
-                <ShoppingCart className="h-4 w-4" />{resolvedLocale === "mr" ? "\u0915\u093e\u0930\u094d\u091f\u092e\u0927\u094d\u092f\u0947 \u091c\u094b\u0921\u093e" : "Add to Cart"}
+              <button
+                type="button"
+                onClick={() => {
+                  if (isInCart) {
+                    removeFromCart(product.id);
+                    toast.success(
+                      resolvedLocale === "mr" ? "उत्पादन कार्टमधून काढले." : "Product removed from cart.",
+                    );
+                  } else {
+                    addToCart(product.id);
+                    toast.success(
+                      resolvedLocale === "mr" ? "उत्पादन कार्टमध्ये जोडले." : "Product added to cart.",
+                      {
+                        action: {
+                          label: resolvedLocale === "mr" ? "कार्ट" : "Cart",
+                          onClick: () => {
+                            window.location.href = "/cart";
+                          },
+                        },
+                      },
+                    );
+                  }
+                }}
+                className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] transition ${
+                  isInCart
+                    ? "bg-[#34180e] text-white"
+                    : "border border-[#d8b48b] text-[#34180e]"
+                }`}
+              >
+                <ShoppingCart className="h-4 w-4" />
+                {isInCart ? removeFromCartLabel : addToCartLabel}
               </button>
               <button type="button" onClick={() => toggleWishlist(product.id)} className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] ${isWishlisted(product.id) ? "bg-[#34180e] text-white" : "border border-[#d8b48b] text-[#34180e]"}`}>
                 <Heart className={`h-4 w-4 ${isWishlisted(product.id) ? "fill-current" : ""}`} />
@@ -207,7 +246,6 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                 ))}
               </div>
             </div>
-            {addedCount > 0 ? <p className="mt-3 text-sm text-green-700">{resolvedLocale === "mr" ? `\u0915\u093e\u0930\u094d\u091f\u092e\u0927\u094d\u092f\u0947 \u091c\u094b\u0921\u0932\u0947 (${addedCount}).` : `Added to cart (${addedCount}).`}</p> : null}
           </div>
         </div>
       </section>

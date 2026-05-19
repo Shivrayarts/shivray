@@ -3,6 +3,7 @@ import { useMemo, useState, type ChangeEvent } from "react";
 import {
   ArrowDown,
   ArrowUp,
+  MessageSquareQuote,
   Film,
   ImagePlus,
   LayoutPanelTop,
@@ -57,6 +58,7 @@ const productTemplate: Product = {
   details: "",
   material: "",
   dimensions: "",
+  historicalBackground: "",
 };
 
 const catalogueTemplate: CatalogueType = {
@@ -118,6 +120,7 @@ const adminMenuItems: Array<{
   { id: "categories", label: "Categories", icon: Shapes },
   { id: "banners", label: "Banners", icon: ImagePlus },
   { id: "videos", label: "Videos", icon: Film },
+  { id: "reviews", label: "Reviews", icon: MessageSquareQuote },
   { id: "orders", label: "Orders", icon: ShoppingCart },
   { id: "customers", label: "Customers", icon: UserRound },
 ];
@@ -204,10 +207,12 @@ function ProductForm({
   value,
   onChange,
   onSave,
+  onPickFile,
 }: {
   value: Product;
   onChange: (value: Product) => void;
   onSave: () => void;
+  onPickFile: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
   const localizedName = adminLocalizedText(value.name);
 
@@ -275,6 +280,16 @@ function ProductForm({
         placeholder="Image URL or data image"
         className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
       />
+      <label className="block rounded-2xl border border-dashed border-[#d8b48b] bg-[#fffaf4] p-4 text-sm text-[#6c4b33]">
+        <span className="mb-2 flex items-center gap-2 font-semibold text-[#34180e]">
+          <Upload className="h-4 w-4" />
+          Upload product image file
+        </span>
+        <p className="mb-2 text-xs text-[#8b6c52]">
+          Pick a JPG/PNG/WebP image from your device. It will auto-fill the product image field.
+        </p>
+        <input type="file" accept="image/*" onChange={onPickFile} className="mt-2 block w-full text-sm" />
+      </label>
       <textarea
         value={value.shortDescription}
         onChange={(event) => onChange({ ...value, shortDescription: event.target.value })}
@@ -287,6 +302,13 @@ function ProductForm({
         onChange={(event) => onChange({ ...value, details: event.target.value })}
         rows={4}
         placeholder="Full details"
+        className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+      />
+      <textarea
+        value={adminText(value.historicalBackground ?? "")}
+        onChange={(event) => onChange({ ...value, historicalBackground: event.target.value })}
+        rows={6}
+        placeholder="Historical background (shown in product details page)"
         className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
       />
       <div className="grid gap-4 md:grid-cols-2">
@@ -755,10 +777,27 @@ export default function AdminPage() {
   }
 
   function saveBanner() {
+    const normalizedType = bannerDraft.mediaType ?? (bannerDraft.videoUrl ? "video" : "image");
+    const normalizedImage =
+      normalizedType === "video"
+        ? String(bannerDraft.videoUrl || bannerDraft.image || "").trim()
+        : String(bannerDraft.image || "").trim();
+
+    if (!normalizedImage) {
+      setMediaNotice(
+        normalizedType === "video"
+          ? "Please upload/select a banner video before saving."
+          : "Please upload/select a banner image before saving.",
+      );
+      return;
+    }
+
     const nextBanner = {
       ...bannerDraft,
       id: bannerDraft.id || uniqueId("banner"),
-      mediaType: bannerDraft.mediaType ?? (bannerDraft.videoUrl ? "video" : "image"),
+      mediaType: normalizedType,
+      image: normalizedImage,
+      videoUrl: normalizedType === "video" ? normalizedImage : "",
     };
     const next = [...storedHomeContent.banners];
     const existingIndex = next.findIndex((item) => item.id === nextBanner.id);
@@ -805,7 +844,7 @@ export default function AdminPage() {
 
     try {
       const isVideo = file.type.startsWith("video/");
-      const dataUrl = await fileToDataUrl(file, isVideo ? 4 : 2);
+      const dataUrl = await fileToDataUrl(file, isVideo ? 6 : 4);
       setBannerDraft((current) => ({
         ...current,
         mediaType: isVideo ? "video" : "image",
@@ -815,6 +854,24 @@ export default function AdminPage() {
       setMediaNotice(`Banner file "${file.name}" loaded successfully.`);
     } catch (error) {
       setMediaNotice(error instanceof Error ? error.message : "Unable to load the banner file.");
+    }
+  }
+
+  async function handleProductFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setMediaNotice("Please select an image file for product image.");
+      return;
+    }
+
+    try {
+      const dataUrl = await fileToDataUrl(file, 4);
+      setProductDraft((current) => ({ ...current, image: dataUrl }));
+      setMediaNotice(`Product image "${file.name}" loaded successfully.`);
+    } catch (error) {
+      setMediaNotice(error instanceof Error ? error.message : "Unable to load the product image file.");
     }
   }
 
@@ -999,9 +1056,13 @@ export default function AdminPage() {
                     <div key={item.id} className="rounded-[24px] border border-[#efe1cf] bg-[#fcf8f2] p-4">
                       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div className="flex items-center gap-4">
-                          <img src={item.image} alt={item.name} className="h-16 w-16 rounded-2xl object-cover" />
+                          <img
+                            src={item.image}
+                            alt={resolveLocalizedText(item.name, "en")}
+                            className="h-16 w-16 rounded-2xl object-cover"
+                          />
                           <div>
-                            <p className="font-semibold text-[#34180e]">{item.name}</p>
+                            <p className="font-semibold text-[#34180e]">{resolveLocalizedText(item.name, "en")}</p>
                             <p className="mt-1 text-sm text-[#6c4b33]">
                               {item.category} • {item.price}
                             </p>
@@ -1022,7 +1083,12 @@ export default function AdminPage() {
                 <h2 className="text-2xl font-semibold text-[#34180e]">Edit Product</h2>
                 <p className="mt-2 text-sm text-[#6c4b33]">Save product changes to update the website catalog.</p>
                 <div className="mt-6">
-                  <ProductForm value={productDraft} onChange={setProductDraft} onSave={saveProduct} />
+                  <ProductForm
+                    value={productDraft}
+                    onChange={setProductDraft}
+                    onSave={saveProduct}
+                    onPickFile={handleProductFileChange}
+                  />
                 </div>
               </div>
             </section>

@@ -264,7 +264,7 @@ async function fetchStorefrontPayload() {
   const [products, catalogues, banners, reviews, videos] = await Promise.all([
     query(
       `
-      SELECT slug, name, price, image_url, category, tag, short_description, details, material, dimensions
+      SELECT slug, name, price, image_url, category, tag, short_description, details, material, dimensions, history_background
       FROM products
       WHERE is_published = 1
       ORDER BY sort_order ASC, id DESC
@@ -315,6 +315,7 @@ async function fetchStorefrontPayload() {
       details: row.details,
       material: row.material,
       dimensions: row.dimensions,
+      historicalBackground: row.history_background ?? "",
     })),
     catalogueTypes: catalogues.map((row) => ({
       id: row.slug,
@@ -571,6 +572,59 @@ app.post("/api/admin/login", async (req, res) => {
   }
 });
 
+app.post("/api/admin/change-password", async (req, res) => {
+  const email = String(req.body?.email ?? "").trim().toLowerCase();
+  const currentPassword = String(req.body?.currentPassword ?? "");
+  const newPassword = String(req.body?.newPassword ?? "");
+
+  if (!email || !currentPassword || !newPassword) {
+    res.status(400).json({ message: "Email, current password, and new password are required." });
+    return;
+  }
+
+  if (newPassword.length < 8) {
+    res.status(400).json({ message: "New password must be at least 8 characters long." });
+    return;
+  }
+
+  if (currentPassword === newPassword) {
+    res.status(400).json({ message: "New password must be different from the current password." });
+    return;
+  }
+
+  try {
+    const rows = await query(
+      `
+      SELECT id, email, password_hash
+      FROM users
+      WHERE email = ? AND role = 'admin' AND is_active = 1
+      LIMIT 1
+      `,
+      [email],
+    );
+
+    const admin = rows[0];
+    if (!admin || String(admin.password_hash).toLowerCase() !== toSha256(currentPassword)) {
+      res.status(401).json({ message: "Current admin email or password is incorrect." });
+      return;
+    }
+
+    await query(
+      `
+      UPDATE users
+      SET password_hash = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+      `,
+      [toSha256(newPassword), admin.id],
+    );
+
+    res.json({ ok: true, message: "Admin password updated successfully." });
+  } catch (error) {
+    console.error("Admin password change failed.", error);
+    res.status(500).json({ message: "Unable to change admin password right now." });
+  }
+});
+
 app.get("/api/admin/session", (req, res) => {
   const session = getAdminSession(req);
   res.json({ authenticated: Boolean(session?.userId) });
@@ -614,9 +668,9 @@ app.put("/api/admin/products", requireAdmin, async (req, res) => {
         await connection.query(
           `
           INSERT INTO products (
-            slug, name, price, image_url, category, tag, short_description, details, material, dimensions, stock_quantity, is_published, sort_order
+            slug, name, price, image_url, category, tag, short_description, details, material, dimensions, history_background, stock_quantity, is_published, sort_order
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1, ?)
           ON DUPLICATE KEY UPDATE
             name = VALUES(name),
             price = VALUES(price),
@@ -627,6 +681,7 @@ app.put("/api/admin/products", requireAdmin, async (req, res) => {
             details = VALUES(details),
             material = VALUES(material),
             dimensions = VALUES(dimensions),
+            history_background = VALUES(history_background),
             is_published = VALUES(is_published),
             sort_order = VALUES(sort_order)
           `,
@@ -641,6 +696,7 @@ app.put("/api/admin/products", requireAdmin, async (req, res) => {
             product.details || "",
             product.material || "",
             product.dimensions || "",
+            product.historicalBackground || "",
             index + 1,
           ],
         );

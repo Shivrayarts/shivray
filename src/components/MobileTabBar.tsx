@@ -1,10 +1,17 @@
 import { Link, useLocation } from "@/lib/spa-router";
 import { Heart, ShoppingCart, Store, UserRound } from "lucide-react";
 import { useLanguage } from "@/lib/language";
+import { useCart } from "@/hooks/use-cart";
+import { useWishlist } from "@/hooks/use-wishlist";
 
 export default function MobileTabBar() {
   const location = useLocation();
   const { resolvedLocale } = useLanguage();
+  const { getTotalItems } = useCart();
+  const { wishlist } = useWishlist();
+  const cartCount = getTotalItems();
+  const wishlistCount = wishlist.length;
+
   const tabs = [
     { to: "/products", label: resolvedLocale === "mr" ? "खरेदी" : "Shop", icon: Store },
     { to: "/login", label: resolvedLocale === "mr" ? "खाते" : "Account", icon: UserRound },
@@ -16,7 +23,7 @@ export default function MobileTabBar() {
     <nav
       className="fixed inset-x-0 bottom-0 z-50 border-t border-[#ece7df] bg-white shadow-[0_-10px_24px_-20px_rgba(0,0,0,0.3)] md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-      aria-label={resolvedLocale === "mr" ? "मोबाइल नेव्हिगेशन" : "Mobile navigation"}
+      aria-label={resolvedLocale === "mr" ? "मोबाईल नेव्हिगेशन" : "Mobile navigation"}
     >
       <div className="grid w-full grid-cols-4 px-3 py-2">
         {tabs.map((tab) => {
@@ -33,7 +40,19 @@ export default function MobileTabBar() {
                 isActive ? "text-[#111111]" : "text-[#1c1c1c]"
               }`}
             >
-              <Icon className="mb-1 h-5 w-5" />
+              <span className="relative mb-1 inline-flex">
+                <Icon className="h-5 w-5" />
+                {tab.to === "/cart" && cartCount > 0 ? (
+                  <span className="absolute -right-2.5 -top-2 inline-flex min-h-[1.15rem] min-w-[1.15rem] items-center justify-center rounded-full bg-[#34180e] px-1 text-[0.62rem] font-semibold leading-none text-white">
+                    {cartCount > 9 ? "9+" : cartCount}
+                  </span>
+                ) : null}
+                {tab.to === "/wishlist" && wishlistCount > 0 ? (
+                  <span className="absolute -right-2.5 -top-2 inline-flex min-h-[1.15rem] min-w-[1.15rem] items-center justify-center rounded-full bg-[#34180e] px-1 text-[0.62rem] font-semibold leading-none text-white">
+                    {wishlistCount > 9 ? "9+" : wishlistCount}
+                  </span>
+                ) : null}
+              </span>
               <span>{tab.label}</span>
             </Link>
           );

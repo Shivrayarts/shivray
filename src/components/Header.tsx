@@ -21,7 +21,7 @@ export default function Header() {
   const brandName = siteConfig.brandName[resolvedLocale];
   const brandNameClass =
     resolvedLocale === "mr"
-      ? "font-['Noto_Sans_Devanagari'] font-bold tracking-normal leading-[1.35]"
+      ? "font-brand-marathi font-bold tracking-normal leading-[1.35]"
       : "font-heading font-bold";
   const brandNameWrapClass = resolvedLocale === "mr" ? "whitespace-nowrap overflow-visible" : "truncate";
   const navLinks = [

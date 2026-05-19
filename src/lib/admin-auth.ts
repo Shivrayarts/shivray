@@ -34,6 +34,13 @@ export async function loginAdmin(email: string, password: string) {
   setAdminAuthenticated(true);
 }
 
+export async function changeAdminPassword(email: string, currentPassword: string, newPassword: string) {
+  await apiRequest("/api/admin/change-password", {
+    method: "POST",
+    body: { email, currentPassword, newPassword },
+  });
+}
+
 export async function refreshAdminAuthStatus() {
   try {
     const response = await apiRequest<{ authenticated: boolean }>("/api/admin/session");

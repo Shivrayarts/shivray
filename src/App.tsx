@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MobileTabBar from "@/components/MobileTabBar";
 import FloatingActions from "@/components/FloatingActions";
+import { Toaster } from "@/components/ui/sonner";
 import logoImg from "@/assets/logo-dark.jpg";
 import { LanguageProvider, useLanguage } from "@/lib/language";
 import { siteConfig } from "@/lib/site-config";
@@ -193,6 +194,7 @@ function AppShell() {
       {hideFooter ? null : <Footer />}
       {isAdminRoute ? null : <MobileTabBar />}
       {isAdminRoute ? null : <FloatingActions />}
+      {isAdminRoute ? null : <Toaster position="top-center" richColors />}
     </div>
   );
 }
