@@ -26,7 +26,7 @@ export default function CartPage() {
     email: "",
     phone: "",
     address: "",
-    paymentMethod: "Online Payment" as "Online Payment",
+    paymentMethod: "Online Payment" as const,
   });
   const [orderMessage, setOrderMessage] = useState("");
   const [touched, setTouched] = useState({

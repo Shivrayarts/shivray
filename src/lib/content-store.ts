@@ -47,18 +47,27 @@ type StorefrontPayload = {
   homeContent: StoredHomeContent;
 };
 
-const defaultProductImageById = new Map(
+const defaultProductImageById = new Map<string, string>(
   defaultProducts.map((product) => [product.id, product.image]),
 );
 
-const defaultCatalogueImageById = new Map(
+const defaultCatalogueImageById = new Map<string, string>(
   defaultCatalogueTypes.map((catalogue) => [catalogue.id, catalogue.image]),
 );
 
-const defaultBannerImageById = new Map(
+const defaultBannerImageById = new Map<string, string>(
   defaultHomeContent.banners.map((banner) => [banner.id, banner.image]),
 );
 const defaultBannerImages = defaultHomeContent.banners.map((banner) => banner.image);
+const defaultHomeBanners: HomeBanner[] = defaultHomeContent.banners.map((banner) => ({ ...banner }));
+const defaultHomeReviews: HomeReview[] = defaultHomeContent.reviews.map((review) => ({ ...review }));
+const defaultHomeVideos: HomeVideo[] = defaultHomeContent.videos.map((video) => {
+  const raw = video as HomeVideo & { thumbnail?: unknown };
+  return {
+    ...video,
+    thumbnail: typeof raw.thumbnail === "string" ? raw.thumbnail : "",
+  };
+});
 
 const apiAssetBaseUrl = String(import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
 
@@ -90,7 +99,7 @@ const legacyHomeVideoUrls = new Set([
   "https://youtu.be/WpBQTatwZhs",
 ]);
 
-const defaultHomeVideoIds = new Set(defaultHomeContent.videos.map((video) => video.id));
+const defaultHomeVideoIds = new Set(defaultHomeVideos.map((video) => video.id));
 
 const fixedDefaultReviews = new Map<string, Pick<HomeReview, "authorName" | "reviewText" | "location">>([
   [
@@ -129,7 +138,7 @@ const fixedDefaultReviews = new Map<string, Pick<HomeReview, "authorName" | "rev
 ]);
 
 function normalizeHomeVideo(video: HomeVideo): HomeVideo {
-  const defaultVideo = defaultHomeContent.videos.find((item) => item.id === video.id);
+  const defaultVideo = defaultHomeVideos.find((item) => item.id === video.id);
   const migratedVideo =
     defaultVideo && defaultHomeVideoIds.has(video.id) && video.videoType === "reel"
       ? {
@@ -205,15 +214,15 @@ function normalizeHomeReview(review: HomeReview): HomeReview {
   };
 }
 
-function ensureArray<T>(value: unknown, fallback: T[]): T[] {
-  return Array.isArray(value) ? (value as T[]) : fallback;
+function ensureArray<T>(value: unknown, fallback: readonly T[]): T[] {
+  return Array.isArray(value) ? (value as T[]) : [...fallback];
 }
 
 function normalizeStoredHomeContent(value: Partial<StoredHomeContent> | null | undefined): StoredHomeContent {
   return {
-    banners: ensureArray(value?.banners, defaultHomeContent.banners).map((banner) => normalizeHomeBanner(banner)),
-    reviews: ensureArray(value?.reviews, defaultHomeContent.reviews).map((review) => normalizeHomeReview(review)),
-    videos: ensureArray(value?.videos, defaultHomeContent.videos).map((video) => normalizeHomeVideo(video)),
+    banners: ensureArray<HomeBanner>(value?.banners, defaultHomeBanners).map((banner) => normalizeHomeBanner(banner)),
+    reviews: ensureArray<HomeReview>(value?.reviews, defaultHomeReviews).map((review) => normalizeHomeReview(review)),
+    videos: ensureArray<HomeVideo>(value?.videos, defaultHomeVideos).map((video) => normalizeHomeVideo(video)),
   };
 }
 
@@ -351,7 +360,7 @@ function bootstrapStorefrontData() {
 }
 
 export function getStoredProducts() {
-  return ensureArray(readJson<Product[]>(PRODUCTS_KEY, defaultProducts), defaultProducts);
+  return ensureArray<Product>(readJson<Product[]>(PRODUCTS_KEY, defaultProducts as Product[]), defaultProducts as Product[]);
 }
 
 export function saveStoredProducts(products: Product[]) {
@@ -364,9 +373,9 @@ export function resetStoredProducts() {
 }
 
 export function getStoredCatalogueTypes() {
-  return ensureArray(
-    readJson<CatalogueType[]>(CATALOGUES_KEY, defaultCatalogueTypes),
-    defaultCatalogueTypes,
+  return ensureArray<CatalogueType>(
+    readJson<CatalogueType[]>(CATALOGUES_KEY, defaultCatalogueTypes as CatalogueType[]),
+    defaultCatalogueTypes as CatalogueType[],
   );
 }
 
@@ -381,7 +390,11 @@ export function resetStoredCatalogueTypes() {
 
 export function getStoredHomeContent(): StoredHomeContent {
   return normalizeStoredHomeContent(
-    readJson<StoredHomeContent>(HOME_CONTENT_KEY, defaultHomeContent),
+    readJson<StoredHomeContent>(HOME_CONTENT_KEY, {
+      banners: defaultHomeBanners,
+      reviews: defaultHomeReviews,
+      videos: defaultHomeVideos,
+    }),
   );
 }
 

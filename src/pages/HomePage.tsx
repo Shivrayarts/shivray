@@ -1,4 +1,4 @@
-import { Link } from "@/lib/spa-router";
+﻿import { Link } from "@/lib/spa-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import {
   useStoredHomeContent,
+  useStoredCatalogueTypes,
   useStoredProducts,
 } from "@/lib/content-store";
 import { useWishlist } from "@/hooks/use-wishlist";
@@ -78,6 +79,7 @@ function isYoutubeShortUrl(value: string) {
 export default function HomePage() {
   const { resolvedLocale } = useLanguage();
   const products = useStoredProducts();
+  const catalogueTypes = useStoredCatalogueTypes();
   const storedHomeContent = useStoredHomeContent();
   const { isWishlisted, toggleWishlist } = useWishlist();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -89,35 +91,41 @@ export default function HomePage() {
   const hasHeroSlides = heroSlides.length > 0;
   const hasReviews = reviews.length > 0;
   const featuredVideos = storedHomeContent.videos;
-  const homeCategoryCards = useMemo(
-    () => [
-      {
-        title: resolvedLocale === "mr" ? "महाराज मूर्ती" : "Maharaj Statues",
-        key: "Statues" as const,
-        count: `${products.filter((product) => product.category === "Statues").length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
-        image: productStatue1,
-      },
-      {
-        title: resolvedLocale === "mr" ? "योद्धा शस्त्रे" : "Warrior Weapons",
-        key: "Weapons" as const,
-        count: `${products.filter((product) => product.category === "Weapons").length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
-        image: productWeapon1,
-      },
-      {
-        title: resolvedLocale === "mr" ? "प्रीमियम ढाली" : "Premium Shields",
-        key: "Shields" as const,
-        count: `${products.filter((product) => product.category === "Shields").length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
-        image: heroBanner3,
-      },
-      {
-        title: resolvedLocale === "mr" ? "धूप संग्रह" : "Dhoop Collection",
-        key: "Dhoop" as const,
-        count: `${products.filter((product) => product.category === "Dhoop").length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
-        image: productDhoop1,
-      },
-    ],
-    [products, resolvedLocale],
-  );
+  const homeCategoryCards = useMemo(() => {
+    const fallbackImages: Record<string, string> = {
+      Statues: productStatue1,
+      Weapons: productWeapon1,
+      Shields: heroBanner3,
+      Dhoop: productDhoop1,
+    };
+
+    const adminCards = catalogueTypes
+      .filter((catalogue) => catalogue.isActive)
+      .map((catalogue) => {
+        const key =
+          (typeof catalogue.shortLabel === "string"
+            ? catalogue.shortLabel
+            : catalogue.shortLabel.en || catalogue.shortLabel.mr || "")
+            .trim() || "General";
+        const title =
+          (typeof catalogue.title === "string" ? catalogue.title : catalogue.title[resolvedLocale]) || key;
+        return {
+          title,
+          key,
+          count: `${products.filter((product) => product.category === key).length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
+          image: catalogue.image || fallbackImages[key] || productStatue1,
+        };
+      });
+
+    if (adminCards.length > 0) return adminCards;
+
+    return ["Statues", "Weapons", "Shields", "Dhoop"].map((key) => ({
+      title: key,
+      key,
+      count: `${products.filter((product) => product.category === key).length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
+      image: fallbackImages[key] || productStatue1,
+    }));
+  }, [catalogueTypes, products, resolvedLocale]);
   const spotlightProductCards = spotlightProducts.map((product) => {
     const matchedProduct = products.find((item) => item.id === product.id);
     return {
@@ -170,6 +178,29 @@ export default function HomePage() {
     const nextSlide = Math.round(node.scrollLeft / cardWidth);
     setCategorySlide(Math.max(0, Math.min(nextSlide, homeCategoryCards.length - 1)));
   };
+
+  const scrollToCategorySlide = (index: number, behavior: ScrollBehavior = "smooth") => {
+    const node = categoriesRef.current;
+    if (!node) return;
+    const firstCard = node.querySelector<HTMLElement>("[data-category-card]");
+    if (!firstCard) return;
+    const cardWidth = firstCard.offsetWidth + 16;
+    const safeIndex = Math.max(0, Math.min(index, homeCategoryCards.length - 1));
+    node.scrollTo({ left: safeIndex * cardWidth, behavior });
+    setCategorySlide(safeIndex);
+  };
+
+  useEffect(() => {
+    if (homeCategoryCards.length <= 1) return;
+    const timer = window.setInterval(() => {
+      setCategorySlide((prev) => {
+        const next = (prev + 1) % homeCategoryCards.length;
+        scrollToCategorySlide(next);
+        return next;
+      });
+    }, 3200);
+    return () => window.clearInterval(timer);
+  }, [homeCategoryCards.length]);
 
   return (
     <div className="bg-[#f7f1e7]">
@@ -256,14 +287,14 @@ export default function HomePage() {
           <div className="text-center">
             <h2 className="font-body text-3xl font-semibold text-[#1d150f] md:text-4xl">{resolvedLocale === "mr" ? "लोकप्रिय श्रेणी" : "Popular Categories"}</h2>
           </div>
-          <div ref={categoriesRef} onScroll={handleCategoriesScroll} className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-4 md:gap-x-6 md:overflow-visible md:pb-0">
+          <div ref={categoriesRef} onScroll={handleCategoriesScroll} className="category-carousel-scroll mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2">
             {homeCategoryCards.map((card) => (
               <Link
                 key={card.key}
                 to="/products"
                 search={{ category: card.key }}
                 data-category-card
-                className="group min-w-[78%] snap-center text-center sm:min-w-[calc(50%-0.5rem)] md:min-w-0"
+                className="group min-w-[78%] snap-center text-center sm:min-w-[calc(50%-0.5rem)] md:min-w-[calc(25%-0.75rem)]"
               >
                 <div className="relative overflow-hidden rounded-[30px] bg-[#b65a73] shadow-[0_18px_45px_-30px_rgba(89,34,49,0.65)]">
                   <img src={card.image} alt={card.title} className="aspect-square w-full object-cover opacity-90 saturate-[0.7] transition duration-500 group-hover:scale-105" />
@@ -275,7 +306,13 @@ export default function HomePage() {
           </div>
           <div className="mt-7 flex items-center justify-center gap-3">
             {homeCategoryCards.map((card, index) => (
-              <span key={card.key} className={`rounded-full ${index === categorySlide ? "h-4 w-4 border border-[#1d150f] bg-white shadow-[inset_0_0_0_4px_#1d150f]" : "h-2.5 w-2.5 bg-[#a9a29c]"}`} />
+              <button
+                key={card.key}
+                type="button"
+                aria-label={`Go to category slide ${index + 1}`}
+                onClick={() => scrollToCategorySlide(index)}
+                className={`rounded-full ${index === categorySlide ? "h-4 w-4 border border-[#1d150f] bg-white shadow-[inset_0_0_0_4px_#1d150f]" : "h-2.5 w-2.5 bg-[#a9a29c]"}`}
+              />
             ))}
           </div>
         </div>

@@ -1,4 +1,5 @@
 import {
+  useCallback,
   createContext,
   type ReactNode,
   useContext,
@@ -59,20 +60,20 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     window.localStorage.setItem(LANGUAGE_KEY, locale);
   }, [locale]);
 
-  const setLocale = (nextLocale: Locale) => {
+  const setLocale = useCallback((nextLocale: Locale) => {
     setLocaleState(nextLocale);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(LANGUAGE_KEY, nextLocale);
     }
-  };
+  }, []);
 
-  const chooseLanguage = (nextLocale: Locale) => {
+  const chooseLanguage = useCallback((nextLocale: Locale) => {
     setLocale(nextLocale);
     setHasChosenLanguage(true);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(LANGUAGE_SEEN_KEY, "true");
     }
-  };
+  }, [setLocale]);
 
   const value = useMemo<LanguageContextValue>(
     () => ({
@@ -82,7 +83,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       setLocale,
       chooseLanguage,
     }),
-    [hasChosenLanguage, locale],
+    [chooseLanguage, hasChosenLanguage, locale, setLocale],
   );
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
@@ -96,4 +97,3 @@ export function useLanguage() {
 
   return context;
 }
-

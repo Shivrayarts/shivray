@@ -1,4 +1,4 @@
-import type { LocalizedText } from "@/lib/language";
+﻿import type { LocalizedText } from "@/lib/language";
 import heroBanner1 from "@/assets/products-poster.jpg";
 import heroBanner2 from "@/assets/hero-banner-2.jpg";
 import heroBanner3 from "@/assets/hero-banner-3.jpg";

@@ -82,7 +82,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
       soldLast7Days: getRandomValue(5, 9),
       viewingNow: getRandomValue(20, 99),
     });
-  }, [product?.id]);
+  }, [product]);
 
   useEffect(() => {
     if (!product) return;
@@ -105,7 +105,13 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   const whatsappLink = `${siteConfig.whatsappHref}?text=${encodeURIComponent(
     `Hi Shivray, I want details for ${normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}. Please share price and availability.`,
   )}`;
-  const galleryImages = [product.image, ...relatedProducts.map((item) => item.image)].slice(0, 4);
+  const galleryImages = [
+    product.image,
+    ...(product.galleryImages ?? []),
+    ...relatedProducts.map((item) => item.image),
+  ]
+    .filter((image, index, array) => Boolean(image) && array.indexOf(image) === index)
+    .slice(0, 5);
   const visibleGalleryImages = galleryImages;
   const selectGalleryImage = (index: number) => {
     if (!galleryImages.length) return;

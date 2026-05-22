@@ -1,8 +1,11 @@
 import { Link, useNavigate } from "@/lib/spa-router";
-import { useMemo, useState, type ChangeEvent } from "react";
+import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import {
   ArrowDown,
   ArrowUp,
+  Bell,
+  ChevronDown,
+  ChevronRight,
   MessageSquareQuote,
   Film,
   ImagePlus,
@@ -13,6 +16,7 @@ import {
   RefreshCcw,
   Save,
   Search,
+  SquarePen,
   Shapes,
   ShoppingCart,
   Trash2,
@@ -23,12 +27,12 @@ import {
 } from "lucide-react";
 import { homeContent as defaultHomeContent } from "@/data/home-content";
 import type { Product } from "@/data/products";
-import { productCategories } from "@/data/products";
 import type { CatalogueType } from "@/lib/catalogue-types";
 import { defaultCatalogueTypes } from "@/lib/catalogue-types";
-import { logoutAdmin } from "@/lib/admin-auth";
+import { changeAdminPassword, logoutAdmin } from "@/lib/admin-auth";
 import { resolveLocalizedText } from "@/lib/language";
 import { parseCurrencyAmount } from "@/lib/utils";
+import { isValidEmail } from "@/lib/form-validation";
 import {
   saveStoredCatalogueTypes,
   saveStoredHomeContent,
@@ -52,6 +56,7 @@ const productTemplate: Product = {
   name: "",
   price: "Rs. 0",
   image: "",
+  galleryImages: [],
   category: "Statues",
   tag: "",
   shortDescription: "",
@@ -110,20 +115,9 @@ type AdminSection =
   | "customers"
   | "reviews";
 
-const adminMenuItems: Array<{
-  id: AdminSection;
-  label: string;
-  icon: LucideIcon;
-}> = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutPanelTop },
-  { id: "products", label: "Products", icon: Package },
-  { id: "categories", label: "Categories", icon: Shapes },
-  { id: "banners", label: "Banners", icon: ImagePlus },
-  { id: "videos", label: "Videos", icon: Film },
-  { id: "reviews", label: "Reviews", icon: MessageSquareQuote },
-  { id: "orders", label: "Orders", icon: ShoppingCart },
-  { id: "customers", label: "Customers", icon: UserRound },
-];
+type ProductViewMode = "list" | "add";
+type ProductSortBy = "newest" | "name-asc" | "name-desc" | "price-low" | "price-high";
+type ProductPriceRange = "all" | "under-5000" | "5000-10000" | "10000-15000" | "15000-plus";
 
 function slugify(value: string) {
   return value
@@ -169,6 +163,10 @@ function formatDate(value: string) {
   });
 }
 
+function normalizeCategoryLabel(value: string) {
+  return value.trim();
+}
+
 function isYoutubeUrl(value: string) {
   return /(youtube\.com|youtu\.be)/i.test(value);
 }
@@ -205,14 +203,18 @@ async function fileToDataUrl(file: File, sizeLimitMb?: number) {
 
 function ProductForm({
   value,
+  categoryOptions,
   onChange,
   onSave,
   onPickFile,
+  onPickGalleryFiles,
 }: {
   value: Product;
+  categoryOptions: string[];
   onChange: (value: Product) => void;
   onSave: () => void;
   onPickFile: (event: ChangeEvent<HTMLInputElement>) => void;
+  onPickGalleryFiles: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
   const localizedName = adminLocalizedText(value.name);
 
@@ -261,44 +263,79 @@ function ProductForm({
           }
           className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
         >
-          {productCategories.map((category) => (
+          {(categoryOptions.length ? categoryOptions : [value.category || "General"]).map((category) => (
             <option key={category} value={category}>
               {category}
             </option>
           ))}
         </select>
         <input
-          value={value.tag}
+          value={adminText(value.tag)}
           onChange={(event) => onChange({ ...value, tag: event.target.value })}
           placeholder="Featured / New / Popular"
           className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
         />
       </div>
       <input
+        type="hidden"
         value={value.image}
-        onChange={(event) => onChange({ ...value, image: event.target.value })}
-        placeholder="Image URL or data image"
-        className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+        readOnly
       />
       <label className="block rounded-2xl border border-dashed border-[#d8b48b] bg-[#fffaf4] p-4 text-sm text-[#6c4b33]">
         <span className="mb-2 flex items-center gap-2 font-semibold text-[#34180e]">
           <Upload className="h-4 w-4" />
-          Upload product image file
+          Choose product cover image
         </span>
         <p className="mb-2 text-xs text-[#8b6c52]">
-          Pick a JPG/PNG/WebP image from your device. It will auto-fill the product image field.
+          Pick a JPG/PNG/WebP image from your device.
         </p>
         <input type="file" accept="image/*" onChange={onPickFile} className="mt-2 block w-full text-sm" />
       </label>
+      {value.image ? (
+        <div className="rounded-xl border border-[#eadbc8] bg-white p-2">
+          <img src={value.image} alt="Product cover" className="h-36 w-full rounded-lg object-cover" />
+        </div>
+      ) : null}
+      <label className="block rounded-2xl border border-dashed border-[#d8b48b] bg-[#fffaf4] p-4 text-sm text-[#6c4b33]">
+        <span className="mb-2 flex items-center gap-2 font-semibold text-[#34180e]">
+          <ImagePlus className="h-4 w-4" />
+          Upload product gallery images (max 4)
+        </span>
+        <p className="mb-2 text-xs text-[#8b6c52]">
+          Select 3-4 images to build product gallery.
+        </p>
+        <input type="file" accept="image/*" multiple onChange={onPickGalleryFiles} className="mt-2 block w-full text-sm" />
+      </label>
+      {(value.galleryImages ?? []).length ? (
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {(value.galleryImages ?? []).map((image, index) => (
+            <div key={`${image}-${index}`} className="rounded-xl border border-[#eadbc8] bg-white p-2">
+              <img src={image} alt={`Gallery ${index + 1}`} className="h-24 w-full rounded-lg object-cover" />
+              <button
+                type="button"
+                onClick={() =>
+                  onChange({
+                    ...value,
+                    galleryImages: (value.galleryImages ?? []).filter((_, itemIndex) => itemIndex !== index),
+                  })
+                }
+                className="mt-2 w-full rounded-lg border border-[#ffe1e1] bg-[#fff3f3] px-2 py-1 text-xs font-semibold text-[#9f2b2b]"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : null}
       <textarea
-        value={value.shortDescription}
+        value={adminText(value.shortDescription)}
         onChange={(event) => onChange({ ...value, shortDescription: event.target.value })}
         rows={3}
         placeholder="Short description"
         className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
       />
       <textarea
-        value={value.details}
+        value={adminText(value.details)}
         onChange={(event) => onChange({ ...value, details: event.target.value })}
         rows={4}
         placeholder="Full details"
@@ -313,13 +350,13 @@ function ProductForm({
       />
       <div className="grid gap-4 md:grid-cols-2">
         <input
-          value={value.material}
+          value={adminText(value.material)}
           onChange={(event) => onChange({ ...value, material: event.target.value })}
           placeholder="Material"
           className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
         />
         <input
-          value={value.dimensions}
+          value={adminText(value.dimensions)}
           onChange={(event) => onChange({ ...value, dimensions: event.target.value })}
           placeholder="Dimensions"
           className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
@@ -341,41 +378,50 @@ function CatalogueForm({
   value,
   onChange,
   onSave,
+  onPickImageFile,
 }: {
   value: CatalogueType;
   onChange: (value: CatalogueType) => void;
   onSave: () => void;
+  onPickImageFile: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
         <input
-          value={value.title}
+          value={adminText(value.title)}
           onChange={(event) => onChange({ ...value, title: event.target.value })}
-          placeholder="Catalogue title"
+          placeholder="Category title"
           className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
         />
         <input
-          value={value.shortLabel}
+          value={adminText(value.shortLabel)}
           onChange={(event) => onChange({ ...value, shortLabel: event.target.value })}
           placeholder="Short label"
           className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
         />
       </div>
       <input
-        value={value.itemCountLabel}
+        value={adminText(value.itemCountLabel)}
         onChange={(event) => onChange({ ...value, itemCountLabel: event.target.value })}
         placeholder="170 products"
         className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
       />
-      <input
-        value={value.image}
-        onChange={(event) => onChange({ ...value, image: event.target.value })}
-        placeholder="Image URL or data image"
-        className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
-      />
+      <label className="block rounded-2xl border border-dashed border-[#d8b48b] bg-[#fffaf4] p-4 text-sm text-[#6c4b33]">
+        <span className="mb-2 flex items-center gap-2 font-semibold text-[#34180e]">
+          <Upload className="h-4 w-4" />
+          Choose category image
+        </span>
+        <p className="mb-2 text-xs text-[#8b6c52]">Pick a JPG/PNG/WebP image from your device.</p>
+        <input type="file" accept="image/*" onChange={onPickImageFile} className="mt-2 block w-full text-sm" />
+      </label>
+      {value.image ? (
+        <div className="rounded-xl border border-[#eadbc8] bg-white p-2">
+          <img src={value.image} alt="Category preview" className="h-36 w-full rounded-lg object-cover" />
+        </div>
+      ) : null}
       <textarea
-        value={value.description}
+        value={adminText(value.description)}
         onChange={(event) => onChange({ ...value, description: event.target.value })}
         rows={4}
         placeholder="Description"
@@ -387,7 +433,7 @@ function CatalogueForm({
           checked={value.isActive}
           onChange={(event) => onChange({ ...value, isActive: event.target.checked })}
         />
-        Show this catalogue on the storefront
+        Show this category on the storefront
       </label>
       <button
         type="button"
@@ -395,7 +441,7 @@ function CatalogueForm({
         className="inline-flex items-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white"
       >
         <Save className="h-4 w-4" />
-        Save Catalogue
+        Save Category
       </button>
     </div>
   );
@@ -459,11 +505,13 @@ function VideoForm({
   onChange,
   onSave,
   onPickFile,
+  onPickThumbnailFile,
 }: {
   value: HomeVideo;
   onChange: (value: HomeVideo) => void;
   onSave: () => void;
   onPickFile: (event: ChangeEvent<HTMLInputElement>) => void;
+  onPickThumbnailFile: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
     <div className="space-y-4">
@@ -490,13 +538,19 @@ function VideoForm({
             <option value="youtube">YouTube Video</option>
           </select>
         </label>
-        <input
-          value={value.thumbnail ?? ""}
-          onChange={(event) => onChange({ ...value, thumbnail: event.target.value })}
-          placeholder="Thumbnail image URL (optional)"
-          className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
-        />
+        <label className="block rounded-2xl border border-dashed border-[#d8b48b] bg-[#fffaf4] p-4 text-sm text-[#6c4b33]">
+          <span className="mb-2 flex items-center gap-2 font-semibold text-[#34180e]">
+            <ImagePlus className="h-4 w-4" />
+            Choose thumbnail image (optional)
+          </span>
+          <input type="file" accept="image/*" onChange={onPickThumbnailFile} className="mt-2 block w-full text-sm" />
+        </label>
       </div>
+      {value.thumbnail ? (
+        <div className="rounded-xl border border-[#eadbc8] bg-white p-2">
+          <img src={value.thumbnail} alt="Video thumbnail preview" className="h-36 w-full rounded-lg object-cover" />
+        </div>
+      ) : null}
       {value.videoType === "youtube" ? (
         <input
           value={value.videoUrl}
@@ -566,7 +620,7 @@ function ReviewForm({
           className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
         />
         <input
-          value={value.location}
+          value={adminText(value.location)}
           onChange={(event) => onChange({ ...value, location: event.target.value })}
           placeholder="Location"
           className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
@@ -587,7 +641,7 @@ function ReviewForm({
         className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
       />
       <textarea
-        value={value.reviewText}
+        value={adminText(value.reviewText)}
         onChange={(event) => onChange({ ...value, reviewText: event.target.value })}
         rows={5}
         placeholder="Review text"
@@ -615,13 +669,13 @@ function StatCard({
   icon: LucideIcon;
 }) {
   return (
-    <div className="rounded-[30px] bg-white p-5 shadow-[0_18px_40px_-30px_rgba(70,36,15,0.28)]">
+    <div className="rounded-[10px] border border-[#e4e4e4] bg-white p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-sm uppercase tracking-[0.24em] text-[#9b7757]">{label}</p>
-          <p className="mt-3 text-3xl font-semibold text-[#34180e]">{value}</p>
+          <p className="text-sm text-[#8f98a4]">{label}</p>
+          <p className="mt-2 text-2xl font-semibold text-[#0f172a]">{value}</p>
         </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-[#fff1d9] text-[#b17024]">
+        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f2f3ff] text-[#a68acb]">
           <Icon className="h-5 w-5" />
         </div>
       </div>
@@ -646,7 +700,38 @@ export default function AdminPage() {
   const [orderStatusFilter, setOrderStatusFilter] = useState<"All" | OrderStatus>("All");
   const [orderSearch, setOrderSearch] = useState("");
   const [customerSearch, setCustomerSearch] = useState("");
+  const [productViewMode, setProductViewMode] = useState<ProductViewMode>("list");
+  const [productFiltersDraft, setProductFiltersDraft] = useState({
+    category: "all",
+    brand: "all",
+    sortBy: "newest" as ProductSortBy,
+    priceRange: "all" as ProductPriceRange,
+  });
+  const [productFilters, setProductFilters] = useState({
+    category: "all",
+    brand: "all",
+    sortBy: "newest" as ProductSortBy,
+    priceRange: "all" as ProductPriceRange,
+  });
+  const [productFilterPanels, setProductFilterPanels] = useState({
+    categories: true,
+    brands: true,
+    pricing: true,
+  });
+  const [productsExpanded, setProductsExpanded] = useState(true);
+  const [ordersExpanded, setOrdersExpanded] = useState(true);
+  const [showLegacyProductList] = useState(false);
   const [mediaNotice, setMediaNotice] = useState("");
+  const [showPasswordPanel, setShowPasswordPanel] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [passwordForm, setPasswordForm] = useState({
+    email: "",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
   const orderedCatalogues = useMemo(
     () => [...catalogueTypes].sort((a, b) => a.sortOrder - b.sortOrder),
@@ -732,17 +817,190 @@ export default function AdminPage() {
     reviews: "Customer Reviews",
     }[activeSection] ?? "Dashboard";
 
+  const availableProductBrands = useMemo(() => {
+    const brands = Array.from(
+      new Set(
+        products
+          .map((product) => adminText(product.tag).trim())
+          .filter(Boolean),
+      ),
+    );
+    return brands.sort((a, b) => a.localeCompare(b));
+  }, [products]);
+
+  const availableProductCategories = useMemo(() => {
+    const fromCatalogues = orderedCatalogues
+      .filter((catalogue) => catalogue.isActive)
+      .map((catalogue) => adminText(catalogue.shortLabel).trim())
+      .filter(Boolean);
+    const fromProducts = products.map((product) => String(product.category || "").trim()).filter(Boolean);
+    return Array.from(new Set([...fromCatalogues, ...fromProducts])).sort((a, b) => a.localeCompare(b));
+  }, [orderedCatalogues, products]);
+
+  const filteredProducts = useMemo(() => {
+    const matchesPriceRange = (priceValue: number) => {
+      if (productFilters.priceRange === "under-5000") return priceValue < 5000;
+      if (productFilters.priceRange === "5000-10000") return priceValue >= 5000 && priceValue <= 10000;
+      if (productFilters.priceRange === "10000-15000") return priceValue > 10000 && priceValue <= 15000;
+      if (productFilters.priceRange === "15000-plus") return priceValue > 15000;
+      return true;
+    };
+
+    const next = products.filter((product) => {
+      const categoryMatch =
+        productFilters.category === "all" || product.category === productFilters.category;
+      const brandValue = adminText(product.tag).trim();
+      const brandMatch =
+        productFilters.brand === "all" || brandValue === productFilters.brand;
+      const priceValue = parseCurrencyValue(product.price);
+      return categoryMatch && brandMatch && matchesPriceRange(priceValue);
+    });
+
+    next.sort((a, b) => {
+      if (productFilters.sortBy === "name-asc") {
+        return resolveLocalizedText(a.name, "en").localeCompare(resolveLocalizedText(b.name, "en"));
+      }
+      if (productFilters.sortBy === "name-desc") {
+        return resolveLocalizedText(b.name, "en").localeCompare(resolveLocalizedText(a.name, "en"));
+      }
+      if (productFilters.sortBy === "price-low") {
+        return parseCurrencyValue(a.price) - parseCurrencyValue(b.price);
+      }
+      if (productFilters.sortBy === "price-high") {
+        return parseCurrencyValue(b.price) - parseCurrencyValue(a.price);
+      }
+      return 0;
+    });
+
+    return next;
+  }, [productFilters, products]);
+
   function handleLogout() {
     logoutAdmin();
     navigate({ to: "/admin" });
   }
 
+  async function handleAdminPasswordChange(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    const email = passwordForm.email.trim().toLowerCase();
+    if (!isValidEmail(email)) {
+      setPasswordError("Enter a valid admin email.");
+      return;
+    }
+    if (!passwordForm.currentPassword.trim()) {
+      setPasswordError("Enter your current password.");
+      return;
+    }
+    if (passwordForm.newPassword.length < 8) {
+      setPasswordError("New password must be at least 8 characters.");
+      return;
+    }
+    if (passwordForm.newPassword === passwordForm.currentPassword) {
+      setPasswordError("New password must be different from current password.");
+      return;
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError("New password and confirm password do not match.");
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      await changeAdminPassword(email, passwordForm.currentPassword, passwordForm.newPassword);
+      setPasswordSuccess("Password changed successfully.");
+      setPasswordForm({
+        email,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      setPasswordError(error instanceof Error ? error.message : "Unable to change password right now.");
+    } finally {
+      setChangingPassword(false);
+    }
+  }
+
+  function applyProductFilters() {
+    setProductFilters(productFiltersDraft);
+  }
+
+  function resetProductFilters() {
+    const reset = {
+      category: "all",
+      brand: "all",
+      sortBy: "newest" as ProductSortBy,
+      priceRange: "all" as ProductPriceRange,
+    };
+    setProductFiltersDraft(reset);
+    setProductFilters(reset);
+  }
+
+  function deleteCategory(catalogueId: string) {
+    const categoryToDelete = orderedCatalogues.find((catalogue) => catalogue.id === catalogueId);
+    if (!categoryToDelete) return;
+
+    const remainingCategories = orderedCatalogues.filter((catalogue) => catalogue.id !== catalogueId);
+    const normalizedRemaining = remainingCategories.map((catalogue, index) => ({
+      ...catalogue,
+      sortOrder: index + 1,
+    }));
+    saveStoredCatalogueTypes(normalizedRemaining);
+
+    const deletedLabel = normalizeCategoryLabel(adminText(categoryToDelete.shortLabel));
+    const fallbackCategory =
+      normalizeCategoryLabel(adminText(normalizedRemaining.find((catalogue) => catalogue.isActive)?.shortLabel || "")) ||
+      "General";
+    if (deletedLabel) {
+      const migratedProducts = products.map((product) =>
+        normalizeCategoryLabel(String(product.category || "")) === deletedLabel
+          ? { ...product, category: fallbackCategory }
+          : product,
+      );
+      saveStoredProducts(migratedProducts);
+    }
+
+    if (catalogueDraft.id === catalogueId) {
+      setCatalogueDraft(catalogueTemplate);
+    }
+    setMediaNotice(`Category removed. Related products moved to "${fallbackCategory}".`);
+  }
+
   function saveProduct() {
     const englishName = adminText(productDraft.name).trim();
     const marathiName = adminLocalizedText(productDraft.name).mr.trim();
+    const category = normalizeCategoryLabel(String(productDraft.category || ""));
+    const coverImage = String(productDraft.image || "").trim();
+
+    if (!englishName) {
+      setMediaNotice("Product name (English) is required.");
+      return;
+    }
+    if (!category) {
+      setMediaNotice("Please select a product category.");
+      return;
+    }
+    if (!coverImage) {
+      setMediaNotice("Please add a cover image for this product.");
+      return;
+    }
+
+    const normalizedPriceValue = parseCurrencyValue(productDraft.price);
+    const normalizedPrice =
+      Number.isFinite(normalizedPriceValue) && normalizedPriceValue > 0
+        ? formatCurrency(normalizedPriceValue)
+        : productDraft.price;
+
     const nextProduct: Product = {
       ...productDraft,
       name: { en: englishName, mr: marathiName },
+      category,
+      image: coverImage,
+      price: normalizedPrice,
+      galleryImages: (productDraft.galleryImages ?? []).filter(Boolean).slice(0, 4),
       id: productDraft.id || slugify(englishName) || uniqueId("product"),
     };
 
@@ -754,26 +1012,61 @@ export default function AdminPage() {
 
     saveStoredProducts(next);
     setProductDraft(nextProduct);
+    setMediaNotice(`Product "${englishName}" saved successfully.`);
   }
 
   function saveCatalogue() {
+    const title = adminText(catalogueDraft.title).trim();
+    const shortLabel = normalizeCategoryLabel(adminText(catalogueDraft.shortLabel).trim());
+    if (!title) {
+      setMediaNotice("Category title is required.");
+      return;
+    }
+    if (!shortLabel) {
+      setMediaNotice("Category short label is required.");
+      return;
+    }
+
+    const duplicateLabel = orderedCatalogues.find(
+      (item) =>
+        item.id !== catalogueDraft.id &&
+        adminText(item.shortLabel).trim().toLowerCase() === shortLabel.toLowerCase(),
+    );
+    if (duplicateLabel) {
+      setMediaNotice("Another category already uses the same short label.");
+      return;
+    }
+
     const nextCatalogue: CatalogueType = {
       ...catalogueDraft,
+      title,
+      shortLabel,
       id:
         catalogueDraft.id ||
-        `${slugify(catalogueDraft.title || catalogueDraft.shortLabel)}-catalogue` ||
+        `${slugify(title || shortLabel)}-catalogue` ||
         uniqueId("catalogue"),
       sortOrder: catalogueDraft.sortOrder || orderedCatalogues.length + 1,
     };
 
     const next = [...orderedCatalogues];
     const existingIndex = next.findIndex((item) => item.id === nextCatalogue.id);
+    const previousLabel =
+      existingIndex >= 0 ? normalizeCategoryLabel(adminText(next[existingIndex].shortLabel)) : "";
 
     if (existingIndex >= 0) next[existingIndex] = nextCatalogue;
     else next.push(nextCatalogue);
 
     saveStoredCatalogueTypes(next.map((item, index) => ({ ...item, sortOrder: index + 1 })));
+    if (previousLabel && previousLabel !== shortLabel) {
+      const migratedProducts = products.map((product) =>
+        normalizeCategoryLabel(String(product.category || "")) === previousLabel
+          ? { ...product, category: shortLabel }
+          : product,
+      );
+      saveStoredProducts(migratedProducts);
+    }
     setCatalogueDraft(nextCatalogue);
+    setMediaNotice(`Category "${title}" saved successfully.`);
   }
 
   function saveBanner() {
@@ -807,14 +1100,25 @@ export default function AdminPage() {
 
     saveStoredHomeContent({ ...storedHomeContent, banners: next });
     setBannerDraft(nextBanner);
+    setMediaNotice("Banner saved successfully.");
   }
 
   function saveVideo() {
+    const videoUrl = String(videoDraft.videoUrl || "").trim();
+    if (!videoUrl) {
+      setMediaNotice("Please add video URL or upload a reel before saving.");
+      return;
+    }
+    if (videoDraft.videoType === "youtube" && !isYoutubeUrl(videoUrl)) {
+      setMediaNotice("Please enter a valid YouTube link.");
+      return;
+    }
     const normalizedType = videoDraft.videoType || (isYoutubeUrl(videoDraft.videoUrl) ? "youtube" : "reel");
     const nextVideo = {
       ...videoDraft,
       id: videoDraft.id || uniqueId("video"),
       videoType: normalizedType,
+      videoUrl,
     };
     const next = [...storedHomeContent.videos];
     const existingIndex = next.findIndex((item) => item.id === nextVideo.id);
@@ -824,9 +1128,14 @@ export default function AdminPage() {
 
     saveStoredHomeContent({ ...storedHomeContent, videos: next });
     setVideoDraft(nextVideo);
+    setMediaNotice("Video saved successfully.");
   }
 
   function saveReview() {
+    if (!adminText(reviewDraft.authorName).trim() || !adminText(reviewDraft.reviewText).trim()) {
+      setMediaNotice("Review author and review text are required.");
+      return;
+    }
     const nextReview = { ...reviewDraft, id: reviewDraft.id || uniqueId("review") };
     const next = [...storedHomeContent.reviews];
     const existingIndex = next.findIndex((item) => item.id === nextReview.id);
@@ -836,6 +1145,7 @@ export default function AdminPage() {
 
     saveStoredHomeContent({ ...storedHomeContent, reviews: next });
     setReviewDraft(nextReview);
+    setMediaNotice("Review saved successfully.");
   }
 
   async function handleBannerFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -875,6 +1185,28 @@ export default function AdminPage() {
     }
   }
 
+  async function handleProductGalleryFilesChange(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    if (!files.length) return;
+
+    const invalidType = files.find((file) => !file.type.startsWith("image/"));
+    if (invalidType) {
+      setMediaNotice("Please select image files only for product gallery.");
+      return;
+    }
+
+    try {
+      const nextGalleryImages = await Promise.all(files.slice(0, 4).map((file) => fileToDataUrl(file, 4)));
+      setProductDraft((current) => ({
+        ...current,
+        galleryImages: [...(current.galleryImages ?? []), ...nextGalleryImages].slice(0, 4),
+      }));
+      setMediaNotice("Product gallery images loaded successfully.");
+    } catch (error) {
+      setMediaNotice(error instanceof Error ? error.message : "Unable to load gallery image files.");
+    }
+  }
+
   async function handleVideoFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -890,10 +1222,43 @@ export default function AdminPage() {
     }
   }
 
+  async function handleCatalogueImageFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setMediaNotice("Please select an image file for category image.");
+      return;
+    }
+    try {
+      const dataUrl = await fileToDataUrl(file, 4);
+      setCatalogueDraft((current) => ({ ...current, image: dataUrl }));
+      setMediaNotice(`Category image "${file.name}" loaded successfully.`);
+    } catch (error) {
+      setMediaNotice(error instanceof Error ? error.message : "Unable to load the category image file.");
+    }
+  }
+
+  async function handleVideoThumbnailFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setMediaNotice("Please select an image file for thumbnail.");
+      return;
+    }
+    try {
+      const dataUrl = await fileToDataUrl(file, 4);
+      setVideoDraft((current) => ({ ...current, thumbnail: dataUrl }));
+      setMediaNotice(`Video thumbnail "${file.name}" loaded successfully.`);
+    } catch (error) {
+      setMediaNotice(error instanceof Error ? error.message : "Unable to load the thumbnail file.");
+    }
+  }
+
   return (
-    <div className="bg-[#f7f1e7] px-4 py-6 md:px-6 md:py-8">
-      <div className="layout-shell grid gap-6 xl:grid-cols-[270px_1fr]">
-        <aside className="sticky top-6 h-fit rounded-[30px] bg-[linear-gradient(180deg,#6f55dc_0%,#5b45c8_100%)] p-6 text-white shadow-[0_24px_60px_-40px_rgba(11,7,34,0.8)]">
+    <div className="min-h-screen bg-[#ececec] px-2 py-3 md:px-4 md:py-5">
+      <div className="mx-auto w-full max-w-[1920px] rounded-[10px] border border-[#dfdfdf] bg-white p-4">
+        <div className="grid gap-6 rounded-[10px] bg-[#eef0f3] p-4 xl:grid-cols-[330px_1fr] xl:items-start">
+        <aside className="sticky top-6 h-[calc(100vh-3.5rem)] overflow-y-auto rounded-[30px] bg-[linear-gradient(180deg,#6f55dc_0%,#5b45c8_100%)] p-6 text-white shadow-[0_24px_60px_-40px_rgba(11,7,34,0.8)]">
           <div className="mb-8">
             <div className="mb-4 flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-white/10 text-[#ffd68d]">
@@ -909,91 +1274,307 @@ export default function AdminPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-1">
-            {adminMenuItems.map((item) => (
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => setActiveSection("dashboard")}
+              className={`flex w-full items-center gap-3 rounded-[18px] px-4 py-3 text-left text-sm font-semibold transition ${
+                activeSection === "dashboard"
+                  ? "bg-white/16 text-[#ffe08a]"
+                  : "bg-white/8 text-[#f3eeff] hover:bg-white/12"
+              }`}
+            >
+              <LayoutPanelTop className="h-4 w-4" />
+              Dashboard
+            </button>
+
+            <div className="rounded-[18px] bg-white/8 p-1.5">
               <button
-                key={item.id}
                 type="button"
-                onClick={() => setActiveSection(item.id)}
-                className={`flex w-full items-center gap-3 rounded-[18px] px-4 py-3 text-left text-sm font-semibold transition xl:justify-start ${
-                  activeSection === item.id
-                    ? "bg-white/16 text-[#ffe08a]"
-                    : "bg-white/8 text-[#f3eeff] hover:bg-white/12"
+                onClick={() => setProductsExpanded((open) => !open)}
+                className={`flex w-full items-center gap-3 rounded-[14px] px-3.5 py-2.5 text-left text-sm font-semibold transition ${
+                  activeSection === "products" ? "text-[#ffe08a]" : "text-[#f3eeff] hover:bg-white/10"
                 }`}
               >
-                <item.icon className="h-4 w-4" />
-                {item.label}
+                <Package className="h-4 w-4" />
+                <span className="flex-1">Products</span>
+                {productsExpanded ? (
+                  <ChevronDown className="h-4 w-4 opacity-80" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 opacity-80" />
+                )}
               </button>
-            ))}
+              {productsExpanded ? (
+                <div className="mt-1 space-y-1 px-2 pb-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveSection("products");
+                      setProductViewMode("list");
+                    }}
+                    className="w-full rounded-xl px-3 py-2 text-left text-sm text-[#efeaff] transition hover:bg-white/10"
+                  >
+                    Product List
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveSection("products");
+                      setProductViewMode("add");
+                    }}
+                    className="w-full rounded-xl px-3 py-2 text-left text-sm text-[#efeaff] transition hover:bg-white/10"
+                  >
+                    Product Add
+                  </button>
+                </div>
+              ) : null}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setActiveSection("categories")}
+              className={`flex w-full items-center gap-3 rounded-[18px] px-4 py-3 text-left text-sm font-semibold transition ${
+                activeSection === "categories"
+                  ? "bg-white/16 text-[#ffe08a]"
+                  : "bg-white/8 text-[#f3eeff] hover:bg-white/12"
+              }`}
+            >
+              <Shapes className="h-4 w-4" />
+              Categories
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveSection("banners")}
+              className={`flex w-full items-center gap-3 rounded-[18px] px-4 py-3 text-left text-sm font-semibold transition ${
+                activeSection === "banners"
+                  ? "bg-white/16 text-[#ffe08a]"
+                  : "bg-white/8 text-[#f3eeff] hover:bg-white/12"
+              }`}
+            >
+              <ImagePlus className="h-4 w-4" />
+              Banners
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveSection("videos")}
+              className={`flex w-full items-center gap-3 rounded-[18px] px-4 py-3 text-left text-sm font-semibold transition ${
+                activeSection === "videos"
+                  ? "bg-white/16 text-[#ffe08a]"
+                  : "bg-white/8 text-[#f3eeff] hover:bg-white/12"
+              }`}
+            >
+              <Film className="h-4 w-4" />
+              Videos
+            </button>
+
+            <div className="rounded-[18px] bg-white/8 p-1.5">
+              <button
+                type="button"
+                onClick={() => setOrdersExpanded((open) => !open)}
+                className={`flex w-full items-center gap-3 rounded-[14px] px-3.5 py-2.5 text-left text-sm font-semibold transition ${
+                  activeSection === "orders" ? "text-[#ffe08a]" : "text-[#f3eeff] hover:bg-white/10"
+                }`}
+              >
+                <ShoppingCart className="h-4 w-4" />
+                <span className="flex-1">Orders</span>
+                {ordersExpanded ? (
+                  <ChevronDown className="h-4 w-4 opacity-80" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 opacity-80" />
+                )}
+              </button>
+              {ordersExpanded ? (
+                <div className="mt-1 space-y-1 px-2 pb-1">
+                  {(["Pending", "Processing", "Shipped", "Delivered", "Cancelled"] as const).map((status) => (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => {
+                        setActiveSection("orders");
+                        setOrderStatusFilter(status);
+                      }}
+                      className="w-full rounded-xl px-3 py-2 text-left text-sm text-[#efeaff] transition hover:bg-white/10"
+                    >
+                      {status} Orders
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setActiveSection("customers")}
+              className={`flex w-full items-center gap-3 rounded-[18px] px-4 py-3 text-left text-sm font-semibold transition ${
+                activeSection === "customers"
+                  ? "bg-white/16 text-[#ffe08a]"
+                  : "bg-white/8 text-[#f3eeff] hover:bg-white/12"
+              }`}
+            >
+              <UserRound className="h-4 w-4" />
+              Customers
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveSection("reviews")}
+              className={`flex w-full items-center gap-3 rounded-[18px] px-4 py-3 text-left text-sm font-semibold transition ${
+                activeSection === "reviews"
+                  ? "bg-white/16 text-[#ffe08a]"
+                  : "bg-white/8 text-[#f3eeff] hover:bg-white/12"
+              }`}
+            >
+              <MessageSquareQuote className="h-4 w-4" />
+              Reviews
+            </button>
           </div>
         </aside>
 
-        <main className="space-y-6">
-          <section className="rounded-[30px] bg-white p-6 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.2)]">
+        <main className="space-y-5">
+          <section className="rounded-[10px] border border-[#e4e4e4] bg-transparent p-2">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="text-sm uppercase tracking-[0.28em] text-[#a86c2b]">Admin Dashboard</p>
-                <h1 className="mt-3 font-heading text-3xl text-[#34180e]">{sectionTitle}</h1>
+              <div className="relative min-w-[240px] max-w-[520px] flex-1">
+                <input
+                  type="text"
+                  value={activeSection === "orders" ? orderSearch : activeSection === "customers" ? customerSearch : ""}
+                  onChange={(event) => {
+                    if (activeSection === "orders") setOrderSearch(event.target.value);
+                    if (activeSection === "customers") setCustomerSearch(event.target.value);
+                  }}
+                  placeholder="Search"
+                  className="w-full rounded-[10px] border border-[#dfdfdf] bg-white py-3 pl-5 pr-14 text-xl text-[#88929d] outline-none md:text-2xl"
+                />
+                <div className="absolute right-0 top-0 flex h-full w-14 items-center justify-center rounded-r-[10px] border-l border-[#dfdfdf] text-[#1f2937]">
+                  <Search className="h-6 w-6" />
+                </div>
               </div>
-              <div className="flex flex-wrap gap-3">
-                <div className="relative min-w-[240px] flex-1">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b6c52]" />
-                  <input
-                    type="text"
-                    value={activeSection === "orders" ? orderSearch : activeSection === "customers" ? customerSearch : ""}
-                    onChange={(event) => {
-                      if (activeSection === "orders") setOrderSearch(event.target.value);
-                      if (activeSection === "customers") setCustomerSearch(event.target.value);
-                    }}
-                    placeholder={
-                      activeSection === "orders"
-                        ? "Search orders"
-                        : activeSection === "customers"
-                        ? "Search customers"
-                        : "Switch to orders or customers to search"
-                    }
-                    className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] py-3 pl-11 pr-4 text-sm text-[#34180e] outline-none"
-                  />
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2 rounded-full bg-[#f4f2ff] px-2 py-1">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#7e6bc2]">
+                    <Bell className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-semibold text-[#121926]">Admin</p>
+                  <p className="text-base text-[#5b6471]">Admin Profile</p>
+                </div>
+                <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#d5d8de] bg-white">
+                  <UserRound className="h-8 w-8 text-[#6b7280]" />
                 </div>
                 <Link
                   to="/"
-                  className="rounded-full border border-[#e8d7c1] px-4 py-2 text-sm font-semibold text-[#6c4b33] transition hover:bg-[#fcf8f2]"
+                  className="rounded-full border border-[#d7dbe2] bg-white px-4 py-2 text-sm font-semibold text-[#4f5d70] transition hover:bg-[#f8f9fb]"
                 >
                   View Store
                 </Link>
                 <button
                   type="button"
+                  onClick={() => {
+                    setShowPasswordPanel((value) => !value);
+                    setPasswordError("");
+                    setPasswordSuccess("");
+                  }}
+                  className="rounded-full border border-[#d7dbe2] bg-white px-4 py-2 text-sm font-semibold text-[#4f5d70] transition hover:bg-[#f8f9fb]"
+                >
+                  {showPasswordPanel ? "Hide Password Form" : "Change Password"}
+                </button>
+                <button
+                  type="button"
                   onClick={handleLogout}
-                  className="inline-flex items-center gap-2 rounded-full bg-[#34180e] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#221008]"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#1f2937] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#111827]"
                 >
                   <LogOut className="h-4 w-4" />
                   Logout
                 </button>
               </div>
             </div>
-            {mediaNotice ? <p className="mt-4 text-sm font-medium text-[#8b4d1d]">{mediaNotice}</p> : null}
-          </section>
-
-          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-            {stats.map((item) => (
-              <StatCard key={item.label} label={item.label} value={item.value} icon={item.icon} />
-            ))}
+            {mediaNotice ? <p className="mt-3 text-sm font-medium text-[#8b4d1d]">{mediaNotice}</p> : null}
+            {showPasswordPanel ? (
+              <form onSubmit={handleAdminPasswordChange} className="mt-4 grid gap-3 rounded-[10px] border border-[#dfe3ea] bg-white p-4 md:grid-cols-2">
+                <input
+                  type="email"
+                  value={passwordForm.email}
+                  onChange={(event) => setPasswordForm((current) => ({ ...current, email: event.target.value }))}
+                  placeholder="Admin email"
+                  className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
+                  required
+                />
+                <input
+                  type="password"
+                  value={passwordForm.currentPassword}
+                  onChange={(event) => setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))}
+                  placeholder="Current password"
+                  className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
+                  required
+                />
+                <input
+                  type="password"
+                  value={passwordForm.newPassword}
+                  onChange={(event) => setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))}
+                  placeholder="New password (min 8 chars)"
+                  className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
+                  required
+                />
+                <input
+                  type="password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(event) => setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))}
+                  placeholder="Confirm new password"
+                  className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
+                  required
+                />
+                <div className="md:col-span-2 flex flex-wrap items-center gap-3">
+                  <button
+                    type="submit"
+                    disabled={changingPassword}
+                    className="rounded-lg bg-[#6f55dc] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {changingPassword ? "Updating..." : "Update Password"}
+                  </button>
+                  {passwordError ? <p className="text-sm text-[#b42318]">{passwordError}</p> : null}
+                  {passwordSuccess ? <p className="text-sm text-[#2d7a31]">{passwordSuccess}</p> : null}
+                </div>
+              </form>
+            ) : null}
           </section>
 
           {activeSection === "dashboard" ? (
+            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {stats.map((item) => (
+                <StatCard key={item.label} label={item.label} value={item.value} icon={item.icon} />
+              ))}
+            </section>
+          ) : null}
+
+          {activeSection === "dashboard" ? (
             <section className="space-y-6">
-              <div className="rounded-[30px] bg-white p-6 shadow-[0_18px_40px_-30px_rgba(70,36,15,0.22)]">
+              <div className="rounded-[10px] border border-[#e1e1e1] bg-white p-5">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-2xl font-semibold text-[#34180e]">Recent Transactions</h2>
-                    <p className="mt-2 text-sm text-[#6c4b33]">
+                    <h2 className="text-2xl font-semibold text-[#121826]">Recent Transactions</h2>
+                    <p className="mt-2 text-sm text-[#637082]">
                       Orders placed from the website show up here automatically.
                     </p>
                   </div>
                 </div>
+                <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-sm text-[#1f2937]">
+                    <span>Show</span>
+                    <select className="rounded-md border border-[#d9dce2] bg-white px-2 py-1 text-sm">
+                      <option>10</option>
+                    </select>
+                    <span>entries</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-[#1f2937]">
+                    <span>Search:</span>
+                    <input className="rounded-md border border-[#d9dce2] bg-white px-3 py-1.5 text-sm outline-none" />
+                  </div>
+                </div>
                 <div className="mt-6 overflow-x-auto">
                   <table className="w-full min-w-[780px] text-left text-sm">
-                    <thead className="border-b border-[#efe1cf] text-[#8b6c52]">
+                    <thead className="border-b border-[#e6e8ee] text-[#111827]">
                       <tr>
                         <th className="px-4 py-3 font-semibold">ID</th>
                         <th className="px-4 py-3 font-semibold">Customer Name</th>
@@ -1006,17 +1587,17 @@ export default function AdminPage() {
                     <tbody>
                       {orders.length > 0 ? (
                         orders.slice(0, 6).map((order) => (
-                          <tr key={order.id} className="border-b border-[#f3e8da]">
-                            <td className="px-4 py-4 font-semibold text-[#34180e]">{order.id}</td>
-                            <td className="px-4 py-4 text-[#5e5a80]">{order.customerName}</td>
-                            <td className="px-4 py-4 text-[#5e5a80]">{order.paymentInfo}</td>
-                            <td className="px-4 py-4 text-[#34180e]">{order.totalPrice}</td>
+                          <tr key={order.id} className="border-b border-[#eceff3]">
+                            <td className="px-4 py-4 font-semibold text-[#111827]">{order.id}</td>
+                            <td className="px-4 py-4 text-[#1f2937]">{order.customerName}</td>
+                            <td className="px-4 py-4 text-[#1f2937]">{order.paymentInfo}</td>
+                            <td className="px-4 py-4 text-[#111827]">{order.totalPrice}</td>
                             <td className="px-4 py-4">
                               <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadgeClass(order.status)}`}>
                                 {order.status}
                               </span>
                             </td>
-                            <td className="px-4 py-4 text-[#5e5a80]">{formatDate(order.createdAt)}</td>
+                            <td className="px-4 py-4 text-[#4b5563]">{formatDate(order.createdAt)}</td>
                           </tr>
                         ))
                       ) : (
@@ -1034,8 +1615,154 @@ export default function AdminPage() {
           ) : null}
 
           {activeSection === "products" ? (
-            <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-              <div className="rounded-[30px] bg-white p-6 shadow-[0_18px_40px_-30px_rgba(70,36,15,0.22)]">
+            <section className="space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#d8dde5] pb-4">
+                <h2 className="text-3xl font-semibold text-[#111827]">
+                  {productViewMode === "add" ? "Products Add" : `Products (${products.length})`}
+                </h2>
+                {productViewMode === "add" ? (
+                  <button
+                    type="button"
+                    onClick={saveProduct}
+                    className="rounded-xl bg-[#6f55dc] px-12 py-3 text-sm font-semibold uppercase tracking-[0.06em] text-white"
+                  >
+                    Save
+                  </button>
+                ) : null}
+              </div>
+              <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+              {productViewMode === "list" ? (
+              <div className="grid gap-3 xl:grid-cols-[300px_1fr] xl:col-span-2 xl:items-start">
+                <aside className="sticky top-6 h-[calc(100vh-9rem)] overflow-y-auto space-y-3 self-start pr-1">
+                  <div className="rounded-[10px] border border-[#dadde3] bg-white p-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-2xl font-semibold text-[#111827]">Filter</p>
+                      <div className="flex gap-2">
+                        <button type="button" onClick={applyProductFilters} className="rounded-lg bg-[#6f55dc] px-4 py-2 text-sm font-semibold text-white">Apply Filter</button>
+                        <button type="button" onClick={resetProductFilters} className="rounded-lg bg-[#ff5a6c] px-4 py-2 text-sm font-semibold text-white">Reset</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-[10px] border border-[#dadde3] bg-white p-3">
+                    <button type="button" onClick={() => setProductFilterPanels((current) => ({ ...current, categories: !current.categories }))} className="flex w-full items-center justify-between text-left">
+                      <span className="text-2xl font-semibold text-[#1f2937]">Categories</span>
+                      <ChevronDown className={`h-5 w-5 text-[#6f55dc] transition ${productFilterPanels.categories ? "rotate-180" : ""}`} />
+                    </button>
+                    {productFilterPanels.categories ? (
+                      <div className="mt-3">
+                        <select value={productFiltersDraft.category} onChange={(event) => setProductFiltersDraft((current) => ({ ...current, category: event.target.value }))} className="w-full rounded-lg border border-[#d7dbe3] px-3 py-2 text-sm text-[#1f2937] outline-none">
+                          <option value="all">All Categories</option>
+                          {availableProductCategories.map((category) => (
+                            <option key={category} value={category}>{category}</option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="rounded-[10px] border border-[#dadde3] bg-white p-3">
+                    <button type="button" onClick={() => setProductFilterPanels((current) => ({ ...current, brands: !current.brands }))} className="flex w-full items-center justify-between text-left">
+                      <span className="text-2xl font-semibold text-[#1f2937]">Select Brand</span>
+                      <ChevronDown className={`h-5 w-5 text-[#6f55dc] transition ${productFilterPanels.brands ? "rotate-180" : ""}`} />
+                    </button>
+                    {productFilterPanels.brands ? (
+                      <div className="mt-3">
+                        <select value={productFiltersDraft.brand} onChange={(event) => setProductFiltersDraft((current) => ({ ...current, brand: event.target.value }))} className="w-full rounded-lg border border-[#d7dbe3] px-3 py-2 text-sm text-[#1f2937] outline-none">
+                          <option value="all">All Brands</option>
+                          {availableProductBrands.map((brand) => (
+                            <option key={brand} value={brand}>{brand}</option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="rounded-[10px] border border-[#dadde3] bg-white p-3">
+                    <select value={productFiltersDraft.sortBy} onChange={(event) => setProductFiltersDraft((current) => ({ ...current, sortBy: event.target.value as ProductSortBy }))} className="w-full rounded-lg border border-[#d7dbe3] px-3 py-2 text-xl text-[#1f2937] outline-none">
+                      <option value="newest">Sort By</option>
+                      <option value="name-asc">Name A-Z</option>
+                      <option value="name-desc">Name Z-A</option>
+                      <option value="price-low">Price Low to High</option>
+                      <option value="price-high">Price High to Low</option>
+                    </select>
+                  </div>
+                  <div className="rounded-[10px] border border-[#dadde3] bg-white p-3">
+                    <button type="button" onClick={() => setProductFilterPanels((current) => ({ ...current, pricing: !current.pricing }))} className="flex w-full items-center justify-between text-left">
+                      <span className="text-2xl font-semibold text-[#1f2937]">Pricing Range</span>
+                      <ChevronDown className={`h-5 w-5 text-[#6f55dc] transition ${productFilterPanels.pricing ? "rotate-180" : ""}`} />
+                    </button>
+                    {productFilterPanels.pricing ? (
+                      <div className="mt-3">
+                        <select value={productFiltersDraft.priceRange} onChange={(event) => setProductFiltersDraft((current) => ({ ...current, priceRange: event.target.value as ProductPriceRange }))} className="w-full rounded-lg border border-[#d7dbe3] px-3 py-2 text-sm text-[#1f2937] outline-none">
+                          <option value="all">All</option>
+                          <option value="under-5000">Under Rs. 5,000</option>
+                          <option value="5000-10000">Rs. 5,000 - Rs. 10,000</option>
+                          <option value="10000-15000">Rs. 10,000 - Rs. 15,000</option>
+                          <option value="15000-plus">Above Rs. 15,000</option>
+                        </select>
+                      </div>
+                    ) : null}
+                  </div>
+                </aside>
+                <div className="space-y-3 xl:h-[calc(100vh-9rem)] xl:overflow-y-auto xl:pr-1">
+                  {filteredProducts.length > 0 ? (
+                    filteredProducts.map((item, index) => (
+                      <article key={item.id} className="rounded-[10px] border border-[#dfe3ea] bg-white p-3">
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                          <h3 className="text-2xl font-semibold text-[#f5ad00]">{resolveLocalizedText(item.name, "en")}</h3>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-[#1f2937]">{new Date().toISOString().slice(0, 10)}</span>
+                            <span className="rounded-full bg-[#f59e0b] px-2.5 py-0.5 text-xs font-semibold text-white">{adminText(item.tag) || "New"}</span>
+                          </div>
+                        </div>
+                        <div className="grid gap-3 md:grid-cols-[80px_1fr_auto] md:items-start">
+                          <img src={item.image} alt={resolveLocalizedText(item.name, "en")} className="h-20 w-16 rounded-md object-cover" />
+                          <table className="w-full min-w-[380px] border border-[#e5e7eb] text-left text-sm">
+                            <thead className="bg-[#f8fafc] text-[#111827]">
+                              <tr>
+                                <th className="border-r border-[#e5e7eb] px-3 py-2 font-semibold">WEIGHT</th>
+                                <th className="border-r border-[#e5e7eb] px-3 py-2 font-semibold">PRICE</th>
+                                <th className="border-r border-[#e5e7eb] px-3 py-2 font-semibold">DISCOUNT</th>
+                                <th className="px-3 py-2 font-semibold">FINAL PRICE</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td className="border-r border-t border-[#e5e7eb] px-3 py-2 text-[#1f2937]">{adminText(item.dimensions) || "-"}</td>
+                                <td className="border-r border-t border-[#e5e7eb] px-3 py-2 text-[#1f2937]">{item.price}</td>
+                                <td className="border-r border-t border-[#e5e7eb] px-3 py-2 text-[#1f2937]">0.00%</td>
+                                <td className="border-t border-[#e5e7eb] px-3 py-2 text-[#1f2937]">{item.price}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                          <div className="space-y-4">
+                            <div>
+                              <p className="text-sm text-[#8b95a4]">Category</p>
+                              <p className="text-2xl font-semibold text-[#111827]">⭐{item.category}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-[#8b95a4]">Brand</p>
+                              <p className="text-2xl font-semibold text-[#111827]">{adminText(item.tag) || "Active"}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-4">
+                          <p className="mb-2 text-sm text-[#7f8897]">Action</p>
+                          <div className="flex gap-2">
+                            <button type="button" onClick={() => { setProductDraft(item); setProductViewMode("add"); }} className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#6f55dc] text-white"><SquarePen className="h-4 w-4" /></button>
+                            <button type="button" onClick={() => saveStoredProducts(products.filter((product) => product.id !== item.id))} className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#ef4357] text-white"><Trash2 className="h-4 w-4" /></button>
+                            <button type="button" onClick={() => saveStoredProducts(moveItem(products, index, -1))} className="rounded-lg border border-[#d7dbe3] px-3 py-2 text-xs font-semibold text-[#4b5563]">Up</button>
+                            <button type="button" onClick={() => saveStoredProducts(moveItem(products, index, 1))} className="rounded-lg border border-[#d7dbe3] px-3 py-2 text-xs font-semibold text-[#4b5563]">Down</button>
+                          </div>
+                        </div>
+                      </article>
+                    ))
+                  ) : (
+                    <div className="rounded-[10px] border border-[#dfe3ea] bg-white p-10 text-center text-[#6b7280]">No products match the current filters.</div>
+                  )}
+                </div>
+              </div>
+              ) : null}
+              {showLegacyProductList && productViewMode === "list" ? (
+              <div className="rounded-[10px] border border-[#dadde3] bg-white p-6">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h2 className="text-2xl font-semibold text-[#34180e]">Product Catalog</h2>
@@ -1045,8 +1772,11 @@ export default function AdminPage() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setProductDraft(productTemplate)}
-                    className="rounded-full bg-[#34180e] px-4 py-2 text-sm font-semibold text-white"
+                    onClick={() => {
+                      setProductDraft(productTemplate);
+                      setProductViewMode("add");
+                    }}
+                    className="rounded-lg bg-[#6f55dc] px-4 py-2 text-sm font-semibold text-white"
                   >
                     New Product
                   </button>
@@ -1069,7 +1799,7 @@ export default function AdminPage() {
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          <button type="button" onClick={() => setProductDraft(item)} className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm text-[#6c4b33]">Edit</button>
+                          <button type="button" onClick={() => { setProductDraft(item); setProductViewMode("add"); }} className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#6f55dc] text-white"><SquarePen className="h-4 w-4" /></button>
                           <button type="button" onClick={() => saveStoredProducts(moveItem(products, index, -1))} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowUp className="h-4 w-4" /></button>
                           <button type="button" onClick={() => saveStoredProducts(moveItem(products, index, 1))} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowDown className="h-4 w-4" /></button>
                           <button type="button" onClick={() => saveStoredProducts(products.filter((product) => product.id !== item.id))} className="rounded-full border border-[#ffe1e1] bg-[#fff3f3] px-3 py-2 text-sm text-[#9f2b2b]"><Trash2 className="h-4 w-4" /></button>
@@ -1079,17 +1809,23 @@ export default function AdminPage() {
                   ))}
                 </div>
               </div>
-              <div className="rounded-[30px] bg-white p-6 shadow-[0_18px_40px_-30px_rgba(70,36,15,0.22)]">
-                <h2 className="text-2xl font-semibold text-[#34180e]">Edit Product</h2>
+              ) : null}
+              {productViewMode === "add" ? (
+              <div className="rounded-[10px] border border-[#dadde3] bg-white p-6">
+                <h2 className="text-center text-2xl font-semibold text-[#111827]">Fill Products Information</h2>
                 <p className="mt-2 text-sm text-[#6c4b33]">Save product changes to update the website catalog.</p>
                 <div className="mt-6">
                   <ProductForm
                     value={productDraft}
+                    categoryOptions={availableProductCategories}
                     onChange={setProductDraft}
                     onSave={saveProduct}
                     onPickFile={handleProductFileChange}
+                    onPickGalleryFiles={handleProductGalleryFilesChange}
                   />
                 </div>
+              </div>
+              ) : null}
               </div>
             </section>
           ) : null}
@@ -1100,7 +1836,7 @@ export default function AdminPage() {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h2 className="text-2xl font-semibold text-[#34180e]">Categories</h2>
-                    <p className="mt-2 text-sm text-[#6c4b33]">Control which catalogue cards appear on the site.</p>
+                    <p className="mt-2 text-sm text-[#6c4b33]">Control which categories appear on the site.</p>
                   </div>
                   <button
                     type="button"
@@ -1115,16 +1851,16 @@ export default function AdminPage() {
                     <div key={item.id} className="rounded-[24px] border border-[#efe1cf] bg-[#fcf8f2] p-4">
                       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
-                          <p className="font-semibold text-[#34180e]">{item.title}</p>
+                          <p className="font-semibold text-[#34180e]">{adminText(item.title).replace(/catalogue/gi, "Category")}</p>
                           <p className="mt-1 text-sm text-[#6c4b33]">
-                            {item.shortLabel} • {item.isActive ? "Visible" : "Hidden"}
+                            {adminText(item.shortLabel)} • {item.isActive ? "Visible" : "Hidden"}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <button type="button" onClick={() => setCatalogueDraft(item)} className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm text-[#6c4b33]">Edit</button>
                           <button type="button" onClick={() => saveStoredCatalogueTypes(moveItem(orderedCatalogues, index, -1).map((catalogue, order) => ({ ...catalogue, sortOrder: order + 1 })))} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowUp className="h-4 w-4" /></button>
                           <button type="button" onClick={() => saveStoredCatalogueTypes(moveItem(orderedCatalogues, index, 1).map((catalogue, order) => ({ ...catalogue, sortOrder: order + 1 })))} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowDown className="h-4 w-4" /></button>
-                          <button type="button" onClick={() => saveStoredCatalogueTypes(orderedCatalogues.filter((catalogue) => catalogue.id !== item.id).map((catalogue, order) => ({ ...catalogue, sortOrder: order + 1 })))} className="rounded-full border border-[#ffe1e1] bg-[#fff3f3] px-3 py-2 text-sm text-[#9f2b2b]"><Trash2 className="h-4 w-4" /></button>
+                          <button type="button" onClick={() => deleteCategory(item.id)} className="rounded-full border border-[#ffe1e1] bg-[#fff3f3] px-3 py-2 text-sm text-[#9f2b2b]"><Trash2 className="h-4 w-4" /></button>
                         </div>
                       </div>
                     </div>
@@ -1143,9 +1879,14 @@ export default function AdminPage() {
               </div>
               <div className="rounded-[30px] bg-white p-6 shadow-[0_18px_40px_-30px_rgba(70,36,15,0.22)]">
                 <h2 className="text-2xl font-semibold text-[#34180e]">Edit Category</h2>
-                <p className="mt-2 text-sm text-[#6c4b33]">Category changes update the homepage and catalogue screens.</p>
+                <p className="mt-2 text-sm text-[#6c4b33]">Category changes update the homepage and category screens.</p>
                 <div className="mt-6">
-                  <CatalogueForm value={catalogueDraft} onChange={setCatalogueDraft} onSave={saveCatalogue} />
+                  <CatalogueForm
+                    value={catalogueDraft}
+                    onChange={setCatalogueDraft}
+                    onSave={saveCatalogue}
+                    onPickImageFile={handleCatalogueImageFileChange}
+                  />
                 </div>
               </div>
             </section>
@@ -1277,6 +2018,7 @@ export default function AdminPage() {
                     onChange={setVideoDraft}
                     onSave={saveVideo}
                     onPickFile={handleVideoFileChange}
+                    onPickThumbnailFile={handleVideoThumbnailFileChange}
                   />
                 </div>
               </div>
@@ -1481,6 +2223,7 @@ export default function AdminPage() {
             </section>
           ) : null}
         </main>
+        </div>
       </div>
     </div>
   );

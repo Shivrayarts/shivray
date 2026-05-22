@@ -65,8 +65,8 @@ function canUseStorage() {
   return typeof window !== "undefined";
 }
 
-function ensureArray<T>(value: unknown, fallback: T[]): T[] {
-  return Array.isArray(value) ? (value as T[]) : fallback;
+function ensureArray<T>(value: unknown, fallback: readonly T[]): T[] {
+  return Array.isArray(value) ? (value as T[]) : [...fallback];
 }
 
 function readJson<T>(key: string, fallback: T): T {
@@ -203,7 +203,7 @@ function upsertCustomerLocally(input: {
 }
 
 export function getStoredCustomers() {
-  return ensureArray(readJson<CustomerProfile[]>(CUSTOMERS_KEY, []), []);
+  return ensureArray<CustomerProfile>(readJson<CustomerProfile[]>(CUSTOMERS_KEY, []), []);
 }
 
 export function saveStoredCustomers(customers: CustomerProfile[]) {
@@ -211,7 +211,7 @@ export function saveStoredCustomers(customers: CustomerProfile[]) {
 }
 
 export function getStoredOrders() {
-  return ensureArray(readJson<OrderRecord[]>(ORDERS_KEY, []), []);
+  return ensureArray<OrderRecord>(readJson<OrderRecord[]>(ORDERS_KEY, []), []);
 }
 
 export function saveStoredOrders(orders: OrderRecord[]) {
@@ -370,7 +370,10 @@ function useStoredValue<T>(read: () => T, events: string[], bootstrap?: () => Pr
 
     syncValue();
     if (bootstrap) {
-      void bootstrap().then(syncValue).catch(() => undefined);
+      const bootstrapTask = bootstrap();
+      if (bootstrapTask) {
+        void bootstrapTask.then(syncValue).catch(() => undefined);
+      }
     }
 
     window.addEventListener("storage", syncValue);

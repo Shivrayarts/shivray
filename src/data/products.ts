@@ -13,7 +13,7 @@ import productWeapon5 from "@/assets/Products/product-3.jpeg";
 import productWeapon6 from "@/assets/Products/product-4.jpeg";
 import productWeapon7 from "@/assets/Products/product-5.jpeg";
 
-type ProductCategory = "Statues" | "Weapons" | "Shields" | "Dhoop";
+type ProductCategory = string;
 type Translatable = string | LocalizedText;
 
 export type Product = {
@@ -21,6 +21,7 @@ export type Product = {
   name: Translatable;
   price: string;
   image: string;
+  galleryImages?: string[];
   category: ProductCategory;
   tag: Translatable;
   shortDescription: Translatable;
@@ -32,7 +33,7 @@ export type Product = {
 
 export const productCategories = ["Statues", "Weapons", "Shields", "Dhoop"] as const;
 
-export const categoryLabels: Record<ProductCategory, LocalizedText> = {
+export const categoryLabels: Record<string, LocalizedText> = {
   Statues: { en: "Statues", mr: "मूर्ती" },
   Weapons: { en: "Weapons", mr: "शस्त्रे" },
   Shields: { en: "Shields", mr: "ढाली" },
@@ -40,7 +41,9 @@ export const categoryLabels: Record<ProductCategory, LocalizedText> = {
 };
 
 export function getCategoryLabel(category: ProductCategory, locale: Locale) {
-  return categoryLabels[category][locale];
+  const known = categoryLabels[category];
+  if (known) return known[locale];
+  return category;
 }
 
 export const allProducts: Product[] = [

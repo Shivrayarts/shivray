@@ -1,7 +1,7 @@
 import { Link, useLocation } from "@/lib/spa-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
-import { categories, getCategoryLabel } from "@/data/products";
+import { getCategoryLabel } from "@/data/products";
 import {
   Pagination,
   PaginationContent,
@@ -11,7 +11,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { useWishlist } from "@/hooks/use-wishlist";
-import { useStoredProducts } from "@/lib/content-store";
+import { useStoredCatalogueTypes, useStoredProducts } from "@/lib/content-store";
 import { getSearchableText, resolveLocalizedText, useLanguage } from "@/lib/language";
 import productDhoop1 from "@/assets/product-dhoop-1.jpg";
 import productStatue1 from "@/assets/product-statue-1.jpg";
@@ -27,13 +27,8 @@ export default function ProductsPage() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const initialSearch = params.get("q") ?? "";
-  const categoryParam = params.get("category");
-  const initialCategory = categories.includes((categoryParam ?? "") as (typeof categories)[number])
-    ? ((categoryParam ?? "All") as (typeof categories)[number])
-    : "All";
-  const hasRouteCategoryFilter = initialCategory !== "All";
   const [search, setSearch] = useState(initialSearch);
-  const [category, setCategory] = useState<(typeof categories)[number]>(initialCategory);
+  const [category, setCategory] = useState("All");
   const [sortBy, setSortBy] = useState("featured");
   const [mobileSortOpen, setMobileSortOpen] = useState(false);
   const [categorySlide, setCategorySlide] = useState(0);
@@ -41,51 +36,63 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
   const products = useStoredProducts();
+  const catalogueTypes = useStoredCatalogueTypes();
   const { isWishlisted, toggleWishlist } = useWishlist();
+
+  const categories = useMemo(() => {
+    const fromProducts = products.map((product) => String(product.category || "").trim()).filter(Boolean);
+    return ["All", ...Array.from(new Set(fromProducts))];
+  }, [products]);
+
+  const categoryParam = params.get("category");
+  const initialCategory = categories.includes(categoryParam ?? "") ? categoryParam ?? "All" : "All";
+  const hasRouteCategoryFilter = initialCategory !== "All";
 
   useEffect(() => {
     const nextParams = new URLSearchParams(location.search);
     const nextSearch = nextParams.get("q") ?? "";
     const nextCategoryParam = nextParams.get("category");
-    const nextCategory = categories.includes(
-      (nextCategoryParam ?? "") as (typeof categories)[number],
-    )
-      ? ((nextCategoryParam ?? "All") as (typeof categories)[number])
-      : "All";
+    const nextCategory = categories.includes(nextCategoryParam ?? "") ? nextCategoryParam ?? "All" : "All";
 
     setSearch(nextSearch);
     setCategory(nextCategory);
-  }, [location.search]);
+  }, [categories, location.search]);
 
-  const categoryCards = useMemo(
-    () => [
-      {
-        title: resolvedLocale === "mr" ? "\u092e\u0939\u093e\u0930\u093e\u091c \u092e\u0942\u0930\u094d\u0924\u0940" : "Maharaj Statues",
-        key: "Statues" as const,
-        count: `${products.filter((product) => product.category === "Statues").length} ${resolvedLocale === "mr" ? "\u0909\u0924\u094d\u092a\u093e\u0926\u0928\u0947" : "products"}`,
-        image: productStatue1,
-      },
-      {
-        title: resolvedLocale === "mr" ? "\u092f\u094b\u0926\u094d\u0927\u093e \u0936\u0938\u094d\u0924\u094d\u0930\u0947" : "Warrior Weapons",
-        key: "Weapons" as const,
-        count: `${products.filter((product) => product.category === "Weapons").length} ${resolvedLocale === "mr" ? "\u0909\u0924\u094d\u092a\u093e\u0926\u0928\u0947" : "products"}`,
-        image: productWeapon1,
-      },
-      {
-        title: resolvedLocale === "mr" ? "\u092a\u094d\u0930\u0940\u092e\u093f\u092f\u092e \u0922\u093e\u0932\u0940" : "Premium Shields",
-        key: "Shields" as const,
-        count: `${products.filter((product) => product.category === "Shields").length} ${resolvedLocale === "mr" ? "\u0909\u0924\u094d\u092a\u093e\u0926\u0928\u0947" : "products"}`,
-        image: heroBanner3,
-      },
-      {
-        title: resolvedLocale === "mr" ? "\u0927\u0942\u092a \u0938\u0902\u0917\u094d\u0930\u0939" : "Dhoop Collection",
-        key: "Dhoop" as const,
-        count: `${products.filter((product) => product.category === "Dhoop").length} ${resolvedLocale === "mr" ? "\u0909\u0924\u094d\u092a\u093e\u0926\u0928\u0947" : "products"}`,
-        image: productDhoop1,
-      },
-    ],
-    [products, resolvedLocale],
-  );
+  const categoryCards = useMemo(() => {
+    const fallbackImages: Record<string, string> = {
+      Statues: productStatue1,
+      Weapons: productWeapon1,
+      Shields: heroBanner3,
+      Dhoop: productDhoop1,
+    };
+
+    const adminCards = catalogueTypes
+      .filter((catalogue) => catalogue.isActive)
+      .map((catalogue) => {
+        const key =
+          (typeof catalogue.shortLabel === "string"
+            ? catalogue.shortLabel
+            : catalogue.shortLabel.en || catalogue.shortLabel.mr || "")
+            .trim() || "General";
+        const title =
+          (typeof catalogue.title === "string" ? catalogue.title : catalogue.title[resolvedLocale]) || key;
+        return {
+          title,
+          key,
+          count: `${products.filter((product) => product.category === key).length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
+          image: catalogue.image || fallbackImages[key] || productStatue1,
+        };
+      });
+
+    if (adminCards.length > 0) return adminCards;
+
+    return ["Statues", "Weapons", "Shields", "Dhoop"].map((key) => ({
+      title: key,
+      key,
+      count: `${products.filter((product) => product.category === key).length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
+      image: fallbackImages[key] || productStatue1,
+    }));
+  }, [catalogueTypes, products, resolvedLocale]);
 
   const visibleCategoryCards = useMemo(
     () =>
@@ -162,6 +169,29 @@ export default function ProductsPage() {
     setCategorySlide(Math.max(0, Math.min(nextSlide, visibleCategoryCards.length - 1)));
   };
 
+  const scrollToCategorySlide = (index: number, behavior: ScrollBehavior = "smooth") => {
+    const node = categoriesRef.current;
+    if (!node) return;
+    const firstCard = node.querySelector<HTMLElement>("[data-catalogue-category-card]");
+    if (!firstCard) return;
+    const cardWidth = firstCard.offsetWidth + 16;
+    const safeIndex = Math.max(0, Math.min(index, visibleCategoryCards.length - 1));
+    node.scrollTo({ left: safeIndex * cardWidth, behavior });
+    setCategorySlide(safeIndex);
+  };
+
+  useEffect(() => {
+    if (visibleCategoryCards.length <= 1) return;
+    const timer = window.setInterval(() => {
+      setCategorySlide((prev) => {
+        const next = (prev + 1) % visibleCategoryCards.length;
+        scrollToCategorySlide(next);
+        return next;
+      });
+    }, 3200);
+    return () => window.clearInterval(timer);
+  }, [visibleCategoryCards.length]);
+
   return (
     <div className="bg-[#f5f5f5] pb-6 md:bg-[#f7f1e7] md:pb-10">
       {/* <section className="hidden bg-[#2b130c] px-4 pb-8 pt-6 text-white md:block md:px-6 md:pb-12 md:pt-10">
@@ -181,9 +211,9 @@ export default function ProductsPage() {
               {resolvedLocale === "mr" ? "\u0932\u094b\u0915\u092a\u094d\u0930\u093f\u092f \u0936\u094d\u0930\u0947\u0923\u0940" : "Popular Categories"}
             </h2>
           </div>
-          <div ref={categoriesRef} onScroll={handleCategoriesScroll} className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-4 md:gap-x-6 md:overflow-visible md:pb-0">
+          <div ref={categoriesRef} onScroll={handleCategoriesScroll} className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2">
             {visibleCategoryCards.map((card) => (
-              <button key={card.key} type="button" data-catalogue-category-card onClick={() => setCategory(card.key)} className="group min-w-[78%] snap-center text-center sm:min-w-[calc(50%-0.5rem)] md:min-w-0">
+              <button key={card.key} type="button" data-catalogue-category-card onClick={() => setCategory(card.key)} className="group min-w-[78%] snap-center text-center sm:min-w-[calc(50%-0.5rem)] md:min-w-[calc(25%-0.75rem)]">
                 <div className="relative overflow-hidden rounded-[30px] bg-[#b65a73] shadow-[0_18px_45px_-30px_rgba(89,34,49,0.65)]">
                   <img src={card.image} alt={card.title} className="aspect-square w-full object-cover opacity-90 saturate-[0.7] transition duration-500 group-hover:scale-105" />
                 </div>
@@ -194,7 +224,13 @@ export default function ProductsPage() {
           </div>
           <div className="mt-7 flex items-center justify-center gap-3">
             {visibleCategoryCards.map((card, index) => (
-              <span key={card.key} className={`rounded-full ${index === categorySlide ? "h-4 w-4 border border-[#1d150f] bg-white shadow-[inset_0_0_0_4px_#1d150f]" : "h-2.5 w-2.5 bg-[#a9a29c]"}`} />
+              <button
+                key={card.key}
+                type="button"
+                aria-label={`Go to category slide ${index + 1}`}
+                onClick={() => scrollToCategorySlide(index)}
+                className={`rounded-full ${index === categorySlide ? "h-4 w-4 border border-[#1d150f] bg-white shadow-[inset_0_0_0_4px_#1d150f]" : "h-2.5 w-2.5 bg-[#a9a29c]"}`}
+              />
             ))}
           </div>
         </div>
