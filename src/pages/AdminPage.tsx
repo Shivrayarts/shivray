@@ -939,6 +939,26 @@ export default function AdminPage() {
     setProductFilters(reset);
   }
 
+  async function deleteProduct(productId: string) {
+    const nextProducts = products.filter((product) => product.id !== productId);
+    const saved = await saveStoredProducts(nextProducts);
+    if (!saved) {
+      setMediaNotice("Unable to delete product right now. Please try again.");
+      return;
+    }
+    setMediaNotice("Product deleted successfully.");
+  }
+
+  async function reorderProduct(index: number, delta: -1 | 1) {
+    const nextProducts = moveItem(products, index, delta);
+    const saved = await saveStoredProducts(nextProducts);
+    if (!saved) {
+      setMediaNotice("Unable to reorder products right now. Please try again.");
+      return;
+    }
+    setMediaNotice("Product order updated successfully.");
+  }
+
   async function deleteCategory(catalogueId: string) {
     const categoryToDelete = orderedCatalogues.find((catalogue) => catalogue.id === catalogueId);
     if (!categoryToDelete) return;
@@ -1780,9 +1800,9 @@ export default function AdminPage() {
                           <p className="mb-2 text-sm text-[#7f8897]">Action</p>
                           <div className="flex gap-2">
                             <button type="button" onClick={() => { setProductDraft(item); setProductViewMode("add"); }} className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#6f55dc] text-white"><SquarePen className="h-4 w-4" /></button>
-                            <button type="button" onClick={() => saveStoredProducts(products.filter((product) => product.id !== item.id))} className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#ef4357] text-white"><Trash2 className="h-4 w-4" /></button>
-                            <button type="button" onClick={() => saveStoredProducts(moveItem(products, index, -1))} className="rounded-lg border border-[#d7dbe3] px-3 py-2 text-xs font-semibold text-[#4b5563]">Up</button>
-                            <button type="button" onClick={() => saveStoredProducts(moveItem(products, index, 1))} className="rounded-lg border border-[#d7dbe3] px-3 py-2 text-xs font-semibold text-[#4b5563]">Down</button>
+                            <button type="button" onClick={() => void deleteProduct(item.id)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#ef4357] text-white"><Trash2 className="h-4 w-4" /></button>
+                            <button type="button" onClick={() => void reorderProduct(index, -1)} className="rounded-lg border border-[#d7dbe3] px-3 py-2 text-xs font-semibold text-[#4b5563]">Up</button>
+                            <button type="button" onClick={() => void reorderProduct(index, 1)} className="rounded-lg border border-[#d7dbe3] px-3 py-2 text-xs font-semibold text-[#4b5563]">Down</button>
                           </div>
                         </div>
                       </article>
@@ -1832,9 +1852,9 @@ export default function AdminPage() {
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <button type="button" onClick={() => { setProductDraft(item); setProductViewMode("add"); }} className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#6f55dc] text-white"><SquarePen className="h-4 w-4" /></button>
-                          <button type="button" onClick={() => saveStoredProducts(moveItem(products, index, -1))} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowUp className="h-4 w-4" /></button>
-                          <button type="button" onClick={() => saveStoredProducts(moveItem(products, index, 1))} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowDown className="h-4 w-4" /></button>
-                          <button type="button" onClick={() => saveStoredProducts(products.filter((product) => product.id !== item.id))} className="rounded-full border border-[#ffe1e1] bg-[#fff3f3] px-3 py-2 text-sm text-[#9f2b2b]"><Trash2 className="h-4 w-4" /></button>
+                          <button type="button" onClick={() => void reorderProduct(index, -1)} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowUp className="h-4 w-4" /></button>
+                          <button type="button" onClick={() => void reorderProduct(index, 1)} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowDown className="h-4 w-4" /></button>
+                          <button type="button" onClick={() => void deleteProduct(item.id)} className="rounded-full border border-[#ffe1e1] bg-[#fff3f3] px-3 py-2 text-sm text-[#9f2b2b]"><Trash2 className="h-4 w-4" /></button>
                         </div>
                       </div>
                     </div>
