@@ -248,63 +248,44 @@ function normalizeStorefrontPayload(payload: Partial<StorefrontPayload>) {
   };
 }
 
-const PRODUCTS_KEY = "shivray_products_store_v3";
-const CATALOGUES_KEY = "shivray_catalogues_store_v1";
-const HOME_CONTENT_KEY = "shivray_home_content_store_v1";
-
 const PRODUCTS_EVENT = "shivray-products-updated";
 const CATALOGUES_EVENT = "shivray-catalogues-updated";
 const HOME_CONTENT_EVENT = "shivray-home-content-updated";
 
 let storefrontBootstrapPromise: Promise<void> | null = null;
+let productsCache: Product[] = [...defaultProducts];
+let catalogueCache: CatalogueType[] = [...defaultCatalogueTypes];
+let homeContentCache: StoredHomeContent = normalizeStoredHomeContent({
+  banners: defaultHomeBanners,
+  reviews: defaultHomeReviews,
+  videos: defaultHomeVideos,
+});
 
-function canUseStorage() {
+function canUseWindow() {
   return typeof window !== "undefined";
 }
 
-function shouldBootstrapStorefront() {
-  if (!canUseStorage()) return false;
-  return window.location.pathname.startsWith("/admin");
-}
-
-function readJson<T>(key: string, fallback: T): T {
-  if (!canUseStorage()) return fallback;
-  const raw = window.localStorage.getItem(key);
-  if (!raw) return fallback;
-
-  try {
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallback;
-  }
-}
-
-function writeJson<T>(key: string, value: T, eventName: string) {
-  if (!canUseStorage()) return;
-  window.localStorage.setItem(key, JSON.stringify(value));
-  window.dispatchEvent(new Event(eventName));
-}
-
-function removeStored(key: string, eventName: string) {
-  if (!canUseStorage()) return;
-  window.localStorage.removeItem(key);
+function dispatchStoreEvent(eventName: string) {
+  if (!canUseWindow()) return;
   window.dispatchEvent(new Event(eventName));
 }
 
 function applyStorefrontPayload(payload: Partial<StorefrontPayload>) {
-  if (!canUseStorage()) return;
   const normalized = normalizeStorefrontPayload(payload);
 
   if (normalized.products) {
-    writeJson(PRODUCTS_KEY, normalized.products, PRODUCTS_EVENT);
+    productsCache = normalized.products;
+    dispatchStoreEvent(PRODUCTS_EVENT);
   }
 
   if (normalized.catalogueTypes) {
-    writeJson(CATALOGUES_KEY, normalized.catalogueTypes, CATALOGUES_EVENT);
+    catalogueCache = normalized.catalogueTypes;
+    dispatchStoreEvent(CATALOGUES_EVENT);
   }
 
   if (normalized.homeContent) {
-    writeJson(HOME_CONTENT_KEY, normalized.homeContent, HOME_CONTENT_EVENT);
+    homeContentCache = normalizeStoredHomeContent(normalized.homeContent);
+    dispatchStoreEvent(HOME_CONTENT_EVENT);
   }
 }
 
@@ -317,38 +298,31 @@ function logSyncError(scope: string, error: unknown) {
   console.error(`Failed to sync ${scope} with the backend.`, error);
 }
 
-function syncProductsToApi(products: Product[]) {
-  void apiRequest<StorefrontPayload>("/api/admin/products", {
+async function syncProductsToApi(products: Product[]) {
+  const payload = await apiRequest<StorefrontPayload>("/api/admin/products", {
     method: "PUT",
     body: { products },
-  })
-    .then((payload) => applyStorefrontPayload(payload))
-    .catch((error) => logSyncError("products", error));
+  });
+  applyStorefrontPayload(payload);
 }
 
-function syncCataloguesToApi(catalogues: CatalogueType[]) {
-  void apiRequest<StorefrontPayload>("/api/admin/catalogues", {
+async function syncCataloguesToApi(catalogues: CatalogueType[]) {
+  const payload = await apiRequest<StorefrontPayload>("/api/admin/catalogues", {
     method: "PUT",
     body: { catalogues },
-  })
-    .then((payload) => applyStorefrontPayload(payload))
-    .catch((error) => logSyncError("catalogues", error));
+  });
+  applyStorefrontPayload(payload);
 }
 
-function syncHomeContentToApi(content: StoredHomeContent) {
-  void apiRequest<StorefrontPayload>("/api/admin/home-content", {
+async function syncHomeContentToApi(content: StoredHomeContent) {
+  const payload = await apiRequest<StorefrontPayload>("/api/admin/home-content", {
     method: "PUT",
     body: { content },
-  })
-    .then((payload) => applyStorefrontPayload(payload))
-    .catch((error) => logSyncError("home content", error));
+  });
+  applyStorefrontPayload(payload);
 }
 
 function bootstrapStorefrontData() {
-  if (!shouldBootstrapStorefront()) {
-    return Promise.resolve();
-  }
-
   if (!storefrontBootstrapPromise) {
     storefrontBootstrapPromise = refreshStorefrontData().catch((error) => {
       storefrontBootstrapPromise = null;
@@ -360,68 +334,79 @@ function bootstrapStorefrontData() {
 }
 
 export function getStoredProducts() {
-  return ensureArray<Product>(readJson<Product[]>(PRODUCTS_KEY, defaultProducts as Product[]), defaultProducts as Product[]);
+  return [...productsCache];
 }
 
-export function saveStoredProducts(products: Product[]) {
-  writeJson(PRODUCTS_KEY, products, PRODUCTS_EVENT);
-  syncProductsToApi(products);
+export async function saveStoredProducts(products: Product[]) {
+  try {
+    await syncProductsToApi(products);
+    return true;
+  } catch (error) {
+    logSyncError("products", error);
+    return false;
+  }
 }
 
 export function resetStoredProducts() {
-  removeStored(PRODUCTS_KEY, PRODUCTS_EVENT);
+  productsCache = [...defaultProducts];
+  dispatchStoreEvent(PRODUCTS_EVENT);
 }
 
 export function getStoredCatalogueTypes() {
-  return ensureArray<CatalogueType>(
-    readJson<CatalogueType[]>(CATALOGUES_KEY, defaultCatalogueTypes as CatalogueType[]),
-    defaultCatalogueTypes as CatalogueType[],
-  );
+  return [...catalogueCache];
 }
 
-export function saveStoredCatalogueTypes(catalogues: CatalogueType[]) {
-  writeJson(CATALOGUES_KEY, catalogues, CATALOGUES_EVENT);
-  syncCataloguesToApi(catalogues);
+export async function saveStoredCatalogueTypes(catalogues: CatalogueType[]) {
+  try {
+    await syncCataloguesToApi(catalogues);
+    return true;
+  } catch (error) {
+    logSyncError("catalogues", error);
+    return false;
+  }
 }
 
 export function resetStoredCatalogueTypes() {
-  removeStored(CATALOGUES_KEY, CATALOGUES_EVENT);
+  catalogueCache = [...defaultCatalogueTypes];
+  dispatchStoreEvent(CATALOGUES_EVENT);
 }
 
 export function getStoredHomeContent(): StoredHomeContent {
-  return normalizeStoredHomeContent(
-    readJson<StoredHomeContent>(HOME_CONTENT_KEY, {
-      banners: defaultHomeBanners,
-      reviews: defaultHomeReviews,
-      videos: defaultHomeVideos,
-    }),
-  );
+  return normalizeStoredHomeContent(homeContentCache);
 }
 
-export function saveStoredHomeContent(content: StoredHomeContent) {
-  writeJson(HOME_CONTENT_KEY, content, HOME_CONTENT_EVENT);
-  syncHomeContentToApi(content);
+export async function saveStoredHomeContent(content: StoredHomeContent) {
+  try {
+    await syncHomeContentToApi(content);
+    return true;
+  } catch (error) {
+    logSyncError("home content", error);
+    return false;
+  }
 }
 
 export function resetStoredHomeContent() {
-  removeStored(HOME_CONTENT_KEY, HOME_CONTENT_EVENT);
+  homeContentCache = normalizeStoredHomeContent({
+    banners: defaultHomeBanners,
+    reviews: defaultHomeReviews,
+    videos: defaultHomeVideos,
+  });
+  dispatchStoreEvent(HOME_CONTENT_EVENT);
 }
 
 function useStoredValue<T>(read: () => T, eventName: string) {
   const [value, setValue] = useState<T>(() => read());
 
   useEffect(() => {
-    if (!canUseStorage()) return;
+    if (!canUseWindow()) return;
 
     const syncValue = () => setValue(read());
 
     syncValue();
     void bootstrapStorefrontData().then(syncValue).catch(() => undefined);
-    window.addEventListener("storage", syncValue);
     window.addEventListener(eventName, syncValue);
 
     return () => {
-      window.removeEventListener("storage", syncValue);
       window.removeEventListener(eventName, syncValue);
     };
   }, [eventName, read]);

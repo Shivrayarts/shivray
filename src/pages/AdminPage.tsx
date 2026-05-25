@@ -939,7 +939,7 @@ export default function AdminPage() {
     setProductFilters(reset);
   }
 
-  function deleteCategory(catalogueId: string) {
+  async function deleteCategory(catalogueId: string) {
     const categoryToDelete = orderedCatalogues.find((catalogue) => catalogue.id === catalogueId);
     if (!categoryToDelete) return;
 
@@ -948,7 +948,11 @@ export default function AdminPage() {
       ...catalogue,
       sortOrder: index + 1,
     }));
-    saveStoredCatalogueTypes(normalizedRemaining);
+    const categorySaved = await saveStoredCatalogueTypes(normalizedRemaining);
+    if (!categorySaved) {
+      setMediaNotice("Unable to remove category right now. Please try again.");
+      return;
+    }
 
     const deletedLabel = normalizeCategoryLabel(adminText(categoryToDelete.shortLabel));
     const fallbackCategory =
@@ -960,7 +964,11 @@ export default function AdminPage() {
           ? { ...product, category: fallbackCategory }
           : product,
       );
-      saveStoredProducts(migratedProducts);
+      const productsSaved = await saveStoredProducts(migratedProducts);
+      if (!productsSaved) {
+        setMediaNotice("Category removed, but product migration failed to sync. Please retry.");
+        return;
+      }
     }
 
     if (catalogueDraft.id === catalogueId) {
@@ -969,7 +977,7 @@ export default function AdminPage() {
     setMediaNotice(`Category removed. Related products moved to "${fallbackCategory}".`);
   }
 
-  function saveProduct() {
+  async function saveProduct() {
     const englishName = adminText(productDraft.name).trim();
     const marathiName = adminLocalizedText(productDraft.name).mr.trim();
     const category = normalizeCategoryLabel(String(productDraft.category || ""));
@@ -1010,12 +1018,16 @@ export default function AdminPage() {
     if (existingIndex >= 0) next[existingIndex] = nextProduct;
     else next.unshift(nextProduct);
 
-    saveStoredProducts(next);
+    const saved = await saveStoredProducts(next);
+    if (!saved) {
+      setMediaNotice("Unable to save product right now. Please try again.");
+      return;
+    }
     setProductDraft(nextProduct);
     setMediaNotice(`Product "${englishName}" saved successfully.`);
   }
 
-  function saveCatalogue() {
+  async function saveCatalogue() {
     const title = adminText(catalogueDraft.title).trim();
     const shortLabel = normalizeCategoryLabel(adminText(catalogueDraft.shortLabel).trim());
     if (!title) {
@@ -1056,20 +1068,28 @@ export default function AdminPage() {
     if (existingIndex >= 0) next[existingIndex] = nextCatalogue;
     else next.push(nextCatalogue);
 
-    saveStoredCatalogueTypes(next.map((item, index) => ({ ...item, sortOrder: index + 1 })));
+    const categorySaved = await saveStoredCatalogueTypes(next.map((item, index) => ({ ...item, sortOrder: index + 1 })));
+    if (!categorySaved) {
+      setMediaNotice("Unable to save category right now. Please try again.");
+      return;
+    }
     if (previousLabel && previousLabel !== shortLabel) {
       const migratedProducts = products.map((product) =>
         normalizeCategoryLabel(String(product.category || "")) === previousLabel
           ? { ...product, category: shortLabel }
           : product,
       );
-      saveStoredProducts(migratedProducts);
+      const productsSaved = await saveStoredProducts(migratedProducts);
+      if (!productsSaved) {
+        setMediaNotice("Category saved, but product migration failed to sync. Please retry.");
+        return;
+      }
     }
     setCatalogueDraft(nextCatalogue);
     setMediaNotice(`Category "${title}" saved successfully.`);
   }
 
-  function saveBanner() {
+  async function saveBanner() {
     const normalizedType = bannerDraft.mediaType ?? (bannerDraft.videoUrl ? "video" : "image");
     const normalizedImage =
       normalizedType === "video"
@@ -1098,12 +1118,16 @@ export default function AdminPage() {
     if (existingIndex >= 0) next[existingIndex] = nextBanner;
     else next.push(nextBanner);
 
-    saveStoredHomeContent({ ...storedHomeContent, banners: next });
+    const saved = await saveStoredHomeContent({ ...storedHomeContent, banners: next });
+    if (!saved) {
+      setMediaNotice("Unable to save banner right now. Please try again.");
+      return;
+    }
     setBannerDraft(nextBanner);
     setMediaNotice("Banner saved successfully.");
   }
 
-  function saveVideo() {
+  async function saveVideo() {
     const videoUrl = String(videoDraft.videoUrl || "").trim();
     if (!videoUrl) {
       setMediaNotice("Please add video URL or upload a reel before saving.");
@@ -1126,12 +1150,16 @@ export default function AdminPage() {
     if (existingIndex >= 0) next[existingIndex] = nextVideo;
     else next.push(nextVideo);
 
-    saveStoredHomeContent({ ...storedHomeContent, videos: next });
+    const saved = await saveStoredHomeContent({ ...storedHomeContent, videos: next });
+    if (!saved) {
+      setMediaNotice("Unable to save video right now. Please try again.");
+      return;
+    }
     setVideoDraft(nextVideo);
     setMediaNotice("Video saved successfully.");
   }
 
-  function saveReview() {
+  async function saveReview() {
     if (!adminText(reviewDraft.authorName).trim() || !adminText(reviewDraft.reviewText).trim()) {
       setMediaNotice("Review author and review text are required.");
       return;
@@ -1143,7 +1171,11 @@ export default function AdminPage() {
     if (existingIndex >= 0) next[existingIndex] = nextReview;
     else next.push(nextReview);
 
-    saveStoredHomeContent({ ...storedHomeContent, reviews: next });
+    const saved = await saveStoredHomeContent({ ...storedHomeContent, reviews: next });
+    if (!saved) {
+      setMediaNotice("Unable to save review right now. Please try again.");
+      return;
+    }
     setReviewDraft(nextReview);
     setMediaNotice("Review saved successfully.");
   }
