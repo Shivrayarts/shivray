@@ -306,6 +306,18 @@ async function syncProductsToApi(products: Product[]) {
   applyStorefrontPayload(payload);
 }
 
+async function syncProductToApi(product: Product) {
+  const productId = String(product.id || "").trim();
+  if (!productId) {
+    throw new Error("Product id is required.");
+  }
+  const payload = await apiRequest<StorefrontPayload>(`/api/admin/products/${encodeURIComponent(productId)}`, {
+    method: "PUT",
+    body: { product },
+  });
+  applyStorefrontPayload(payload);
+}
+
 async function syncCataloguesToApi(catalogues: CatalogueType[]) {
   const payload = await apiRequest<StorefrontPayload>("/api/admin/catalogues", {
     method: "PUT",
@@ -343,6 +355,16 @@ export async function saveStoredProducts(products: Product[]) {
     return true;
   } catch (error) {
     logSyncError("products", error);
+    return false;
+  }
+}
+
+export async function saveStoredProduct(product: Product) {
+  try {
+    await syncProductToApi(product);
+    return true;
+  } catch (error) {
+    logSyncError("product", error);
     return false;
   }
 }

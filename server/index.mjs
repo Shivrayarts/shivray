@@ -75,6 +75,63 @@ function parseProductPrice(value) {
   return parsed;
 }
 
+function normalizeProductForDb(product) {
+  const parsedPrice = parseProductPrice(product?.price);
+  if (parsedPrice === null) return null;
+
+  return {
+    slug: slugify(product?.id || getEnglishText(product?.name), "product"),
+    name: encodeLocalizedValue(product?.name),
+    price: parsedPrice,
+    image: product?.image,
+    category: product?.category,
+    tag: product?.tag || "",
+    shortDescription: product?.shortDescription || "",
+    details: product?.details || "",
+    material: product?.material || "",
+    dimensions: product?.dimensions || "",
+    historicalBackground: product?.historicalBackground || "",
+  };
+}
+
+async function upsertProductRow(connection, product, sortOrder) {
+  await connection.query(
+    `
+    INSERT INTO products (
+      slug, name, price, image_url, category, tag, short_description, details, material, dimensions, history_background, stock_quantity, is_published, sort_order
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1, ?)
+    ON DUPLICATE KEY UPDATE
+      name = VALUES(name),
+      price = VALUES(price),
+      image_url = VALUES(image_url),
+      category = VALUES(category),
+      tag = VALUES(tag),
+      short_description = VALUES(short_description),
+      details = VALUES(details),
+      material = VALUES(material),
+      dimensions = VALUES(dimensions),
+      history_background = VALUES(history_background),
+      is_published = VALUES(is_published),
+      sort_order = VALUES(sort_order)
+    `,
+    [
+      product.slug,
+      product.name,
+      product.price,
+      product.image,
+      product.category,
+      product.tag,
+      product.shortDescription,
+      product.details,
+      product.material,
+      product.dimensions,
+      product.historicalBackground,
+      sortOrder,
+    ],
+  );
+}
+
 function toBoolean(value) {
   return Boolean(Number(value));
 }
@@ -669,11 +726,11 @@ app.put("/api/admin/products", requireAdmin, async (req, res) => {
   const products = Array.isArray(req.body?.products) ? req.body.products : [];
 
   try {
-    for (const product of products) {
-      const parsedPrice = parseProductPrice(product?.price);
-      if (parsedPrice === null) {
+    const normalizedProducts = products.map((product) => normalizeProductForDb(product));
+    for (let index = 0; index < normalizedProducts.length; index += 1) {
+      if (!normalizedProducts[index]) {
         res.status(400).json({
-          message: `Invalid price for product "${getEnglishText(product?.name) || product?.id || "unknown"}". Price must be greater than 0.`,
+          message: `Invalid price for product "${getEnglishText(products[index]?.name) || products[index]?.id || "unknown"}". Price must be greater than 0.`,
         });
         return;
       }
@@ -682,46 +739,10 @@ app.put("/api/admin/products", requireAdmin, async (req, res) => {
     await withTransaction(async (connection) => {
       const keepSlugs = [];
 
-      for (let index = 0; index < products.length; index += 1) {
-        const product = products[index];
-        const slug = slugify(product.id || getEnglishText(product.name), "product");
-        keepSlugs.push(slug);
-
-        await connection.query(
-          `
-          INSERT INTO products (
-            slug, name, price, image_url, category, tag, short_description, details, material, dimensions, history_background, stock_quantity, is_published, sort_order
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1, ?)
-          ON DUPLICATE KEY UPDATE
-            name = VALUES(name),
-            price = VALUES(price),
-            image_url = VALUES(image_url),
-            category = VALUES(category),
-            tag = VALUES(tag),
-            short_description = VALUES(short_description),
-            details = VALUES(details),
-            material = VALUES(material),
-            dimensions = VALUES(dimensions),
-            history_background = VALUES(history_background),
-            is_published = VALUES(is_published),
-            sort_order = VALUES(sort_order)
-          `,
-          [
-            slug,
-            encodeLocalizedValue(product.name),
-            parseProductPrice(product.price),
-            product.image,
-            product.category,
-            product.tag || "",
-            product.shortDescription || "",
-            product.details || "",
-            product.material || "",
-            product.dimensions || "",
-            product.historicalBackground || "",
-            index + 1,
-          ],
-        );
+      for (let index = 0; index < normalizedProducts.length; index += 1) {
+        const product = normalizedProducts[index];
+        keepSlugs.push(product.slug);
+        await upsertProductRow(connection, product, index + 1);
       }
 
       if (keepSlugs.length > 0) {
@@ -735,6 +756,44 @@ app.put("/api/admin/products", requireAdmin, async (req, res) => {
     res.json(await fetchStorefrontPayload());
   } catch (error) {
     res.status(500).json({ message: error instanceof Error ? error.message : "Unable to save products." });
+  }
+});
+
+app.put("/api/admin/products/:slug", requireAdmin, async (req, res) => {
+  const slug = String(req.params.slug || "").trim();
+  const product = req.body?.product;
+
+  if (!slug || !product) {
+    res.status(400).json({ message: "Product slug and payload are required." });
+    return;
+  }
+
+  const normalizedProduct = normalizeProductForDb(product);
+  if (!normalizedProduct) {
+    res.status(400).json({
+      message: `Invalid price for product "${getEnglishText(product?.name) || product?.id || slug}". Price must be greater than 0.`,
+    });
+    return;
+  }
+
+  try {
+    await withTransaction(async (connection) => {
+      const [rows] = await connection.query(
+        `
+        SELECT sort_order
+        FROM products
+        WHERE slug = ?
+        LIMIT 1
+        `,
+        [slug],
+      );
+      const sortOrder = Number(rows?.[0]?.sort_order) || 1;
+      await upsertProductRow(connection, { ...normalizedProduct, slug }, sortOrder);
+    });
+
+    res.json(await fetchStorefrontPayload());
+  } catch (error) {
+    res.status(500).json({ message: error instanceof Error ? error.message : "Unable to save product." });
   }
 });
 

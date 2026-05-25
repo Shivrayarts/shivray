@@ -36,6 +36,7 @@ import { isValidEmail } from "@/lib/form-validation";
 import {
   saveStoredCatalogueTypes,
   saveStoredHomeContent,
+  saveStoredProduct,
   saveStoredProducts,
   type HomeBanner,
   type HomeReview,
@@ -1036,13 +1037,7 @@ export default function AdminPage() {
       id: productDraft.id || slugify(englishName) || uniqueId("product"),
     };
 
-    const next = [...products];
-    const existingIndex = next.findIndex((item) => item.id === nextProduct.id);
-
-    if (existingIndex >= 0) next[existingIndex] = nextProduct;
-    else next.unshift(nextProduct);
-
-    const saved = await saveStoredProducts(next);
+    const saved = await saveStoredProduct(nextProduct);
     if (!saved) {
       setMediaNotice("Unable to save product right now. Please try again.");
       return;
