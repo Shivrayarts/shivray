@@ -54,7 +54,7 @@ import {
 const productTemplate: Product = {
   id: "",
   name: "",
-  price: "Rs. 0",
+  price: "",
   image: "",
   galleryImages: [],
   category: "Statues",
@@ -246,9 +246,12 @@ function ProductForm({
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <input
+          type="number"
+          min="1"
+          step="0.01"
           value={value.price}
           onChange={(event) => onChange({ ...value, price: event.target.value })}
-          placeholder="Rs. 5,100"
+          placeholder="5100"
           className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
         />
       </div>
@@ -1017,10 +1020,11 @@ export default function AdminPage() {
     }
 
     const normalizedPriceValue = parseCurrencyValue(productDraft.price);
-    const normalizedPrice =
-      Number.isFinite(normalizedPriceValue) && normalizedPriceValue > 0
-        ? formatCurrency(normalizedPriceValue)
-        : productDraft.price;
+    if (!Number.isFinite(normalizedPriceValue) || normalizedPriceValue <= 0) {
+      setMediaNotice("Please enter a valid product price greater than 0.");
+      return;
+    }
+    const normalizedPrice = formatCurrency(normalizedPriceValue);
 
     const nextProduct: Product = {
       ...productDraft,

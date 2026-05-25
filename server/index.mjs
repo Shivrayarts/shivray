@@ -63,6 +63,18 @@ function parseCurrencyAmount(value) {
   return Number(String(value).replace(/[^\d.]/g, "")) || 0;
 }
 
+function parseProductPrice(value) {
+  const raw = String(value ?? "").trim();
+  if (!raw) return null;
+
+  const normalized = raw.replace(/[^\d.]/g, "");
+  if (!normalized || !/^\d+(\.\d+)?$/.test(normalized)) return null;
+
+  const parsed = Number(normalized);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return parsed;
+}
+
 function toBoolean(value) {
   return Boolean(Number(value));
 }
@@ -657,6 +669,16 @@ app.put("/api/admin/products", requireAdmin, async (req, res) => {
   const products = Array.isArray(req.body?.products) ? req.body.products : [];
 
   try {
+    for (const product of products) {
+      const parsedPrice = parseProductPrice(product?.price);
+      if (parsedPrice === null) {
+        res.status(400).json({
+          message: `Invalid price for product "${getEnglishText(product?.name) || product?.id || "unknown"}". Price must be greater than 0.`,
+        });
+        return;
+      }
+    }
+
     await withTransaction(async (connection) => {
       const keepSlugs = [];
 
@@ -688,7 +710,7 @@ app.put("/api/admin/products", requireAdmin, async (req, res) => {
           [
             slug,
             encodeLocalizedValue(product.name),
-            parseCurrencyAmount(product.price),
+            parseProductPrice(product.price),
             product.image,
             product.category,
             product.tag || "",
