@@ -414,6 +414,7 @@ function applyStorefrontPayload(payload: Partial<StorefrontPayload>) {
 
   if (normalized.catalogueTypes) {
     catalogueCache = normalized.catalogueTypes;
+    writeLocalCataloguesFallback(normalized.catalogueTypes);
     dispatchStoreEvent(CATALOGUES_EVENT);
   }
 
@@ -427,7 +428,6 @@ async function refreshStorefrontData() {
   const payload = await apiRequest<StorefrontPayload>("/api/storefront");
   applyStorefrontPayload(payload);
   clearLocalProductsFallback();
-  clearLocalCataloguesFallback();
   clearLocalHomeContentFallback();
 }
 
@@ -542,7 +542,6 @@ export function getStoredCatalogueTypes() {
 export async function saveStoredCatalogueTypes(catalogues: CatalogueType[]) {
   try {
     await syncCataloguesToApi(catalogues);
-    clearLocalCataloguesFallback();
     return true;
   } catch (error) {
     logSyncError("catalogues", error);

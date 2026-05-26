@@ -108,7 +108,6 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   const galleryImages = [
     product.image,
     ...(product.galleryImages ?? []),
-    ...relatedProducts.map((item) => item.image),
   ]
     .filter((image, index, array) => Boolean(image) && array.indexOf(image) === index)
     .slice(0, 5);

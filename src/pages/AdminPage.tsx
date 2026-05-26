@@ -321,10 +321,10 @@ function ProductForm({
       <label className="block rounded-2xl border border-dashed border-[#d8b48b] bg-[#fffaf4] p-4 text-sm text-[#6c4b33]">
         <span className="mb-2 flex items-center gap-2 font-semibold text-[#34180e]">
           <ImagePlus className="h-4 w-4" />
-          Upload product gallery images (max 4)
+          Upload product gallery images (optional, max 4)
         </span>
         <p className="mb-2 text-xs text-[#8b6c52]">
-          Select 3-4 images to build product gallery.
+          Select 1-4 images to build product gallery.
         </p>
         <input type="file" accept="image/*" multiple onChange={onPickGalleryFiles} className="mt-2 block w-full text-sm" />
       </label>
