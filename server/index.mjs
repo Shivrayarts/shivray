@@ -318,6 +318,18 @@ function clearAdminSessionCookie(res) {
   res.setHeader("Set-Cookie", cookieParts.join("; "));
 }
 
+async function ensureHomepageSettingsTable(connection) {
+  await connection.query(
+    `
+    CREATE TABLE IF NOT EXISTS homepage_settings (
+      setting_key VARCHAR(100) NOT NULL PRIMARY KEY,
+      setting_value TEXT NULL,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `,
+  );
+}
+
 function requireAdmin(req, res, next) {
   const session = getAdminSession(req);
   if (!session?.userId) {
@@ -330,7 +342,7 @@ function requireAdmin(req, res, next) {
 }
 
 async function fetchStorefrontPayload() {
-  const [products, catalogues, banners, reviews, videos] = await Promise.all([
+  const [products, catalogues, banners, reviews, videos, spotlightSettings] = await Promise.all([
     query(
       `
       SELECT slug, name, price, image_url, category, tag, short_description, details, material, dimensions, history_background
@@ -370,7 +382,28 @@ async function fetchStorefrontPayload() {
       ORDER BY sort_order ASC, id ASC
       `,
     ),
+    query(
+      `
+      SELECT setting_value
+      FROM homepage_settings
+      WHERE setting_key = 'spotlight_product_ids'
+      LIMIT 1
+      `,
+    ).catch(() => []),
   ]);
+
+  let spotlightProductIds = [];
+  const rawSpotlight = spotlightSettings?.[0]?.setting_value;
+  if (typeof rawSpotlight === "string" && rawSpotlight.trim()) {
+    try {
+      const parsed = JSON.parse(rawSpotlight);
+      if (Array.isArray(parsed)) {
+        spotlightProductIds = parsed.filter((id) => typeof id === "string" && id.trim()).map((id) => id.trim());
+      }
+    } catch {
+      spotlightProductIds = [];
+    }
+  }
 
   return {
     products: products.map((row) => ({
@@ -397,6 +430,7 @@ async function fetchStorefrontPayload() {
       sortOrder: Number(row.sort_order),
     })),
     homeContent: {
+      spotlightProductIds,
       banners: banners.map((row) => ({
         id: row.slug,
         eyebrow: row.eyebrow,
@@ -694,6 +728,54 @@ app.post("/api/admin/change-password", async (req, res) => {
   }
 });
 
+app.post("/api/admin/change-username", requireAdmin, async (req, res) => {
+  const session = req.adminSession;
+  const currentPassword = String(req.body?.currentPassword ?? "");
+  const newUsername = String(req.body?.newUsername ?? "").trim();
+
+  if (!currentPassword || !newUsername) {
+    res.status(400).json({ message: "Current password and new username are required." });
+    return;
+  }
+
+  if (newUsername.length < 2) {
+    res.status(400).json({ message: "Username must be at least 2 characters long." });
+    return;
+  }
+
+  try {
+    const rows = await query(
+      `
+      SELECT id, full_name, password_hash
+      FROM users
+      WHERE id = ? AND role = 'admin' AND is_active = 1
+      LIMIT 1
+      `,
+      [session.userId],
+    );
+
+    const admin = rows[0];
+    if (!admin || String(admin.password_hash).toLowerCase() !== toSha256(currentPassword)) {
+      res.status(401).json({ message: "Current password is incorrect." });
+      return;
+    }
+
+    await query(
+      `
+      UPDATE users
+      SET full_name = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+      `,
+      [newUsername, admin.id],
+    );
+
+    res.json({ ok: true, message: "Admin username updated successfully.", fullName: newUsername });
+  } catch (error) {
+    console.error("Admin username change failed.", error);
+    res.status(500).json({ message: "Unable to change username right now." });
+  }
+});
+
 app.get("/api/admin/session", (req, res) => {
   const session = getAdminSession(req);
   res.json({ authenticated: Boolean(session?.userId) });
@@ -835,15 +917,27 @@ app.put("/api/admin/catalogues", requireAdmin, async (req, res) => {
 
 app.put("/api/admin/home-content", requireAdmin, async (req, res) => {
   const content = req.body?.content ?? {};
+  const spotlightProductIds = Array.isArray(content.spotlightProductIds)
+    ? content.spotlightProductIds.filter((id) => typeof id === "string" && id.trim()).map((id) => id.trim()).slice(0, 8)
+    : [];
   const banners = Array.isArray(content.banners) ? content.banners : [];
   const reviews = Array.isArray(content.reviews) ? content.reviews : [];
   const videos = Array.isArray(content.videos) ? content.videos : [];
 
   try {
     await withTransaction(async (connection) => {
+      await ensureHomepageSettingsTable(connection);
       await connection.query("DELETE FROM hero_banners");
       await connection.query("DELETE FROM homepage_reviews");
       await connection.query("DELETE FROM homepage_videos");
+      await connection.query(
+        `
+        INSERT INTO homepage_settings (setting_key, setting_value)
+        VALUES ('spotlight_product_ids', ?)
+        ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+        `,
+        [JSON.stringify(spotlightProductIds)],
+      );
 
       for (let index = 0; index < banners.length; index += 1) {
         const item = banners[index];

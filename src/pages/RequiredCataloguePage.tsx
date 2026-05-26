@@ -80,19 +80,19 @@ export default function RequiredCataloguePage() {
             </p>
             <div className="mt-5 space-y-4">
               <div className="rounded-[24px] bg-[#f7f1e7] p-5">
-                <p className="text-[2rem] font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "अनेक कॅटलॉग प्रकार" : "Multiple catalogue types"}</p>
+                <p className="text-[1.4rem] font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "अनेक कॅटलॉग प्रकार" : "Multiple catalogue types"}</p>
                 <p className="mt-2 text-sm leading-7 text-[#6c4b33]">
                   {resolvedLocale === "mr" ? "मूर्ती, शस्त्र, ढाल, डेकोर आणि पूर्ण कॅटलॉगमधून निवड करा." : "Customers can directly choose statue, weapon, shield, decor, or full-range catalogue requests."}
                 </p>
               </div>
               <div className="rounded-[24px] bg-[#f7f1e7] p-5">
-                <p className="text-[2rem] font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "योग्य शिफारसी" : "Filtered recommendations"}</p>
+                <p className="text-[1.4rem] font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "योग्य शिफारसी" : "Filtered recommendations"}</p>
                 <p className="mt-2 text-sm leading-7 text-[#6c4b33]">
                   {resolvedLocale === "mr" ? "तुमच्या निवडीप्रमाणे अधिक संबंधित पर्याय मिळतात." : "Each request can point to the exact catalogue type and help us send more relevant options."}
                 </p>
               </div>
               <div className="rounded-[24px] bg-[#f7f1e7] p-5">
-                <p className="text-[2rem] font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "झटपट फॉलो-अप" : "Fast follow-up"}</p>
+                <p className="text-[1.4rem] font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "झटपट फॉलो-अप" : "Fast follow-up"}</p>
                 <p className="mt-2 text-sm leading-7 text-[#6c4b33]">
                   {resolvedLocale === "mr" ? "फोन किंवा WhatsApp वरून थेट संपर्क." : "Phone-first users can move directly from request to call or WhatsApp support."}
                 </p>
@@ -104,7 +104,7 @@ export default function RequiredCataloguePage() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
               {resolvedLocale === "mr" ? "विनंती फॉर्म" : "Request Form"}
             </p>
-            <h2 className="mt-3 font-heading text-3xl leading-tight text-[#34180e] md:text-4xl">
+            <h2 className="mt-3 font-heading text-[1.8rem] leading-tight text-[#34180e] md:text-[2.2rem]">
               {resolvedLocale === "mr" ? "कॅटलॉग मिळवण्यासाठी तपशील भरा" : "Fill in your details to get the catalogue"}
             </h2>
             <form className="mt-6 space-y-4" onSubmit={(event) => event.preventDefault()}>

@@ -113,6 +113,13 @@ CREATE TABLE IF NOT EXISTS homepage_videos (
   KEY idx_homepage_videos_sort (sort_order)
 ) ENGINE=InnoDB;
 
+CREATE TABLE IF NOT EXISTS homepage_settings (
+  setting_key VARCHAR(100) NOT NULL,
+  setting_value TEXT DEFAULT NULL,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (setting_key)
+) ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS orders (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   order_no VARCHAR(30) NOT NULL,

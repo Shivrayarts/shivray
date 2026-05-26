@@ -4,6 +4,7 @@ import {
   ArrowDown,
   ArrowUp,
   Bell,
+  Download,
   ChevronDown,
   ChevronRight,
   MessageSquareQuote,
@@ -29,14 +30,13 @@ import { homeContent as defaultHomeContent } from "@/data/home-content";
 import type { Product } from "@/data/products";
 import type { CatalogueType } from "@/lib/catalogue-types";
 import { defaultCatalogueTypes } from "@/lib/catalogue-types";
-import { changeAdminPassword, logoutAdmin } from "@/lib/admin-auth";
+import { changeAdminPassword, changeAdminUsername, logoutAdmin } from "@/lib/admin-auth";
 import { resolveLocalizedText } from "@/lib/language";
 import { parseCurrencyAmount } from "@/lib/utils";
-import { isValidEmail } from "@/lib/form-validation";
+import { isValidEmail, isValidName, isValidPhone } from "@/lib/form-validation";
 import {
   saveStoredCatalogueTypes,
   saveStoredHomeContent,
-  saveStoredProduct,
   saveStoredProducts,
   type HomeBanner,
   type HomeReview,
@@ -46,7 +46,9 @@ import {
   useStoredProducts,
 } from "@/lib/content-store";
 import {
+  type CustomerProfile,
   type OrderStatus,
+  saveStoredCustomers,
   updateOrderStatus,
   useStoredCustomers,
   useStoredOrders,
@@ -106,6 +108,13 @@ const videoTemplate: HomeVideo = {
   thumbnail: "",
 };
 
+const customerTemplate = {
+  name: "",
+  email: "",
+  phone: "",
+  address: "",
+};
+
 type AdminSection =
   | "dashboard"
   | "products"
@@ -162,6 +171,10 @@ function formatDate(value: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function escapeTsvValue(value: string) {
+  return value.replace(/\t/g, " ").replace(/\r?\n/g, " ").trim();
 }
 
 function normalizeCategoryLabel(value: string) {
@@ -705,6 +718,9 @@ export default function AdminPage() {
   const [orderSearch, setOrderSearch] = useState("");
   const [customerSearch, setCustomerSearch] = useState("");
   const [productViewMode, setProductViewMode] = useState<ProductViewMode>("list");
+  const [showAddCustomerForm, setShowAddCustomerForm] = useState(false);
+  const [customerDraft, setCustomerDraft] = useState(customerTemplate);
+  const [editingCustomerId, setEditingCustomerId] = useState<string | null>(null);
   const [productFiltersDraft, setProductFiltersDraft] = useState({
     category: "all",
     brand: "all",
@@ -722,11 +738,19 @@ export default function AdminPage() {
     brands: true,
     pricing: true,
   });
-  const [productsExpanded, setProductsExpanded] = useState(true);
-  const [ordersExpanded, setOrdersExpanded] = useState(true);
+  const [productsExpanded, setProductsExpanded] = useState(false);
+  const [ordersExpanded, setOrdersExpanded] = useState(false);
   const [showLegacyProductList] = useState(false);
   const [mediaNotice, setMediaNotice] = useState("");
   const [showPasswordPanel, setShowPasswordPanel] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [changingUsername, setChangingUsername] = useState(false);
+  const [usernameError, setUsernameError] = useState("");
+  const [usernameSuccess, setUsernameSuccess] = useState("");
+  const [usernameForm, setUsernameForm] = useState({
+    newUsername: "",
+    currentPassword: "",
+  });
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState("");
@@ -797,6 +821,17 @@ export default function AdminPage() {
         .includes(search);
     });
   }, [customerSearch, enrichedCustomers]);
+
+  const notifications = useMemo(() => {
+    const pendingOrders = orders.filter((order) => order.status === "Pending").length;
+    const processingOrders = orders.filter((order) => order.status === "Processing").length;
+    const items: string[] = [];
+    if (pendingOrders > 0) items.push(`${pendingOrders} pending order(s) need attention.`);
+    if (processingOrders > 0) items.push(`${processingOrders} processing order(s) are in progress.`);
+    if (mediaNotice) items.push(mediaNotice);
+    if (items.length === 0) items.push("No new notifications.");
+    return items;
+  }, [orders, mediaNotice]);
 
   const stats = useMemo(
     () => [
@@ -879,6 +914,21 @@ export default function AdminPage() {
     return next;
   }, [productFilters, products]);
 
+  const spotlightOptionProducts = useMemo(() => {
+    const byId = new Map<string, Product>();
+    for (const item of products) byId.set(item.id, item);
+
+    const draftId = String(productDraft.id || "").trim();
+    const draftName = adminText(productDraft.name).trim();
+    if (draftId && draftName && !byId.has(draftId)) {
+      byId.set(draftId, productDraft);
+    }
+
+    return Array.from(byId.values()).sort((a, b) =>
+      resolveLocalizedText(a.name, "en").localeCompare(resolveLocalizedText(b.name, "en")),
+    );
+  }, [products, productDraft]);
+
   function handleLogout() {
     logoutAdmin();
     navigate({ to: "/admin" });
@@ -925,6 +975,36 @@ export default function AdminPage() {
       setPasswordError(error instanceof Error ? error.message : "Unable to change password right now.");
     } finally {
       setChangingPassword(false);
+    }
+  }
+
+  async function handleAdminUsernameChange(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setUsernameError("");
+    setUsernameSuccess("");
+
+    const newUsername = usernameForm.newUsername.trim();
+    if (newUsername.length < 2) {
+      setUsernameError("New username must be at least 2 characters.");
+      return;
+    }
+    if (!usernameForm.currentPassword.trim()) {
+      setUsernameError("Enter your current password to confirm.");
+      return;
+    }
+
+    setChangingUsername(true);
+    try {
+      await changeAdminUsername(usernameForm.currentPassword, newUsername);
+      setUsernameSuccess("Username changed successfully.");
+      setUsernameForm({
+        newUsername: "",
+        currentPassword: "",
+      });
+    } catch (error) {
+      setUsernameError(error instanceof Error ? error.message : "Unable to change username right now.");
+    } finally {
+      setChangingUsername(false);
     }
   }
 
@@ -1037,13 +1117,151 @@ export default function AdminPage() {
       id: productDraft.id || slugify(englishName) || uniqueId("product"),
     };
 
-    const saved = await saveStoredProduct(nextProduct);
+    const nextProducts = [...products];
+    const existingIndex = nextProducts.findIndex((item) => item.id === nextProduct.id);
+    if (existingIndex >= 0) nextProducts[existingIndex] = nextProduct;
+    else nextProducts.unshift(nextProduct);
+
+    const saved = await saveStoredProducts(nextProducts);
     if (!saved) {
       setMediaNotice("Unable to save product right now. Please try again.");
       return;
     }
     setProductDraft(nextProduct);
+    setProductViewMode("list");
     setMediaNotice(`Product "${englishName}" saved successfully.`);
+  }
+
+  function downloadCustomersExcel() {
+    if (filteredCustomers.length === 0) {
+      setMediaNotice("No customers available to export.");
+      return;
+    }
+
+    const headers = [
+      "Customer Name",
+      "Email",
+      "Phone",
+      "Address",
+      "Orders",
+      "Total Spend",
+      "Last Login",
+    ];
+
+    const rows = filteredCustomers.map((customer) => [
+      escapeTsvValue(customer.name || ""),
+      escapeTsvValue(customer.email || ""),
+      escapeTsvValue(customer.phone || ""),
+      escapeTsvValue(customer.address || ""),
+      String(customer.ordersCount ?? 0),
+      formatCurrency(customer.totalSpent ?? 0),
+      escapeTsvValue(formatDate(customer.lastLoginAt || "")),
+    ]);
+
+    const tsv = [headers, ...rows].map((line) => line.join("\t")).join("\n");
+    const blob = new Blob(["\ufeff", tsv], {
+      type: "application/vnd.ms-excel;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    const dateStamp = new Date().toISOString().slice(0, 10);
+    anchor.href = url;
+    anchor.download = `customers-${dateStamp}.xls`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+    setMediaNotice(`Exported ${filteredCustomers.length} customer(s) to Excel.`);
+  }
+
+  function saveCustomer() {
+    const name = customerDraft.name.trim();
+    const email = customerDraft.email.trim().toLowerCase();
+    const phone = customerDraft.phone.trim();
+    const address = customerDraft.address.trim();
+
+    if (!isValidName(name)) {
+      setMediaNotice("Please enter a valid customer name.");
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setMediaNotice("Please enter a valid customer email.");
+      return;
+    }
+    if (phone && !isValidPhone(phone)) {
+      setMediaNotice("Please enter a valid 10-digit phone number.");
+      return;
+    }
+
+    const duplicate = customers.find(
+      (customer) =>
+        customer.email.trim().toLowerCase() === email &&
+        customer.id !== editingCustomerId,
+    );
+    if (duplicate) {
+      setMediaNotice("A customer with this email already exists.");
+      return;
+    }
+
+    const now = new Date().toISOString();
+    if (editingCustomerId) {
+      const nextCustomers = customers.map((customer) =>
+        customer.id === editingCustomerId
+          ? {
+              ...customer,
+              name,
+              email,
+              phone,
+              address,
+              lastLoginAt: customer.lastLoginAt || now,
+            }
+          : customer,
+      );
+      saveStoredCustomers(nextCustomers);
+      setMediaNotice(`Customer "${name}" updated successfully.`);
+    } else {
+      const nextCustomer: CustomerProfile = {
+        id: `customer-${email.replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`,
+        name,
+        email,
+        phone,
+        address,
+        createdAt: now,
+        lastLoginAt: now,
+      };
+      saveStoredCustomers([nextCustomer, ...customers]);
+      setMediaNotice(`Customer "${name}" added successfully.`);
+    }
+
+    setCustomerDraft(customerTemplate);
+    setShowAddCustomerForm(false);
+    setEditingCustomerId(null);
+  }
+
+  function editCustomer(customer: CustomerProfile) {
+    setEditingCustomerId(customer.id);
+    setCustomerDraft({
+      name: customer.name || "",
+      email: customer.email || "",
+      phone: customer.phone || "",
+      address: customer.address || "",
+    });
+    setShowAddCustomerForm(true);
+  }
+
+  async function updateSpotlightProduct(index: number, productId: string) {
+    const nextSpotlight = [...(storedHomeContent.spotlightProductIds ?? [])];
+    while (nextSpotlight.length < 4) nextSpotlight.push("");
+    nextSpotlight[index] = productId;
+    const saved = await saveStoredHomeContent({
+      ...storedHomeContent,
+      spotlightProductIds: nextSpotlight.filter(Boolean),
+    });
+    if (!saved) {
+      setMediaNotice("Unable to update homepage best-selling products right now. Please try again.");
+      return;
+    }
+    setMediaNotice("Homepage best-selling products updated.");
   }
 
   async function saveCatalogue() {
@@ -1502,15 +1720,45 @@ export default function AdminPage() {
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-2 rounded-full bg-[#f4f2ff] px-2 py-1">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#7e6bc2]">
+                <div className="relative flex items-center gap-2 rounded-full bg-[#f4f2ff] px-2 py-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowNotifications((value) => !value)}
+                    className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#7e6bc2]"
+                    aria-label="Toggle notifications"
+                  >
                     <Bell className="h-5 w-5" />
-                  </div>
+                    {notifications[0] !== "No new notifications." ? (
+                      <span className="absolute right-1 top-1 inline-flex h-2.5 w-2.5 rounded-full bg-[#ef4357]" />
+                    ) : null}
+                  </button>
+                  {showNotifications ? (
+                    <div className="absolute right-0 top-12 z-20 w-80 rounded-xl border border-[#dfe3ea] bg-white p-3 shadow-[0_20px_40px_-28px_rgba(0,0,0,0.35)]">
+                      <p className="mb-2 text-sm font-semibold text-[#111827]">Notifications</p>
+                      <div className="space-y-2">
+                        {notifications.map((note, index) => (
+                          <p key={`${note}-${index}`} className="rounded-lg bg-[#f8fafc] px-3 py-2 text-xs text-[#374151]">
+                            {note}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
-                <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPasswordPanel((value) => !value);
+                    setPasswordError("");
+                    setPasswordSuccess("");
+                    setUsernameError("");
+                    setUsernameSuccess("");
+                  }}
+                  className="text-right transition hover:opacity-80"
+                >
                   <p className="text-2xl font-semibold text-[#121926]">Admin</p>
                   <p className="text-base text-[#5b6471]">Admin Profile</p>
-                </div>
+                </button>
                 <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#d5d8de] bg-white">
                   <UserRound className="h-8 w-8 text-[#6b7280]" />
                 </div>
@@ -1520,17 +1768,6 @@ export default function AdminPage() {
                 >
                   View Store
                 </Link>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowPasswordPanel((value) => !value);
-                    setPasswordError("");
-                    setPasswordSuccess("");
-                  }}
-                  className="rounded-full border border-[#d7dbe2] bg-white px-4 py-2 text-sm font-semibold text-[#4f5d70] transition hover:bg-[#f8f9fb]"
-                >
-                  {showPasswordPanel ? "Hide Password Form" : "Change Password"}
-                </button>
                 <button
                   type="button"
                   onClick={handleLogout}
@@ -1543,51 +1780,93 @@ export default function AdminPage() {
             </div>
             {mediaNotice ? <p className="mt-3 text-sm font-medium text-[#8b4d1d]">{mediaNotice}</p> : null}
             {showPasswordPanel ? (
-              <form onSubmit={handleAdminPasswordChange} className="mt-4 grid gap-3 rounded-[10px] border border-[#dfe3ea] bg-white p-4 md:grid-cols-2">
-                <input
-                  type="email"
-                  value={passwordForm.email}
-                  onChange={(event) => setPasswordForm((current) => ({ ...current, email: event.target.value }))}
-                  placeholder="Admin email"
-                  className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
-                  required
-                />
-                <input
-                  type="password"
-                  value={passwordForm.currentPassword}
-                  onChange={(event) => setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))}
-                  placeholder="Current password"
-                  className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
-                  required
-                />
-                <input
-                  type="password"
-                  value={passwordForm.newPassword}
-                  onChange={(event) => setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))}
-                  placeholder="New password (min 8 chars)"
-                  className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
-                  required
-                />
-                <input
-                  type="password"
-                  value={passwordForm.confirmPassword}
-                  onChange={(event) => setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))}
-                  placeholder="Confirm new password"
-                  className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
-                  required
-                />
-                <div className="md:col-span-2 flex flex-wrap items-center gap-3">
-                  <button
-                    type="submit"
-                    disabled={changingPassword}
-                    className="rounded-lg bg-[#6f55dc] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {changingPassword ? "Updating..." : "Update Password"}
-                  </button>
-                  {passwordError ? <p className="text-sm text-[#b42318]">{passwordError}</p> : null}
-                  {passwordSuccess ? <p className="text-sm text-[#2d7a31]">{passwordSuccess}</p> : null}
+              <div className="mt-4 space-y-4 rounded-[10px] border border-[#dfe3ea] bg-white p-4">
+                <div>
+                  <h3 className="mb-2 text-lg font-semibold text-[#111827]">Change Username</h3>
+                  <form onSubmit={handleAdminUsernameChange} className="grid gap-3 md:grid-cols-2">
+                    <input
+                      type="text"
+                      value={usernameForm.newUsername}
+                      onChange={(event) =>
+                        setUsernameForm((current) => ({ ...current, newUsername: event.target.value }))
+                      }
+                      placeholder="New username"
+                      className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
+                      required
+                    />
+                    <input
+                      type="password"
+                      value={usernameForm.currentPassword}
+                      onChange={(event) =>
+                        setUsernameForm((current) => ({ ...current, currentPassword: event.target.value }))
+                      }
+                      placeholder="Current password"
+                      className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
+                      required
+                    />
+                    <div className="md:col-span-2 flex flex-wrap items-center gap-3">
+                      <button
+                        type="submit"
+                        disabled={changingUsername}
+                        className="rounded-lg bg-[#6f55dc] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {changingUsername ? "Updating..." : "Update Username"}
+                      </button>
+                      {usernameError ? <p className="text-sm text-[#b42318]">{usernameError}</p> : null}
+                      {usernameSuccess ? <p className="text-sm text-[#2d7a31]">{usernameSuccess}</p> : null}
+                    </div>
+                  </form>
                 </div>
-              </form>
+
+                <div className="border-t border-[#eceff3] pt-4">
+                  <h3 className="mb-2 text-lg font-semibold text-[#111827]">Change Password</h3>
+                  <form onSubmit={handleAdminPasswordChange} className="grid gap-3 md:grid-cols-2">
+                    <input
+                      type="email"
+                      value={passwordForm.email}
+                      onChange={(event) => setPasswordForm((current) => ({ ...current, email: event.target.value }))}
+                      placeholder="Admin email"
+                      className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
+                      required
+                    />
+                    <input
+                      type="password"
+                      value={passwordForm.currentPassword}
+                      onChange={(event) => setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))}
+                      placeholder="Current password"
+                      className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
+                      required
+                    />
+                    <input
+                      type="password"
+                      value={passwordForm.newPassword}
+                      onChange={(event) => setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))}
+                      placeholder="New password (min 8 chars)"
+                      className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
+                      required
+                    />
+                    <input
+                      type="password"
+                      value={passwordForm.confirmPassword}
+                      onChange={(event) => setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))}
+                      placeholder="Confirm new password"
+                      className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
+                      required
+                    />
+                    <div className="md:col-span-2 flex flex-wrap items-center gap-3">
+                      <button
+                        type="submit"
+                        disabled={changingPassword}
+                        className="rounded-lg bg-[#6f55dc] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {changingPassword ? "Updating..." : "Update Password"}
+                      </button>
+                      {passwordError ? <p className="text-sm text-[#b42318]">{passwordError}</p> : null}
+                      {passwordSuccess ? <p className="text-sm text-[#2d7a31]">{passwordSuccess}</p> : null}
+                    </div>
+                  </form>
+                </div>
+              </div>
             ) : null}
           </section>
 
@@ -1681,6 +1960,32 @@ export default function AdminPage() {
                   </button>
                 ) : null}
               </div>
+              {productViewMode === "list" ? (
+                <div className="rounded-[10px] border border-[#dadde3] bg-white p-4">
+                  <h3 className="text-xl font-semibold text-[#1f2937]">Homepage Best Selling Products</h3>
+                  <p className="mt-1 text-sm text-[#6c4b33]">Choose which products appear in the homepage best-selling section.</p>
+                  <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    {Array.from({ length: 4 }).map((_, index) => {
+                      const value = storedHomeContent.spotlightProductIds?.[index] ?? "";
+                      return (
+                        <select
+                          key={`spotlight-${index}`}
+                          value={value}
+                          onChange={(event) => void updateSpotlightProduct(index, event.target.value)}
+                          className="rounded-lg border border-[#d7dbe3] bg-white px-3 py-2 text-sm text-[#1f2937] outline-none"
+                        >
+                          <option value="">Select product #{index + 1}</option>
+                          {spotlightOptionProducts.map((item) => (
+                            <option key={item.id} value={item.id}>
+                              {resolveLocalizedText(item.name, "en")}
+                            </option>
+                          ))}
+                        </select>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
               <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
               {productViewMode === "list" ? (
               <div className="grid gap-3 xl:grid-cols-[300px_1fr] xl:col-span-2 xl:items-start">
@@ -2173,7 +2478,77 @@ export default function AdminPage() {
                     <h2 className="text-2xl font-semibold text-[#34180e]">Customers</h2>
                     <p className="mt-2 text-sm text-[#6c4b33]">Customers are added here when they log in on the storefront.</p>
                   </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAddCustomerForm((open) => !open);
+                        setEditingCustomerId(null);
+                        setCustomerDraft(customerTemplate);
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full bg-[#34180e] px-4 py-2 text-sm font-semibold text-white"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Customer
+                    </button>
+                    <button
+                      type="button"
+                      onClick={downloadCustomersExcel}
+                      className="inline-flex items-center gap-2 rounded-full border border-[#eadbc8] bg-[#fffaf4] px-4 py-2 text-sm font-semibold text-[#8b4d1d]"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download Excel
+                    </button>
+                  </div>
                 </div>
+                {showAddCustomerForm ? (
+                  <div className="mt-5 grid gap-3 rounded-2xl border border-[#efe1cf] bg-[#fcf8f2] p-4 md:grid-cols-2">
+                    <input
+                      value={customerDraft.name}
+                      onChange={(event) => setCustomerDraft((current) => ({ ...current, name: event.target.value }))}
+                      placeholder="Customer name"
+                      className="rounded-xl border border-[#eadbc8] bg-white px-4 py-3 text-sm text-[#34180e] outline-none"
+                    />
+                    <input
+                      value={customerDraft.email}
+                      onChange={(event) => setCustomerDraft((current) => ({ ...current, email: event.target.value }))}
+                      placeholder="Email address"
+                      className="rounded-xl border border-[#eadbc8] bg-white px-4 py-3 text-sm text-[#34180e] outline-none"
+                    />
+                    <input
+                      value={customerDraft.phone}
+                      onChange={(event) => setCustomerDraft((current) => ({ ...current, phone: event.target.value }))}
+                      placeholder="Phone number (optional)"
+                      className="rounded-xl border border-[#eadbc8] bg-white px-4 py-3 text-sm text-[#34180e] outline-none"
+                    />
+                    <input
+                      value={customerDraft.address}
+                      onChange={(event) => setCustomerDraft((current) => ({ ...current, address: event.target.value }))}
+                      placeholder="Address (optional)"
+                      className="rounded-xl border border-[#eadbc8] bg-white px-4 py-3 text-sm text-[#34180e] outline-none"
+                    />
+                    <div className="flex items-center gap-2 md:col-span-2">
+                      <button
+                        type="button"
+                        onClick={saveCustomer}
+                        className="rounded-full bg-[#34180e] px-4 py-2 text-sm font-semibold text-white"
+                      >
+                        {editingCustomerId ? "Update Customer" : "Save Customer"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowAddCustomerForm(false);
+                          setEditingCustomerId(null);
+                          setCustomerDraft(customerTemplate);
+                        }}
+                        className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm font-semibold text-[#6c4b33]"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
                 <div className="mt-6 overflow-x-auto">
                   <table className="w-full min-w-[920px] text-left text-sm">
                     <thead className="border-b border-[#efe1cf] text-[#8b6c52]">
@@ -2184,6 +2559,7 @@ export default function AdminPage() {
                         <th className="px-4 py-3 font-semibold">Orders</th>
                         <th className="px-4 py-3 font-semibold">Total Spend</th>
                         <th className="px-4 py-3 font-semibold">Last Login</th>
+                        <th className="px-4 py-3 font-semibold">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2199,11 +2575,21 @@ export default function AdminPage() {
                             <td className="px-4 py-4 text-[#34180e]">{customer.ordersCount}</td>
                             <td className="px-4 py-4 text-[#34180e]">{formatCurrency(customer.totalSpent)}</td>
                             <td className="px-4 py-4 text-[#5e5a80]">{formatDate(customer.lastLoginAt)}</td>
+                            <td className="px-4 py-4">
+                              <button
+                                type="button"
+                                onClick={() => editCustomer(customer)}
+                                className="inline-flex items-center gap-1 rounded-full border border-[#eadbc8] bg-white px-3 py-1.5 text-xs font-semibold text-[#6c4b33]"
+                              >
+                                <SquarePen className="h-3.5 w-3.5" />
+                                Edit
+                              </button>
+                            </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={6} className="px-4 py-10 text-center text-[#8b6c52]">
+                          <td colSpan={7} className="px-4 py-10 text-center text-[#8b6c52]">
                             No customers found yet.
                           </td>
                         </tr>

@@ -41,6 +41,13 @@ export async function changeAdminPassword(email: string, currentPassword: string
   });
 }
 
+export async function changeAdminUsername(currentPassword: string, newUsername: string) {
+  await apiRequest("/api/admin/change-username", {
+    method: "POST",
+    body: { currentPassword, newUsername },
+  });
+}
+
 export async function refreshAdminAuthStatus() {
   try {
     const response = await apiRequest<{ authenticated: boolean }>("/api/admin/session");

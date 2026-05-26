@@ -23,14 +23,6 @@ import productStatue1 from "@/assets/product-statue-1.jpg";
 import productShowcase1 from "@/assets/Products/product-1.png";
 import productWeapon1 from "@/assets/product-weapon-1.jpg";
 import heroBanner3 from "@/assets/hero-banner-3.jpg";
-import type { Product } from "@/data/products";
-
-const spotlightProducts = [
-  { id: "shastradhari-maharaj-coloured", title: "Shastradhari Maharaj", price: "Rs. 12,500", image: productStatue1 },
-  { id: "roudra-shambhu-chatrapati", title: "Roudra Shambhu Chatrapati", price: "Rs. 12,600", image: productShowcase1 },
-  { id: "royal-khanjar-with-sheath", title: "Royal Khanjar", price: "Rs. 13,200", image: productWeapon1 },
-  { id: "brass-dhoop-stand", title: "Brass Dhoop Stand", price: "Rs. 12,100", image: productDhoop1 },
-] as const;
 
 // const features = [
 //   { icon: ShieldCheck, title: "Trusted Craftsmanship", copy: "Hand-finished products inspired by heritage, made for display, gifting, and devotion." },
@@ -85,12 +77,22 @@ export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [categorySlide, setCategorySlide] = useState(0);
   const [currentReview, setCurrentReview] = useState(0);
+  const [videoSlide, setVideoSlide] = useState(0);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
+  const videosRef = useRef<HTMLDivElement | null>(null);
   const heroSlides = storedHomeContent.banners;
   const reviews = storedHomeContent.reviews;
   const hasHeroSlides = heroSlides.length > 0;
   const hasReviews = reviews.length > 0;
   const featuredVideos = storedHomeContent.videos;
+  const spotlightIds = storedHomeContent.spotlightProductIds?.length
+    ? storedHomeContent.spotlightProductIds
+    : [
+        "shastradhari-maharaj-coloured",
+        "roudra-shambhu-chatrapati",
+        "royal-khanjar-with-sheath",
+        "brass-dhoop-stand",
+      ];
   const homeCategoryCards = useMemo(() => {
     const fallbackImages: Record<string, string> = {
       Statues: productStatue1,
@@ -126,21 +128,38 @@ export default function HomePage() {
       image: fallbackImages[key] || productStatue1,
     }));
   }, [catalogueTypes, products, resolvedLocale]);
-  const spotlightProductCards = spotlightProducts.map((product) => {
-    const matchedProduct = products.find((item) => item.id === product.id);
-    return {
-      id: product.id,
-      name: matchedProduct?.name ?? product.title,
-      price: matchedProduct?.price ?? product.price,
-      image: product.image,
-      category: matchedProduct?.category ?? "Statues",
-      tag: matchedProduct?.tag ?? "",
-      shortDescription: matchedProduct?.shortDescription ?? "",
-      details: matchedProduct?.details ?? "",
-      material: matchedProduct?.material ?? "",
-      dimensions: matchedProduct?.dimensions ?? "",
-    };
+  const spotlightProductCards = spotlightIds.flatMap((productId) => {
+    const matchedProduct = products.find((item) => item.id === productId);
+    if (!matchedProduct) return [];
+    return [{
+      id: matchedProduct.id,
+      name: matchedProduct.name,
+      price: matchedProduct.price,
+      image: matchedProduct.image || productStatue1,
+      category: matchedProduct.category ?? "Statues",
+      tag: matchedProduct.tag ?? "",
+      shortDescription: matchedProduct.shortDescription ?? "",
+      details: matchedProduct.details ?? "",
+      material: matchedProduct.material ?? "",
+      dimensions: matchedProduct.dimensions ?? "",
+    }];
   });
+
+  const resolvedSpotlightProductCards =
+    spotlightProductCards.length > 0
+      ? spotlightProductCards
+      : products.slice(0, 4).map((product) => ({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.image || productStatue1,
+          category: product.category ?? "Statues",
+          tag: product.tag ?? "",
+          shortDescription: product.shortDescription ?? "",
+          details: product.details ?? "",
+          material: product.material ?? "",
+          dimensions: product.dimensions ?? "",
+        }));
 
   useEffect(() => {
     if (heroSlides.length <= 1) return;
@@ -188,6 +207,27 @@ export default function HomePage() {
     const safeIndex = Math.max(0, Math.min(index, homeCategoryCards.length - 1));
     node.scrollTo({ left: safeIndex * cardWidth, behavior });
     setCategorySlide(safeIndex);
+  };
+
+  const handleVideosScroll = () => {
+    const node = videosRef.current;
+    if (!node) return;
+    const firstCard = node.querySelector<HTMLElement>("article");
+    if (!firstCard) return;
+    const cardWidth = firstCard.offsetWidth + 20;
+    const nextSlide = Math.round(node.scrollLeft / cardWidth);
+    setVideoSlide(Math.max(0, Math.min(nextSlide, featuredVideos.length - 1)));
+  };
+
+  const scrollToVideoSlide = (index: number, behavior: ScrollBehavior = "smooth") => {
+    const node = videosRef.current;
+    if (!node) return;
+    const firstCard = node.querySelector<HTMLElement>("article");
+    if (!firstCard) return;
+    const cardWidth = firstCard.offsetWidth + 20;
+    const safeIndex = Math.max(0, Math.min(index, featuredVideos.length - 1));
+    node.scrollTo({ left: safeIndex * cardWidth, behavior });
+    setVideoSlide(safeIndex);
   };
 
   useEffect(() => {
@@ -328,7 +368,7 @@ export default function HomePage() {
             <Link to="/products" className="hidden text-sm font-semibold text-[#8b4d1d] md:inline-flex">{resolvedLocale === "mr" ? "सर्व पहा" : "View all"}</Link>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {spotlightProductCards.map((product) => (
+            {resolvedSpotlightProductCards.map((product) => (
               <ProductGalleryCard key={product.id} product={product} isWishlisted={isWishlisted(product.id)} onToggleWishlist={toggleWishlist} />
             ))}
           </div>
@@ -399,7 +439,7 @@ export default function HomePage() {
             </p>
           </div>
           {featuredVideos.length > 0 ? (
-            <div className="mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2">
+            <div ref={videosRef} onScroll={handleVideosScroll} className="category-carousel-scroll mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2">
               {featuredVideos.map((video) => {
                 const isYoutube = video.videoType === "youtube";
                 const isShort = isYoutube && isYoutubeShortUrl(video.videoUrl);
@@ -473,6 +513,19 @@ export default function HomePage() {
               {resolvedLocale === "mr" ? "अजून व्हिडिओ जोडलेले नाहीत. तुम्ही रील्स आणि YouTube व्हिडिओ अॅडमिन पॅनेलमधून प्रकाशित करू शकता." : "No videos added yet. You can publish reels and YouTube videos from the admin panel."}
             </div>
           )}
+          {featuredVideos.length > 1 ? (
+            <div className="mt-5 flex items-center justify-center gap-2">
+              {featuredVideos.map((video, index) => (
+                <button
+                  key={video.id}
+                  type="button"
+                  onClick={() => scrollToVideoSlide(index)}
+                  aria-label={`Go to video ${index + 1}`}
+                  className={`rounded-full transition-all ${index === videoSlide ? "h-3 w-9 bg-[#e3a92b]" : "h-2.5 w-2.5 bg-[#9d7f61]"}`}
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
       </section>
 

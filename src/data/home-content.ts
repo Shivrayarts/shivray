@@ -6,6 +6,12 @@ import heroBanner3 from "@/assets/hero-banner-3.jpg";
 type Translatable = string | LocalizedText;
 
 export const homeContent = {
+  spotlightProductIds: [
+    "shastradhari-maharaj-coloured",
+    "roudra-shambhu-chatrapati",
+    "royal-khanjar-with-sheath",
+    "brass-dhoop-stand",
+  ],
   banners: [
     {
       id: "timeless-culture-banner",
