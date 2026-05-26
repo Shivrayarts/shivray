@@ -742,6 +742,7 @@ export default function AdminPage() {
   const [ordersExpanded, setOrdersExpanded] = useState(false);
   const [showLegacyProductList] = useState(false);
   const [mediaNotice, setMediaNotice] = useState("");
+  const [bannerNotice, setBannerNotice] = useState("");
   const [showPasswordPanel, setShowPasswordPanel] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [changingUsername, setChangingUsername] = useState(false);
@@ -1334,6 +1335,7 @@ export default function AdminPage() {
         : String(bannerDraft.image || "").trim();
 
     if (!normalizedImage) {
+      setBannerNotice("Please upload/select a banner before saving.");
       setMediaNotice(
         normalizedType === "video"
           ? "Please upload/select a banner video before saving."
@@ -1357,10 +1359,12 @@ export default function AdminPage() {
 
     const saved = await saveStoredHomeContent({ ...storedHomeContent, banners: next });
     if (!saved) {
+      setBannerNotice("Unable to save banner right now. Please try again.");
       setMediaNotice("Unable to save banner right now. Please try again.");
       return;
     }
     setBannerDraft(nextBanner);
+    setBannerNotice("Banner saved successfully.");
     setMediaNotice("Banner saved successfully.");
   }
 
@@ -1430,8 +1434,10 @@ export default function AdminPage() {
         image: isVideo ? current.image : dataUrl,
         videoUrl: isVideo ? dataUrl : "",
       }));
+      setBannerNotice(`Banner file "${file.name}" loaded successfully.`);
       setMediaNotice(`Banner file "${file.name}" loaded successfully.`);
     } catch (error) {
+      setBannerNotice(error instanceof Error ? error.message : "Unable to load the banner file.");
       setMediaNotice(error instanceof Error ? error.message : "Unable to load the banner file.");
     }
   }
@@ -2258,7 +2264,10 @@ export default function AdminPage() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setBannerDraft(bannerTemplate)}
+                    onClick={() => {
+                      setBannerDraft(bannerTemplate);
+                      setBannerNotice("");
+                    }}
                     className="rounded-full bg-[#34180e] px-4 py-2 text-sm font-semibold text-white"
                   >
                     New Banner
@@ -2309,6 +2318,9 @@ export default function AdminPage() {
                     onSave={saveBanner}
                     onPickFile={handleBannerFileChange}
                   />
+                  {bannerNotice ? (
+                    <p className="mt-3 text-sm font-semibold text-[#2f7a34]">{bannerNotice}</p>
+                  ) : null}
                 </div>
               </div>
             </section>
