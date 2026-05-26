@@ -177,6 +177,11 @@ function escapeTsvValue(value: string) {
   return value.replace(/\t/g, " ").replace(/\r?\n/g, " ").trim();
 }
 
+function escapeCsvValue(value: string) {
+  const normalized = value.replace(/\r?\n/g, " ").trim();
+  return `"${normalized.replace(/"/g, '""')}"`;
+}
+
 function normalizeCategoryLabel(value: string) {
   return value.trim();
 }
@@ -1150,24 +1155,24 @@ export default function AdminPage() {
     ];
 
     const rows = filteredCustomers.map((customer) => [
-      escapeTsvValue(customer.name || ""),
-      escapeTsvValue(customer.email || ""),
-      escapeTsvValue(customer.phone || ""),
-      escapeTsvValue(customer.address || ""),
-      String(customer.ordersCount ?? 0),
-      formatCurrency(customer.totalSpent ?? 0),
-      escapeTsvValue(formatDate(customer.lastLoginAt || "")),
+      escapeCsvValue(customer.name || ""),
+      escapeCsvValue(customer.email || ""),
+      escapeCsvValue(customer.phone || ""),
+      escapeCsvValue(customer.address || ""),
+      escapeCsvValue(String(customer.ordersCount ?? 0)),
+      escapeCsvValue(formatCurrency(customer.totalSpent ?? 0)),
+      escapeCsvValue(formatDate(customer.lastLoginAt || "")),
     ]);
 
-    const tsv = [headers, ...rows].map((line) => line.join("\t")).join("\n");
-    const blob = new Blob(["\ufeff", tsv], {
-      type: "application/vnd.ms-excel;charset=utf-8;",
+    const csv = [headers.map(escapeCsvValue), ...rows].map((line) => line.join(",")).join("\n");
+    const blob = new Blob(["\ufeff", csv], {
+      type: "text/csv;charset=utf-8;",
     });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     const dateStamp = new Date().toISOString().slice(0, 10);
     anchor.href = url;
-    anchor.download = `customers-${dateStamp}.xls`;
+    anchor.download = `customers-${dateStamp}.csv`;
     document.body.appendChild(anchor);
     anchor.click();
     document.body.removeChild(anchor);

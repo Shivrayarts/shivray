@@ -314,6 +314,7 @@ const PRODUCTS_EVENT = "shivray-products-updated";
 const CATALOGUES_EVENT = "shivray-catalogues-updated";
 const HOME_CONTENT_EVENT = "shivray-home-content-updated";
 const LOCAL_PRODUCTS_FALLBACK_KEY = "shivray-products-local-fallback-v1";
+const LOCAL_CATALOGUES_FALLBACK_KEY = "shivray-catalogues-local-fallback-v1";
 const LOCAL_HOME_CONTENT_FALLBACK_KEY = "shivray-home-content-local-fallback-v1";
 
 let storefrontBootstrapPromise: Promise<void> | null = null;
@@ -351,6 +352,29 @@ function writeLocalProductsFallback(products: Product[]) {
 function clearLocalProductsFallback() {
   if (!canUseWindow()) return;
   window.localStorage.removeItem(LOCAL_PRODUCTS_FALLBACK_KEY);
+}
+
+function readLocalCataloguesFallback(): CatalogueType[] | null {
+  if (!canUseWindow()) return null;
+  const raw = window.localStorage.getItem(LOCAL_CATALOGUES_FALLBACK_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    return parsed as CatalogueType[];
+  } catch {
+    return null;
+  }
+}
+
+function writeLocalCataloguesFallback(catalogues: CatalogueType[]) {
+  if (!canUseWindow()) return;
+  window.localStorage.setItem(LOCAL_CATALOGUES_FALLBACK_KEY, JSON.stringify(catalogues));
+}
+
+function clearLocalCataloguesFallback() {
+  if (!canUseWindow()) return;
+  window.localStorage.removeItem(LOCAL_CATALOGUES_FALLBACK_KEY);
 }
 
 function readLocalHomeContentFallback(): StoredHomeContent | null {
@@ -403,6 +427,7 @@ async function refreshStorefrontData() {
   const payload = await apiRequest<StorefrontPayload>("/api/storefront");
   applyStorefrontPayload(payload);
   clearLocalProductsFallback();
+  clearLocalCataloguesFallback();
   clearLocalHomeContentFallback();
 }
 
@@ -507,16 +532,25 @@ export function resetStoredProducts() {
 }
 
 export function getStoredCatalogueTypes() {
+  const localFallback = readLocalCataloguesFallback();
+  if (localFallback && localFallback.length > 0) {
+    catalogueCache = localFallback;
+  }
   return [...catalogueCache];
 }
 
 export async function saveStoredCatalogueTypes(catalogues: CatalogueType[]) {
   try {
     await syncCataloguesToApi(catalogues);
+    clearLocalCataloguesFallback();
     return true;
   } catch (error) {
     logSyncError("catalogues", error);
-    return false;
+    // Localhost/dev fallback: keep category edits/deletes after refresh if backend sync fails.
+    catalogueCache = [...catalogues];
+    writeLocalCataloguesFallback(catalogues);
+    dispatchStoreEvent(CATALOGUES_EVENT);
+    return true;
   }
 }
 
