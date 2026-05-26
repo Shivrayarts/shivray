@@ -262,7 +262,9 @@ export default function Footer() {
             {resolvedLocale === "mr" ? "मदत आणि प्रश्नोत्तरे" : "Help & FAQs"}
           </Link>
           <p className="mt-4 text-sm leading-6 lg:mt-0">
-            {resolvedLocale === "mr" ? "© 2026 शिवराय आर्ट अँड हँडक्राफ्ट. सर्व हक्क राखीव." : `© 2026 ${footerBrandName}. All rights reserved.`}
+            {resolvedLocale === "mr"
+              ? "© 2026 शिवराय आर्ट अँड हँडक्राफ्ट. सर्व हक्क राखीव. सर्व रंग कोड, डिझाइन्स आणि प्रतिमा या शिवराय आर्ट अँड हँडक्राफ्ट यांची बौद्धिक मालमत्ता आहेत आणि कॉपीराइट कायद्यांनी संरक्षित आहेत. अनधिकृत वापर, पुनरुत्पादन किंवा वितरण कडक मनाई आहे."
+              : `© 2026 ${footerBrandName}. All rights reserved. All colour codes, designs, and images are the intellectual property of ${footerBrandName} and are protected by copyright laws. Unauthorized use, reproduction, or distribution is strictly prohibited.`}
           </p>
         </div>
       </div>

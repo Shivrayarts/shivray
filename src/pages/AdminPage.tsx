@@ -328,27 +328,40 @@ function ProductForm({
         </p>
         <input type="file" accept="image/*" multiple onChange={onPickGalleryFiles} className="mt-2 block w-full text-sm" />
       </label>
-      {(value.galleryImages ?? []).length ? (
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          {(value.galleryImages ?? []).map((image, index) => (
-            <div key={`${image}-${index}`} className="rounded-xl border border-[#eadbc8] bg-white p-2">
-              <img src={image} alt={`Gallery ${index + 1}`} className="h-24 w-full rounded-lg object-cover" />
-              <button
-                type="button"
-                onClick={() =>
-                  onChange({
-                    ...value,
-                    galleryImages: (value.galleryImages ?? []).filter((_, itemIndex) => itemIndex !== index),
-                  })
-                }
-                className="mt-2 w-full rounded-lg border border-[#ffe1e1] bg-[#fff3f3] px-2 py-1 text-xs font-semibold text-[#9f2b2b]"
-              >
-                Remove
-              </button>
-            </div>
-          ))}
+      <div className="rounded-xl border border-[#eadbc8] bg-white p-3">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <p className="text-sm font-semibold text-[#34180e]">Selected gallery images</p>
+          <span className="rounded-full bg-[#fff1d9] px-2 py-1 text-xs font-semibold text-[#8b4d1d]">
+            {(value.galleryImages ?? []).length}/4
+          </span>
         </div>
-      ) : null}
+        {(value.galleryImages ?? []).length ? (
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            {(value.galleryImages ?? []).map((image, index) => (
+              <div key={`${image}-${index}`} className="rounded-xl border border-[#eadbc8] bg-white p-2">
+                <div className="mb-2 inline-flex rounded-full bg-[#f4f2ff] px-2 py-1 text-[11px] font-semibold text-[#5e4bb2]">
+                  Image {index + 1}
+                </div>
+                <img src={image} alt={`Gallery ${index + 1}`} className="h-24 w-full rounded-lg object-cover" />
+                <button
+                  type="button"
+                  onClick={() =>
+                    onChange({
+                      ...value,
+                      galleryImages: (value.galleryImages ?? []).filter((_, itemIndex) => itemIndex !== index),
+                    })
+                  }
+                  className="mt-2 w-full rounded-lg border border-[#ffe1e1] bg-[#fff3f3] px-2 py-1 text-xs font-semibold text-[#9f2b2b]"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-[#8b6c52]">No gallery images selected yet.</p>
+        )}
+      </div>
       <textarea
         value={adminText(value.shortDescription)}
         onChange={(event) => onChange({ ...value, shortDescription: event.target.value })}
