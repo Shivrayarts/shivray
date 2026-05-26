@@ -376,13 +376,38 @@ function ProductForm({
         placeholder="Full details"
         className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
       />
-      <textarea
-        value={adminText(value.historicalBackground ?? "")}
-        onChange={(event) => onChange({ ...value, historicalBackground: event.target.value })}
-        rows={6}
-        placeholder="Historical background (shown in product details page)"
-        className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
-      />
+      <div className="grid gap-4 md:grid-cols-2">
+        <textarea
+          value={adminLocalizedText(value.historicalBackground ?? "").en}
+          onChange={(event) =>
+            onChange({
+              ...value,
+              historicalBackground: {
+                ...adminLocalizedText(value.historicalBackground ?? ""),
+                en: event.target.value,
+              },
+            })
+          }
+          rows={6}
+          placeholder="Historical background (English)"
+          className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+        />
+        <textarea
+          value={adminLocalizedText(value.historicalBackground ?? "").mr}
+          onChange={(event) =>
+            onChange({
+              ...value,
+              historicalBackground: {
+                ...adminLocalizedText(value.historicalBackground ?? ""),
+                mr: event.target.value,
+              },
+            })
+          }
+          rows={6}
+          placeholder="Historical background (Marathi)"
+          className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+        />
+      </div>
       <div className="grid gap-4 md:grid-cols-2">
         <input
           value={adminText(value.material)}
@@ -1103,6 +1128,7 @@ export default function AdminPage() {
   async function saveProduct() {
     const englishName = adminText(productDraft.name).trim();
     const marathiName = adminLocalizedText(productDraft.name).mr.trim();
+    const historicalBackground = adminLocalizedText(productDraft.historicalBackground ?? "");
     const category = normalizeCategoryLabel(String(productDraft.category || ""));
     const coverImage = String(productDraft.image || "").trim();
 
@@ -1133,6 +1159,10 @@ export default function AdminPage() {
       image: coverImage,
       price: normalizedPrice,
       galleryImages: (productDraft.galleryImages ?? []).filter(Boolean).slice(0, 4),
+      historicalBackground: {
+        en: historicalBackground.en.trim(),
+        mr: historicalBackground.mr.trim(),
+      },
       id: productDraft.id || slugify(englishName) || uniqueId("product"),
     };
 
@@ -1384,6 +1414,48 @@ export default function AdminPage() {
     setBannerDraft(nextBanner);
     setBannerNotice("Banner saved successfully.");
     setMediaNotice("Banner saved successfully.");
+  }
+
+  async function deleteBanner(bannerId: string) {
+    const nextBanners = storedHomeContent.banners.filter((banner) => banner.id !== bannerId);
+    const saved = await saveStoredHomeContent({ ...storedHomeContent, banners: nextBanners });
+    if (!saved) {
+      setBannerNotice("Unable to delete banner right now. Please try again.");
+      setMediaNotice("Unable to delete banner right now. Please try again.");
+      return;
+    }
+    if (bannerDraft.id === bannerId) {
+      setBannerDraft(bannerTemplate);
+    }
+    setBannerNotice("Banner deleted successfully.");
+    setMediaNotice("Banner deleted successfully.");
+  }
+
+  async function reorderBanner(index: number, direction: -1 | 1) {
+    const nextBanners = moveItem(storedHomeContent.banners, index, direction);
+    const saved = await saveStoredHomeContent({ ...storedHomeContent, banners: nextBanners });
+    if (!saved) {
+      setBannerNotice("Unable to reorder banners right now. Please try again.");
+      setMediaNotice("Unable to reorder banners right now. Please try again.");
+      return;
+    }
+    setBannerNotice("Banner order updated successfully.");
+    setMediaNotice("Banner order updated successfully.");
+  }
+
+  async function resetBanners() {
+    const saved = await saveStoredHomeContent({
+      ...storedHomeContent,
+      banners: defaultHomeContent.banners.map((item) => ({ ...item })),
+    });
+    if (!saved) {
+      setBannerNotice("Unable to reset banners right now. Please try again.");
+      setMediaNotice("Unable to reset banners right now. Please try again.");
+      return;
+    }
+    setBannerDraft(bannerTemplate);
+    setBannerNotice("Banners reset successfully.");
+    setMediaNotice("Banners reset successfully.");
   }
 
   async function saveVideo() {
@@ -2307,9 +2379,9 @@ export default function AdminPage() {
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <button type="button" onClick={() => setBannerDraft(item)} className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm text-[#6c4b33]">Edit</button>
-                          <button type="button" onClick={() => saveStoredHomeContent({ ...storedHomeContent, banners: moveItem(storedHomeContent.banners, index, -1) })} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowUp className="h-4 w-4" /></button>
-                          <button type="button" onClick={() => saveStoredHomeContent({ ...storedHomeContent, banners: moveItem(storedHomeContent.banners, index, 1) })} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowDown className="h-4 w-4" /></button>
-                          <button type="button" onClick={() => saveStoredHomeContent({ ...storedHomeContent, banners: storedHomeContent.banners.filter((banner) => banner.id !== item.id) })} className="rounded-full border border-[#ffe1e1] bg-[#fff3f3] px-3 py-2 text-sm text-[#9f2b2b]"><Trash2 className="h-4 w-4" /></button>
+                          <button type="button" onClick={() => void reorderBanner(index, -1)} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowUp className="h-4 w-4" /></button>
+                          <button type="button" onClick={() => void reorderBanner(index, 1)} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowDown className="h-4 w-4" /></button>
+                          <button type="button" onClick={() => void deleteBanner(item.id)} className="rounded-full border border-[#ffe1e1] bg-[#fff3f3] px-3 py-2 text-sm text-[#9f2b2b]"><Trash2 className="h-4 w-4" /></button>
                         </div>
                       </div>
                     </div>
@@ -2318,7 +2390,7 @@ export default function AdminPage() {
                 <div className="mt-6">
                   <button
                     type="button"
-                    onClick={() => saveStoredHomeContent({ ...storedHomeContent, banners: defaultHomeContent.banners.map((item) => ({ ...item })) })}
+                    onClick={() => void resetBanners()}
                     className="inline-flex items-center gap-2 rounded-full border border-[#eadbc8] bg-[#fffaf4] px-4 py-2 text-sm font-semibold text-[#8b4d1d]"
                   >
                     <RefreshCcw className="h-4 w-4" />
