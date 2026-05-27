@@ -1197,7 +1197,7 @@ export default function AdminPage() {
       setMediaNotice("Please enter a valid product price greater than 0.");
       return;
     }
-    const normalizedPrice = formatCurrency(normalizedPriceValue);
+    const normalizedPrice = normalizedPriceValue.toFixed(2);
 
     const baseProductId = productDraft.id || slugify(englishName) || uniqueId("product");
     const nextProductId =

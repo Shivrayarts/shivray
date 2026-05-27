@@ -63,11 +63,29 @@ function parseCurrencyAmount(value) {
   return Number(String(value).replace(/[^\d.]/g, "")) || 0;
 }
 
+function normalizeUnicodeDigits(value) {
+  return String(value ?? "").replace(/\p{Nd}/gu, (char) => {
+    const code = char.codePointAt(0) ?? 0;
+    if (code >= 0x30 && code <= 0x39) return char; // ASCII
+    if (code >= 0x660 && code <= 0x669) return String(code - 0x660); // Arabic-Indic
+    if (code >= 0x6f0 && code <= 0x6f9) return String(code - 0x6f0); // Eastern Arabic-Indic
+    if (code >= 0x966 && code <= 0x96f) return String(code - 0x966); // Devanagari
+    if (code >= 0xff10 && code <= 0xff19) return String(code - 0xff10); // Full-width
+    return char;
+  });
+}
+
 function parseProductPrice(value) {
-  const raw = String(value ?? "").trim();
+  const raw = normalizeUnicodeDigits(value).trim();
   if (!raw) return null;
 
-  const normalized = raw.replace(/[^\d.]/g, "");
+  const digitsOnly = raw.replace(/[^\d.,]/g, "");
+  if (!digitsOnly) return null;
+
+  const lastDot = digitsOnly.lastIndexOf(".");
+  const integerPart = (lastDot >= 0 ? digitsOnly.slice(0, lastDot) : digitsOnly).replace(/[^\d]/g, "");
+  const fractionalPart = lastDot >= 0 ? digitsOnly.slice(lastDot + 1).replace(/[^\d]/g, "") : "";
+  const normalized = fractionalPart ? `${integerPart}.${fractionalPart}` : integerPart;
   if (!normalized || !/^\d+(\.\d+)?$/.test(normalized)) return null;
 
   const parsed = Number(normalized);
@@ -864,7 +882,7 @@ app.put("/api/admin/products/:slug", requireAdmin, async (req, res) => {
   const normalizedProduct = normalizeProductForDb(product);
   if (!normalizedProduct) {
     res.status(400).json({
-      message: `Invalid price for product "${getEnglishText(product?.name) || product?.id || slug}". Price must be greater than 0.`,
+      message: `Invalid price for product "${getEnglishText(product?.name) || product?.id || slug}". Received price: "${String(product?.price ?? "")}". Price must be greater than 0.`,
     });
     return;
   }
