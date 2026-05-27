@@ -221,6 +221,49 @@ async function fileToDataUrl(file: File, sizeLimitMb?: number) {
   });
 }
 
+async function imageFileToOptimizedDataUrl(
+  file: File,
+  {
+    maxDimension = 1400,
+    quality = 0.86,
+    mimeType = "image/webp",
+  }: {
+    maxDimension?: number;
+    quality?: number;
+    mimeType?: string;
+  } = {},
+) {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Please select an image file.");
+  }
+
+  const originalDataUrl = await fileToDataUrl(file, 4);
+  return new Promise<string>((resolve) => {
+    const image = new Image();
+    image.onload = () => {
+      const width = image.naturalWidth || image.width;
+      const height = image.naturalHeight || image.height;
+      const largestSide = Math.max(width, height);
+      const scale = largestSide > maxDimension ? maxDimension / largestSide : 1;
+      const targetWidth = Math.max(1, Math.round(width * scale));
+      const targetHeight = Math.max(1, Math.round(height * scale));
+
+      const canvas = document.createElement("canvas");
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const context = canvas.getContext("2d");
+      if (!context) {
+        resolve(originalDataUrl);
+        return;
+      }
+      context.drawImage(image, 0, 0, targetWidth, targetHeight);
+      resolve(canvas.toDataURL(mimeType, quality));
+    };
+    image.onerror = () => resolve(originalDataUrl);
+    image.src = originalDataUrl;
+  });
+}
+
 function ProductForm({
   value,
   categoryOptions,
@@ -1603,7 +1646,7 @@ export default function AdminPage() {
       return;
     }
     try {
-      const dataUrl = await fileToDataUrl(file, 4);
+      const dataUrl = await imageFileToOptimizedDataUrl(file);
       setCatalogueDraft((current) => ({ ...current, image: dataUrl }));
       setMediaNotice(`Category image "${file.name}" loaded successfully.`);
     } catch (error) {
