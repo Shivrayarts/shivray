@@ -500,12 +500,13 @@ export async function saveStoredProducts(products: Product[]) {
     return true;
   } catch (error) {
     logSyncError("products", error);
-    // Localhost/dev fallback: persist product edits/deletes across refresh when API sync fails.
+    // Local fallback keeps the admin session usable, but API sync failed.
+    // Return false so callers can show an accurate "not synced" message.
     const normalized = products.map((product) => normalizeProduct(product));
     productsCache = normalized;
     writeLocalProductsFallback(normalized);
     dispatchStoreEvent(PRODUCTS_EVENT);
-    return true;
+    return false;
   }
 }
 

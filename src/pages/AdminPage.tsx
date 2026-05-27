@@ -1198,6 +1198,12 @@ export default function AdminPage() {
     }
     const normalizedPrice = formatCurrency(normalizedPriceValue);
 
+    const baseProductId = productDraft.id || slugify(englishName) || uniqueId("product");
+    const nextProductId =
+      productDraft.id || !products.some((item) => item.id === baseProductId)
+        ? baseProductId
+        : `${baseProductId}-${Date.now()}`;
+
     const nextProduct: Product = {
       ...productDraft,
       name: { en: englishName, mr: marathiName },
@@ -1209,7 +1215,7 @@ export default function AdminPage() {
         en: historicalBackground.en.trim(),
         mr: historicalBackground.mr.trim(),
       },
-      id: productDraft.id || slugify(englishName) || uniqueId("product"),
+      id: nextProductId,
     };
 
     const nextProducts = [...products];
@@ -1219,8 +1225,8 @@ export default function AdminPage() {
 
     const saved = await saveStoredProducts(nextProducts);
     if (!saved) {
-      setMediaNotice("Unable to save product right now. Please try again.");
-      toast.error("Unable to save product right now. Please try again.");
+      setMediaNotice("Product was saved locally, but backend sync failed. Please try saving again.");
+      toast.error("Product was saved locally, but backend sync failed. Please try again.");
       return;
     }
     setProductDraft(nextProduct);
