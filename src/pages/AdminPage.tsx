@@ -35,6 +35,8 @@ import { resolveLocalizedText } from "@/lib/language";
 import { parseCurrencyAmount } from "@/lib/utils";
 import { isValidEmail, isValidName, isValidPhone } from "@/lib/form-validation";
 import {
+  deleteStoredProduct,
+  saveStoredProduct,
   saveStoredCatalogueTypes,
   saveStoredHomeContent,
   saveStoredProducts,
@@ -1112,8 +1114,7 @@ export default function AdminPage() {
   }
 
   async function deleteProduct(productId: string) {
-    const nextProducts = products.filter((product) => product.id !== productId);
-    const saved = await saveStoredProducts(nextProducts);
+    const saved = await deleteStoredProduct(productId);
     if (!saved) {
       setMediaNotice("Unable to delete product right now. Please try again.");
       toast.error("Unable to delete product right now. Please try again.");
@@ -1218,15 +1219,10 @@ export default function AdminPage() {
       id: nextProductId,
     };
 
-    const nextProducts = [...products];
-    const existingIndex = nextProducts.findIndex((item) => item.id === nextProduct.id);
-    if (existingIndex >= 0) nextProducts[existingIndex] = nextProduct;
-    else nextProducts.unshift(nextProduct);
-
-    const saved = await saveStoredProducts(nextProducts);
+    const saved = await saveStoredProduct(nextProduct);
     if (!saved) {
-      setMediaNotice("Product was saved locally, but backend sync failed. Please try saving again.");
-      toast.error("Product was saved locally, but backend sync failed. Please try again.");
+      setMediaNotice("Unable to save product to backend right now. Please try again.");
+      toast.error("Unable to save product to backend right now. Please try again.");
       return;
     }
     setProductDraft(nextProduct);

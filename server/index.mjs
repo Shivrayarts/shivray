@@ -819,25 +819,36 @@ app.put("/api/admin/products", requireAdmin, async (req, res) => {
     }
 
     await withTransaction(async (connection) => {
-      const keepSlugs = [];
-
       for (let index = 0; index < normalizedProducts.length; index += 1) {
         const product = normalizedProducts[index];
-        keepSlugs.push(product.slug);
         await upsertProductRow(connection, product, index + 1);
-      }
-
-      if (keepSlugs.length > 0) {
-        const placeholders = keepSlugs.map(() => "?").join(", ");
-        await connection.query(`DELETE FROM products WHERE slug NOT IN (${placeholders})`, keepSlugs);
-      } else {
-        await connection.query("DELETE FROM products");
       }
     });
 
     res.json(await fetchStorefrontPayload());
   } catch (error) {
     res.status(500).json({ message: error instanceof Error ? error.message : "Unable to save products." });
+  }
+});
+
+app.delete("/api/admin/products/:slug", requireAdmin, async (req, res) => {
+  const slug = String(req.params.slug || "").trim();
+  if (!slug) {
+    res.status(400).json({ message: "Product slug is required." });
+    return;
+  }
+
+  try {
+    await query(
+      `
+      DELETE FROM products
+      WHERE slug = ?
+      `,
+      [slug],
+    );
+    res.json(await fetchStorefrontPayload());
+  } catch (error) {
+    res.status(500).json({ message: error instanceof Error ? error.message : "Unable to delete product." });
   }
 });
 

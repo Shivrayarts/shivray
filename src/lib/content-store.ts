@@ -334,8 +334,15 @@ function canUseWindow() {
   return typeof window !== "undefined";
 }
 
+function canUseLocalFallback() {
+  if (!canUseWindow()) return false;
+  if (import.meta.env.DEV) return true;
+  const host = window.location.hostname.toLowerCase();
+  return host === "localhost" || host === "127.0.0.1" || host.endsWith(".local");
+}
+
 function readLocalProductsFallback(): Product[] | null {
-  if (!canUseWindow()) return null;
+  if (!canUseLocalFallback()) return null;
   const raw = window.localStorage.getItem(LOCAL_PRODUCTS_FALLBACK_KEY);
   if (!raw) return null;
   try {
@@ -348,7 +355,7 @@ function readLocalProductsFallback(): Product[] | null {
 }
 
 function writeLocalProductsFallback(products: Product[]) {
-  if (!canUseWindow()) return;
+  if (!canUseLocalFallback()) return;
   window.localStorage.setItem(LOCAL_PRODUCTS_FALLBACK_KEY, JSON.stringify(products));
 }
 
@@ -458,6 +465,13 @@ async function syncProductToApi(product: Product) {
   applyStorefrontPayload(payload);
 }
 
+async function syncDeleteProductToApi(productId: string) {
+  const payload = await apiRequest<StorefrontPayload>(`/api/admin/products/${encodeURIComponent(productId)}`, {
+    method: "DELETE",
+  });
+  applyStorefrontPayload(payload);
+}
+
 async function syncCataloguesToApi(catalogues: CatalogueType[]) {
   const payload = await apiRequest<StorefrontPayload>("/api/admin/catalogues", {
     method: "PUT",
@@ -500,6 +514,10 @@ export async function saveStoredProducts(products: Product[]) {
     return true;
   } catch (error) {
     logSyncError("products", error);
+    if (!canUseLocalFallback()) {
+      void refreshStorefrontData().catch(() => undefined);
+      return false;
+    }
     // Local fallback keeps the admin session usable, but API sync failed.
     // Return false so callers can show an accurate "not synced" message.
     const normalized = products.map((product) => normalizeProduct(product));
@@ -517,6 +535,10 @@ export async function saveStoredProduct(product: Product) {
     return true;
   } catch (error) {
     logSyncError("product", error);
+    if (!canUseLocalFallback()) {
+      void refreshStorefrontData().catch(() => undefined);
+      return false;
+    }
     // Localhost/dev fallback for single-product save.
     const nextProduct = normalizeProduct(product);
     const nextProducts = [...productsCache];
@@ -526,7 +548,29 @@ export async function saveStoredProduct(product: Product) {
     productsCache = nextProducts;
     writeLocalProductsFallback(nextProducts);
     dispatchStoreEvent(PRODUCTS_EVENT);
+    return false;
+  }
+}
+
+export async function deleteStoredProduct(productId: string) {
+  const normalizedId = String(productId || "").trim();
+  if (!normalizedId) return false;
+
+  try {
+    await syncDeleteProductToApi(normalizedId);
+    clearLocalProductsFallback();
     return true;
+  } catch (error) {
+    logSyncError("product delete", error);
+    if (!canUseLocalFallback()) {
+      void refreshStorefrontData().catch(() => undefined);
+      return false;
+    }
+    const nextProducts = productsCache.filter((item) => item.id !== normalizedId);
+    productsCache = nextProducts;
+    writeLocalProductsFallback(nextProducts);
+    dispatchStoreEvent(PRODUCTS_EVENT);
+    return false;
   }
 }
 
