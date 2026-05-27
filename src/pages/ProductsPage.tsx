@@ -213,7 +213,7 @@ export default function ProductsPage() {
           </div>
           <div ref={categoriesRef} onScroll={handleCategoriesScroll} className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2">
             {visibleCategoryCards.map((card) => (
-              <button key={card.key} type="button" data-catalogue-category-card onClick={() => setCategory(card.key)} className="group min-w-[78%] snap-center text-center sm:min-w-[calc(50%-0.5rem)] md:min-w-[calc(25%-0.75rem)]">
+              <button key={card.key} type="button" data-catalogue-category-card onClick={() => setCategory(card.key)} className="group w-[78vw] max-w-[22rem] shrink-0 snap-center text-center sm:w-[19rem] md:w-[16.5rem]">
                 <div className="relative overflow-hidden rounded-[30px] bg-[#b65a73] shadow-[0_18px_45px_-30px_rgba(89,34,49,0.65)]">
                   <img src={card.image} alt={card.title} className="aspect-square w-full object-cover opacity-90 saturate-[0.7] transition duration-500 group-hover:scale-105" />
                 </div>
