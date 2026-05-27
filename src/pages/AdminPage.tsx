@@ -53,6 +53,7 @@ import {
   useStoredCustomers,
   useStoredOrders,
 } from "@/lib/customer-orders";
+import { toast } from "sonner";
 
 const productTemplate: Product = {
   id: "",
@@ -1072,9 +1073,11 @@ export default function AdminPage() {
     const saved = await saveStoredProducts(nextProducts);
     if (!saved) {
       setMediaNotice("Unable to delete product right now. Please try again.");
+      toast.error("Unable to delete product right now. Please try again.");
       return;
     }
     setMediaNotice("Product deleted successfully.");
+    toast.success("Product deleted successfully.");
   }
 
   async function reorderProduct(index: number, delta: -1 | 1) {
@@ -1174,11 +1177,13 @@ export default function AdminPage() {
     const saved = await saveStoredProducts(nextProducts);
     if (!saved) {
       setMediaNotice("Unable to save product right now. Please try again.");
+      toast.error("Unable to save product right now. Please try again.");
       return;
     }
     setProductDraft(nextProduct);
     setProductViewMode("list");
     setMediaNotice(`Product "${englishName}" saved successfully.`);
+    toast.success(`Product "${englishName}" saved successfully.`);
   }
 
   function downloadCustomersExcel() {
@@ -1357,6 +1362,7 @@ export default function AdminPage() {
     const categorySaved = await saveStoredCatalogueTypes(next.map((item, index) => ({ ...item, sortOrder: index + 1 })));
     if (!categorySaved) {
       setMediaNotice("Unable to save category right now. Please try again.");
+      toast.error("Unable to save category right now. Please try again.");
       return;
     }
     if (previousLabel && previousLabel !== shortLabel) {
@@ -1368,11 +1374,13 @@ export default function AdminPage() {
       const productsSaved = await saveStoredProducts(migratedProducts);
       if (!productsSaved) {
         setMediaNotice("Category saved, but product migration failed to sync. Please retry.");
+        toast.error("Category saved, but product migration failed to sync. Please retry.");
         return;
       }
     }
     setCatalogueDraft(nextCatalogue);
     setMediaNotice(`Category "${title}" saved successfully.`);
+    toast.success(`Category "${title}" saved successfully.`);
   }
 
   async function saveBanner() {

@@ -194,7 +194,7 @@ function AppShell() {
       {hideFooter ? null : <Footer />}
       {isAdminRoute ? null : <MobileTabBar />}
       {isAdminRoute ? null : <FloatingActions />}
-      {isAdminRoute ? null : <Toaster position="top-center" richColors />}
+      <Toaster position="top-center" richColors />
     </div>
   );
 }
