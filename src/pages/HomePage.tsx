@@ -18,10 +18,10 @@ import {
 import { useWishlist } from "@/hooks/use-wishlist";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import ProductGalleryCard from "@/components/ProductGalleryCard";
-import productDhoop1 from "@/assets/product-dhoop-1.jpg";
-import productStatue1 from "@/assets/product-statue-1.jpg";
+import productDhoop1 from "@/assets/Products/product-1.png";
+import productStatue1 from "@/assets/Products/product-2.jpeg";
 import productShowcase1 from "@/assets/Products/product-1.png";
-import productWeapon1 from "@/assets/product-weapon-1.jpg";
+import productWeapon1 from "@/assets/Products/product-5.jpeg";
 import heroBanner3 from "@/assets/hero-banner-3.jpg";
 
 // const features = [

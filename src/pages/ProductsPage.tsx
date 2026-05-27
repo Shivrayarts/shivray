@@ -13,10 +13,10 @@ import {
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useStoredCatalogueTypes, useStoredProducts } from "@/lib/content-store";
 import { getSearchableText, resolveLocalizedText, useLanguage } from "@/lib/language";
-import productDhoop1 from "@/assets/product-dhoop-1.jpg";
-import productStatue1 from "@/assets/product-statue-1.jpg";
+import productDhoop1 from "@/assets/Products/product-1.png";
+import productStatue1 from "@/assets/Products/product-2.jpeg";
 import heroBanner3 from "@/assets/hero-banner-3.jpg";
-import productWeapon1 from "@/assets/product-weapon-1.jpg";
+import productWeapon1 from "@/assets/Products/product-5.jpeg";
 import { parseCurrencyAmount } from "@/lib/utils";
 import ProductGalleryCard from "@/components/ProductGalleryCard";
 

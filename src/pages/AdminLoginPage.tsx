@@ -139,7 +139,7 @@ export default function AdminLoginPage() {
                   value={email}
                   onBlur={() => setTouched((current) => ({ ...current, email: true }))}
                   onChange={(event) => setEmail(event.target.value)}
-                  placeholder="admin@shivray.local"
+                  placeholder="Enter admin email"
                   className={`w-full rounded-2xl border bg-[#fcf8f2] py-3 pl-10 pr-4 text-sm text-[#34180e] outline-none ${
                     touched.email && !isValidEmail(email) ? "border-[#b42318]" : "border-[#eadbc8]"
                   }`}
@@ -208,7 +208,7 @@ export default function AdminLoginPage() {
                     onChange={(event) =>
                       setChangeForm((value) => ({ ...value, email: event.target.value }))
                     }
-                    placeholder="admin@shivray.local"
+                    placeholder="Enter admin email"
                     className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm text-[#34180e] outline-none ${
                       changeTouched.email && !isValidEmail(changeForm.email)
                         ? "border-[#b42318]"

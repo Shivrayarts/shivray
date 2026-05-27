@@ -48,15 +48,8 @@ type StorefrontPayload = {
   homeContent: StoredHomeContent;
 };
 
-const defaultProductImageById = new Map<string, string>(
-  defaultProducts.map((product) => [product.id, product.image]),
-);
 const defaultProductById = new Map<string, Product>(
   defaultProducts.map((product) => [product.id, product]),
-);
-
-const defaultCatalogueImageById = new Map<string, string>(
-  defaultCatalogueTypes.map((catalogue) => [catalogue.id, catalogue.image]),
 );
 
 const defaultBannerImageById = new Map<string, string>(
@@ -257,7 +250,7 @@ function normalizeProduct(product: Product): Product {
 
   return {
     ...product,
-    image: defaultProductImageById.get(product.id) ?? product.image,
+    image: normalizeAssetUrl(product.image),
     name: asLocalizedText(product.name, defaultProduct?.name),
     tag: asLocalizedText(product.tag, defaultProduct?.tag),
     shortDescription: asLocalizedText(product.shortDescription, defaultProduct?.shortDescription),
@@ -276,17 +269,32 @@ function ensureArray<T>(value: unknown, fallback: readonly T[]): T[] {
   return Array.isArray(value) ? (value as T[]) : [...fallback];
 }
 
-function normalizeStoredHomeContent(value: Partial<StoredHomeContent> | null | undefined): StoredHomeContent {
-  const spotlightProductIds = ensureArray<string>(value?.spotlightProductIds, defaultSpotlightProductIds)
+const emptyHomeContent: StoredHomeContent = {
+  spotlightProductIds: [],
+  banners: [],
+  reviews: [],
+  videos: [],
+};
+
+function normalizeStoredHomeContent(
+  value: Partial<StoredHomeContent> | null | undefined,
+  fallback: StoredHomeContent = {
+    spotlightProductIds: defaultSpotlightProductIds,
+    banners: defaultHomeBanners,
+    reviews: defaultHomeReviews,
+    videos: defaultHomeVideos,
+  },
+): StoredHomeContent {
+  const spotlightProductIds = ensureArray<string>(value?.spotlightProductIds, fallback.spotlightProductIds)
     .filter((id) => typeof id === "string" && id.trim())
     .map((id) => id.trim())
     .slice(0, 8);
 
   return {
     spotlightProductIds,
-    banners: ensureArray<HomeBanner>(value?.banners, defaultHomeBanners).map((banner) => normalizeHomeBanner(banner)),
-    reviews: ensureArray<HomeReview>(value?.reviews, defaultHomeReviews).map((review) => normalizeHomeReview(review)),
-    videos: ensureArray<HomeVideo>(value?.videos, defaultHomeVideos).map((video) => normalizeHomeVideo(video)),
+    banners: ensureArray<HomeBanner>(value?.banners, fallback.banners).map((banner) => normalizeHomeBanner(banner)),
+    reviews: ensureArray<HomeReview>(value?.reviews, fallback.reviews).map((review) => normalizeHomeReview(review)),
+    videos: ensureArray<HomeVideo>(value?.videos, fallback.videos).map((video) => normalizeHomeVideo(video)),
   };
 }
 
@@ -296,7 +304,7 @@ function normalizeStorefrontPayload(payload: Partial<StorefrontPayload>) {
     products: payload.products?.map((product) => normalizeProduct(product)),
     catalogueTypes: payload.catalogueTypes?.map((catalogue) => ({
       ...catalogue,
-      image: defaultCatalogueImageById.get(catalogue.id) ?? catalogue.image,
+      image: normalizeAssetUrl(catalogue.image),
     })),
     homeContent: payload.homeContent
       ? {
@@ -318,14 +326,9 @@ const LOCAL_CATALOGUES_FALLBACK_KEY = "shivray-catalogues-local-fallback-v1";
 const LOCAL_HOME_CONTENT_FALLBACK_KEY = "shivray-home-content-local-fallback-v1";
 
 let storefrontBootstrapPromise: Promise<void> | null = null;
-let productsCache: Product[] = [...defaultProducts];
-let catalogueCache: CatalogueType[] = [...defaultCatalogueTypes];
-let homeContentCache: StoredHomeContent = normalizeStoredHomeContent({
-  spotlightProductIds: defaultSpotlightProductIds,
-  banners: defaultHomeBanners,
-  reviews: defaultHomeReviews,
-  videos: defaultHomeVideos,
-});
+let productsCache: Product[] = [];
+let catalogueCache: CatalogueType[] = [];
+let homeContentCache: StoredHomeContent = { ...emptyHomeContent };
 
 function canUseWindow() {
   return typeof window !== "undefined";
@@ -383,7 +386,7 @@ function readLocalHomeContentFallback(): StoredHomeContent | null {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as Partial<StoredHomeContent>;
-    return normalizeStoredHomeContent(parsed);
+    return normalizeStoredHomeContent(parsed, emptyHomeContent);
   } catch {
     return null;
   }
@@ -419,7 +422,7 @@ function applyStorefrontPayload(payload: Partial<StorefrontPayload>) {
   }
 
   if (normalized.homeContent) {
-    homeContentCache = normalizeStoredHomeContent(normalized.homeContent);
+    homeContentCache = normalizeStoredHomeContent(normalized.homeContent, emptyHomeContent);
     dispatchStoreEvent(HOME_CONTENT_EVENT);
   }
 }
@@ -561,9 +564,9 @@ export function resetStoredCatalogueTypes() {
 export function getStoredHomeContent(): StoredHomeContent {
   const localFallback = readLocalHomeContentFallback();
   if (localFallback) {
-    homeContentCache = normalizeStoredHomeContent(localFallback);
+    homeContentCache = normalizeStoredHomeContent(localFallback, emptyHomeContent);
   }
-  return normalizeStoredHomeContent(homeContentCache);
+  return normalizeStoredHomeContent(homeContentCache, emptyHomeContent);
 }
 
 export async function saveStoredHomeContent(content: StoredHomeContent) {
