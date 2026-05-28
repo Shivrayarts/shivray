@@ -991,6 +991,7 @@ export default function AdminPage() {
   const [ordersExpanded, setOrdersExpanded] = useState(false);
   const [showLegacyProductList] = useState(false);
   const [mediaNotice, setMediaNotice] = useState("");
+  const [mediaNoticeTone, setMediaNoticeTone] = useState<"success" | "error" | "info">("info");
   const [bannerNotice, setBannerNotice] = useState("");
   const [showPasswordPanel, setShowPasswordPanel] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -1180,6 +1181,7 @@ export default function AdminPage() {
   }, [products, productDraft]);
 
   function showSaveError(message: string) {
+    setMediaNoticeTone("error");
     setMediaNotice(message);
     toast.error(message);
   }
@@ -1338,6 +1340,7 @@ export default function AdminPage() {
   }
 
   async function saveProduct() {
+    setMediaNoticeTone("info");
     setMediaNotice("");
     const englishName = adminText(productDraft.name).trim();
     const marathiName = adminLocalizedText(productDraft.name).mr.trim();
@@ -1422,6 +1425,7 @@ export default function AdminPage() {
     }
     setProductDraft(nextProduct);
     setProductViewMode("list");
+    setMediaNoticeTone("success");
     setMediaNotice(`Product "${englishName}" saved successfully.`);
     toast.success(`Product "${englishName}" saved successfully.`);
   }
@@ -2519,7 +2523,15 @@ export default function AdminPage() {
                 <h2 className="text-center text-2xl font-semibold text-[#111827]">Fill Products Information</h2>
                 <p className="mt-2 text-sm text-[#6c4b33]">Save product changes to update the website catalog.</p>
                 {mediaNotice ? (
-                  <div className="mt-4 rounded-xl border border-[#f3d0a4] bg-[#fff7ed] px-4 py-3 text-sm font-medium text-[#9a3412]">
+                  <div
+                    className={`mt-4 rounded-xl px-4 py-3 text-sm font-medium ${
+                      mediaNoticeTone === "success"
+                        ? "border border-[#bbf7d0] bg-[#f0fdf4] text-[#166534]"
+                        : mediaNoticeTone === "error"
+                        ? "border border-[#fecaca] bg-[#fef2f2] text-[#b91c1c]"
+                        : "border border-[#f3d0a4] bg-[#fff7ed] text-[#9a3412]"
+                    }`}
+                  >
                     {mediaNotice}
                   </div>
                 ) : null}
