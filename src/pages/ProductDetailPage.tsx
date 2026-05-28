@@ -26,6 +26,10 @@ function formatDisplayPrice(value: number) {
   })}`;
 }
 
+function isBrokenObjectText(value: string) {
+  return value.trim().toLowerCase() === "[object object]";
+}
+
 function getHistoricalBackground(
   product: {
     name: Product["name"];
@@ -136,9 +140,10 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
     const nextIndex = (index + galleryImages.length) % galleryImages.length;
     setSelectedImage(galleryImages[nextIndex]);
   };
+  const historicalBackgroundText = String(resolveLocalizedText(product.historicalBackground ?? "", resolvedLocale)).trim();
   const historicalBackground = [
-    ...(String(resolveLocalizedText(product.historicalBackground ?? "", resolvedLocale)).trim()
-      ? String(resolveLocalizedText(product.historicalBackground ?? "", resolvedLocale))
+    ...(historicalBackgroundText && !isBrokenObjectText(historicalBackgroundText)
+      ? historicalBackgroundText
           .split(/\n+/)
           .map((line) => line.trim())
           .filter(Boolean)
