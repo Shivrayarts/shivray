@@ -79,6 +79,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   const products = useStoredProducts();
   const product = products.find((item) => item.id === productId);
   const [selectedImage, setSelectedImage] = useState("");
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState(0);
   const [liveMetrics, setLiveMetrics] = useState({ soldLast7Days: 7, viewingNow: 20 });
   const { cart, addToCart, removeFromCart } = useCart();
   const { isWishlisted, toggleWishlist } = useWishlist();
@@ -98,6 +99,13 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   useEffect(() => {
     if (!product) return;
     setSelectedImage(product.image);
+  }, [product]);
+
+  useEffect(() => {
+    if (!product) return;
+    const options = product.productOptions ?? [];
+    const discountedIndex = options.findIndex((option) => Number(option.discount || 0) > 0);
+    setSelectedOptionIndex(discountedIndex >= 0 ? discountedIndex : 0);
   }, [product]);
 
   if (!product) {
@@ -143,6 +151,10 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   const removeFromCartLabel = resolvedLocale === "mr" ? "कार्टमधून काढा" : "Remove from Cart";
   const isInCart = cart.some((item) => item.id === product.id);
   const productOptions = product.productOptions ?? [];
+  const selectedOption = productOptions[selectedOptionIndex] ?? null;
+  const selectedOriginalPrice = selectedOption?.price || product.price;
+  const selectedFinalPrice = selectedOption?.finalPrice || selectedOption?.price || product.price;
+  const selectedDiscount = Number(selectedOption?.discount || 0);
 
   return (
     <div className="bg-[#f7f1e7] pb-8 md:pb-12">
@@ -211,6 +223,45 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                 {productOptions.length ? `${resolvedLocale === "mr" ? "सुरुवात" : "Starting at"} ${product.price}` : product.price}
               </p>
             </div>
+            {productOptions.length ? (
+              <div className="mt-5">
+                <div className="flex flex-wrap gap-3">
+                  {productOptions.map((option, index) => {
+                    const discount = Number(option.discount || 0);
+                    const isSelected = index === selectedOptionIndex;
+                    return (
+                      <button
+                        key={`${product.id}-offer-${index}`}
+                        type="button"
+                        onClick={() => setSelectedOptionIndex(index)}
+                        className={`overflow-hidden rounded-2xl border text-center transition ${
+                          isSelected
+                            ? "border-[#2f9e44] shadow-[0_12px_24px_-18px_rgba(47,158,68,0.8)]"
+                            : "border-[#dad7cf]"
+                        }`}
+                      >
+                        <p className={`px-6 py-3 text-lg font-semibold ${isSelected ? "bg-[#f4fbf4] text-[#4e5b4e]" : "bg-[#fbfaf7] text-[#5f645f]"}`}>
+                          {option.label}
+                        </p>
+                        {discount > 0 ? (
+                          <p className="bg-[#45ae4a] px-6 py-2 text-base font-semibold text-white">{discount.toFixed(0)}%</p>
+                        ) : (
+                          <p className="bg-[#f4efe8] px-6 py-2 text-sm font-semibold text-[#8b6c52]">
+                            {resolvedLocale === "mr" ? "किंमत" : "Price"}
+                          </p>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="mt-5">
+                  <p className="text-[2rem] font-semibold text-[#34180e]">{selectedFinalPrice}</p>
+                  {selectedDiscount > 0 ? (
+                    <p className="mt-1 text-xl font-medium text-[#b6aea3] line-through">{selectedOriginalPrice}</p>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
             <p className="mt-5 text-sm leading-7 text-[#6c4b33]">{resolveLocalizedText(product.details, resolvedLocale)}</p>
             {productOptions.length ? (
               <div className="mt-6 overflow-hidden rounded-[24px] border border-[#eadbc8]">

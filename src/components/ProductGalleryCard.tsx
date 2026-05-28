@@ -23,6 +23,10 @@ export default function ProductGalleryCard({
 }: ProductGalleryCardProps) {
   const { resolvedLocale } = useLanguage();
   const localizedName = normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale), "sentence");
+  const productOptions = product.productOptions ?? [];
+  const highlightedOption =
+    productOptions.find((option) => Number(option.discount || 0) > 0) ?? productOptions[0] ?? null;
+  const optionChips = productOptions.slice(0, 2);
   const isMarathi = resolvedLocale === "mr";
   const marathiTextStyle = isMarathi
     ? { fontFamily: '"Nirmala UI", "Noto Sans Devanagari", Mangal, Arial, sans-serif' }
@@ -69,7 +73,33 @@ export default function ProductGalleryCard({
         >
           <span className={isMarathi ? "block pb-1" : "line-clamp-2"}>{localizedName}</span>
         </Link>
-        <p className={`${isMarathi ? "mt-2" : "mt-3"} text-[1.15rem] font-semibold text-[#b46a16] md:text-[1.35rem]`}>{product.price}</p>
+        {optionChips.length ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {optionChips.map((option, index) => (
+              <div
+                key={`${product.id}-chip-${index}`}
+                className={`overflow-hidden rounded-2xl border text-center ${
+                  Number(option.discount || 0) > 0
+                    ? "border-[#59b85c]"
+                    : "border-[#d7d7d7]"
+                }`}
+              >
+                <p className="bg-[#f8faf7] px-4 py-2 text-sm font-semibold text-[#5f645f]">{option.label}</p>
+                {Number(option.discount || 0) > 0 ? (
+                  <p className="bg-[#45ae4a] px-4 py-1 text-sm font-semibold text-white">{Number(option.discount || 0).toFixed(0)}%</p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        ) : null}
+        <div className={`${isMarathi ? "mt-2" : "mt-3"}`}>
+          <p className="text-[1.15rem] font-semibold text-[#b46a16] md:text-[1.35rem]">
+            {highlightedOption?.finalPrice || product.price}
+          </p>
+          {highlightedOption && Number(highlightedOption.discount || 0) > 0 ? (
+            <p className="mt-1 text-base font-medium text-[#a8a29b] line-through">{highlightedOption.price}</p>
+          ) : null}
+        </div>
       </div>
     </div>
   );
