@@ -193,6 +193,10 @@ function getEnglishText(value: Translatable) {
   return typeof value === "string" ? value : value.en;
 }
 
+function isBrokenObjectPlaceholder(value: Translatable) {
+  return typeof value === "string" && value.trim().toLowerCase() === "[object object]";
+}
+
 function asLocalizedText(value: Translatable, fallback?: Translatable): LocalizedText {
   if (typeof value !== "string") {
     return {
@@ -247,18 +251,26 @@ function normalizeHomeReview(review: HomeReview): HomeReview {
 
 function normalizeProduct(product: Product): Product {
   const defaultProduct = defaultProductById.get(product.id);
+  const safeValue = (value: Translatable, fallback?: Translatable) =>
+    isBrokenObjectPlaceholder(value) && fallback ? fallback : value;
 
   return {
     ...product,
     image: normalizeAssetUrl(product.image),
-    name: asLocalizedText(product.name, defaultProduct?.name),
-    tag: asLocalizedText(product.tag, defaultProduct?.tag),
-    shortDescription: asLocalizedText(product.shortDescription, defaultProduct?.shortDescription),
-    details: asLocalizedText(product.details, defaultProduct?.details),
-    material: asLocalizedText(product.material, defaultProduct?.material),
-    dimensions: asLocalizedText(product.dimensions, defaultProduct?.dimensions),
+    name: asLocalizedText(safeValue(product.name, defaultProduct?.name), defaultProduct?.name),
+    tag: asLocalizedText(safeValue(product.tag, defaultProduct?.tag), defaultProduct?.tag),
+    shortDescription: asLocalizedText(
+      safeValue(product.shortDescription, defaultProduct?.shortDescription),
+      defaultProduct?.shortDescription,
+    ),
+    details: asLocalizedText(safeValue(product.details, defaultProduct?.details), defaultProduct?.details),
+    material: asLocalizedText(safeValue(product.material, defaultProduct?.material), defaultProduct?.material),
+    dimensions: asLocalizedText(safeValue(product.dimensions, defaultProduct?.dimensions), defaultProduct?.dimensions),
     historicalBackground: product.historicalBackground
-      ? asLocalizedText(product.historicalBackground, defaultProduct?.historicalBackground)
+      ? asLocalizedText(
+          safeValue(product.historicalBackground, defaultProduct?.historicalBackground),
+          defaultProduct?.historicalBackground,
+        )
       : defaultProduct?.historicalBackground
       ? asLocalizedText(defaultProduct.historicalBackground)
       : undefined,
