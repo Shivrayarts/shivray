@@ -1427,6 +1427,9 @@ export default function AdminPage() {
     setProductViewMode("list");
     setMediaNoticeTone("success");
     setMediaNotice(`Product "${englishName}" saved successfully.`);
+    if (typeof window !== "undefined") {
+      window.alert(`Product "${englishName}" saved successfully.`);
+    }
     toast.success(`Product "${englishName}" saved successfully.`);
   }
 
