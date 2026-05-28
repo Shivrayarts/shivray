@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS products (
   name VARCHAR(191) NOT NULL,
   price DECIMAL(10,2) NOT NULL,
   image_url MEDIUMTEXT NOT NULL,
-  category ENUM('Statues', 'Weapons', 'Shields', 'Dhoop') NOT NULL,
+  category VARCHAR(191) NOT NULL,
   tag VARCHAR(60) DEFAULT NULL,
   short_description VARCHAR(255) NOT NULL,
   details TEXT NOT NULL,

@@ -361,6 +361,33 @@ async function ensureHomepageSettingsTable(connection) {
   );
 }
 
+async function ensureProductsCategoryColumnSupportsCustomValues() {
+  try {
+    const rows = await query(
+      `
+      SHOW COLUMNS FROM products LIKE 'category'
+      `,
+    );
+
+    const column = Array.isArray(rows) ? rows[0] : null;
+    const rawType = String(column?.Type ?? column?.type ?? "").toLowerCase();
+    if (!rawType.startsWith("enum(")) return;
+
+    await query(
+      `
+      ALTER TABLE products
+      MODIFY COLUMN category VARCHAR(191) NOT NULL
+      `,
+    );
+    console.log("Updated products.category column from ENUM to VARCHAR(191).");
+  } catch (error) {
+    console.warn(
+      "Unable to verify or update products.category column. Product saves may fail for custom categories.",
+      error instanceof Error ? error.message : error,
+    );
+  }
+}
+
 async function loadProductOptionsMap() {
   const rows = await query(
     `
@@ -1432,6 +1459,15 @@ app.use((error, _req, res, _next) => {
   res.status(500).json({ message: error instanceof Error ? error.message : "Unexpected server error." });
 });
 
-app.listen(env.PORT, () => {
-  console.log(`Shivray backend listening on http://localhost:${env.PORT}`);
+async function startServer() {
+  await ensureProductsCategoryColumnSupportsCustomValues();
+
+  app.listen(env.PORT, () => {
+    console.log(`Shivray backend listening on http://localhost:${env.PORT}`);
+  });
+}
+
+startServer().catch((error) => {
+  console.error("Unable to start Shivray backend.", error);
+  process.exit(1);
 });
