@@ -16,6 +16,13 @@ import productWeapon7 from "@/assets/Products/product-5.jpeg";
 type ProductCategory = string;
 type Translatable = string | LocalizedText;
 
+export type ProductOption = {
+  label: string;
+  price: string;
+  discount: string;
+  finalPrice: string;
+};
+
 export type Product = {
   id: string;
   name: Translatable;
@@ -29,6 +36,7 @@ export type Product = {
   material: Translatable;
   dimensions: Translatable;
   historicalBackground?: Translatable;
+  productOptions?: ProductOption[];
 };
 
 export const productCategories = ["Statues", "Weapons", "Shields", "Dhoop"] as const;

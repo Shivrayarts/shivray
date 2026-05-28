@@ -15,6 +15,17 @@ function getRandomValue(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function parseDisplayPrice(value: string) {
+  return Number(String(value || "").replace(/[^\d.]/g, "")) || 0;
+}
+
+function formatDisplayPrice(value: number) {
+  return `Rs. ${value.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
 function getHistoricalBackground(
   product: {
     name: Product["name"];
@@ -131,6 +142,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   const addToCartLabel = resolvedLocale === "mr" ? "कार्टमध्ये जोडा" : "Add to Cart";
   const removeFromCartLabel = resolvedLocale === "mr" ? "कार्टमधून काढा" : "Remove from Cart";
   const isInCart = cart.some((item) => item.id === product.id);
+  const productOptions = product.productOptions ?? [];
 
   return (
     <div className="bg-[#f7f1e7] pb-8 md:pb-12">
@@ -195,9 +207,29 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
           <div className="flex flex-col rounded-[32px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:px-7 md:pb-7 md:pt-5">
             <div className="flex items-center justify-between gap-3">
               <span className="rounded-full bg-[#fcf1dc] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#b17024]">{resolveLocalizedText(product.tag, resolvedLocale) || (resolvedLocale === "mr" ? "\u0935\u093f\u0936\u0947\u0937 \u0924\u0941\u0915\u0921\u093e" : "Featured piece")}</span>
-              <p className="text-2xl font-semibold text-[#8b4d1d]">{product.price}</p>
+              <p className="text-right text-2xl font-semibold text-[#8b4d1d]">
+                {productOptions.length ? `${resolvedLocale === "mr" ? "सुरुवात" : "Starting at"} ${product.price}` : product.price}
+              </p>
             </div>
             <p className="mt-5 text-sm leading-7 text-[#6c4b33]">{resolveLocalizedText(product.details, resolvedLocale)}</p>
+            {productOptions.length ? (
+              <div className="mt-6 overflow-hidden rounded-[24px] border border-[#eadbc8]">
+                <div className="grid grid-cols-4 bg-[#fcf8f2] text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b4d1d]">
+                  <p className="px-4 py-3">{resolvedLocale === "mr" ? "वजन/आकार" : "Weight/Size"}</p>
+                  <p className="px-4 py-3">{resolvedLocale === "mr" ? "किंमत" : "Price"}</p>
+                  <p className="px-4 py-3">{resolvedLocale === "mr" ? "सवलत" : "Discount"}</p>
+                  <p className="px-4 py-3">{resolvedLocale === "mr" ? "अंतिम किंमत" : "Final Price"}</p>
+                </div>
+                {productOptions.map((option, index) => (
+                  <div key={`${product.id}-option-${index}`} className="grid grid-cols-4 border-t border-[#eadbc8] text-sm text-[#34180e]">
+                    <p className="px-4 py-3">{option.label}</p>
+                    <p className="px-4 py-3">{formatDisplayPrice(parseDisplayPrice(option.price))}</p>
+                    <p className="px-4 py-3">{Number(option.discount || 0).toFixed(2)}%</p>
+                    <p className="px-4 py-3">{formatDisplayPrice(parseDisplayPrice(option.finalPrice || option.price))}</p>
+                  </div>
+                ))}
+              </div>
+            ) : null}
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <div className="rounded-[24px] bg-[#fcf8f2] p-4"><p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">{resolvedLocale === "mr" ? "\u0938\u093e\u0939\u093f\u0924\u094d\u092f" : "Material"}</p><p className="mt-2 text-sm text-[#34180e]">{resolveLocalizedText(product.material, resolvedLocale)}</p></div>
               <div className="rounded-[24px] bg-[#fcf8f2] p-4"><p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">{resolvedLocale === "mr" ? "\u092a\u0930\u093f\u092e\u093e\u0923" : "Dimensions"}</p><p className="mt-2 text-sm text-[#34180e]">{resolveLocalizedText(product.dimensions, resolvedLocale)}</p></div>

@@ -51,6 +51,7 @@ app.use((req, res, next) => {
 
 const memoryCustomers = [];
 const memoryOrders = [];
+const PRODUCT_OPTIONS_SETTING_KEY = "product_options_map";
 
 function formatCurrency(value) {
   return `Rs. ${Number(value || 0).toLocaleString("en-IN", {
@@ -97,6 +98,17 @@ function normalizeProductForDb(product) {
   const parsedPrice = parseProductPrice(product?.price);
   if (parsedPrice === null) return null;
 
+  const productOptions = Array.isArray(product?.productOptions)
+    ? product.productOptions
+        .map((option) => ({
+          label: String(option?.label || "").trim(),
+          price: formatCurrency(parseCurrencyAmount(option?.price)),
+          discount: String(option?.discount || "0").trim(),
+          finalPrice: formatCurrency(parseCurrencyAmount(option?.finalPrice)),
+        }))
+        .filter((option) => option.label && parseCurrencyAmount(option.price) > 0 && parseCurrencyAmount(option.finalPrice) > 0)
+    : [];
+
   return {
     slug: slugify(product?.id || getEnglishText(product?.name), "product"),
     name: encodeLocalizedValue(product?.name),
@@ -109,6 +121,7 @@ function normalizeProductForDb(product) {
     material: product?.material || "",
     dimensions: product?.dimensions || "",
     historicalBackground: product?.historicalBackground || "",
+    productOptions,
   };
 }
 
@@ -348,6 +361,40 @@ async function ensureHomepageSettingsTable(connection) {
   );
 }
 
+async function loadProductOptionsMap() {
+  const rows = await query(
+    `
+    SELECT setting_value
+    FROM homepage_settings
+    WHERE setting_key = ?
+    LIMIT 1
+    `,
+    [PRODUCT_OPTIONS_SETTING_KEY],
+  ).catch(() => []);
+
+  const rawValue = rows?.[0]?.setting_value;
+  if (typeof rawValue !== "string" || !rawValue.trim()) return {};
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+async function saveProductOptionsMap(connection, productOptionsMap) {
+  await ensureHomepageSettingsTable(connection);
+  await connection.query(
+    `
+    INSERT INTO homepage_settings (setting_key, setting_value)
+    VALUES (?, ?)
+    ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+    `,
+    [PRODUCT_OPTIONS_SETTING_KEY, JSON.stringify(productOptionsMap)],
+  );
+}
+
 function requireAdmin(req, res, next) {
   const session = getAdminSession(req);
   if (!session?.userId) {
@@ -360,7 +407,7 @@ function requireAdmin(req, res, next) {
 }
 
 async function fetchStorefrontPayload() {
-  const [products, catalogues, banners, reviews, videos, spotlightSettings] = await Promise.all([
+  const [products, catalogues, banners, reviews, videos, spotlightSettings, productOptionsMap] = await Promise.all([
     query(
       `
       SELECT slug, name, price, image_url, category, tag, short_description, details, material, dimensions, history_background
@@ -408,6 +455,7 @@ async function fetchStorefrontPayload() {
       LIMIT 1
       `,
     ).catch(() => []),
+    loadProductOptionsMap(),
   ]);
 
   let spotlightProductIds = [];
@@ -436,6 +484,7 @@ async function fetchStorefrontPayload() {
       material: row.material,
       dimensions: row.dimensions,
       historicalBackground: row.history_background ?? "",
+      productOptions: Array.isArray(productOptionsMap?.[row.slug]) ? productOptionsMap[row.slug] : [],
     })),
     catalogueTypes: catalogues.map((row) => ({
       id: row.slug,
@@ -837,10 +886,13 @@ app.put("/api/admin/products", requireAdmin, async (req, res) => {
     }
 
     await withTransaction(async (connection) => {
+      const productOptionsMap = {};
       for (let index = 0; index < normalizedProducts.length; index += 1) {
         const product = normalizedProducts[index];
         await upsertProductRow(connection, product, index + 1);
+        productOptionsMap[product.slug] = product.productOptions;
       }
+      await saveProductOptionsMap(connection, productOptionsMap);
     });
 
     res.json(await fetchStorefrontPayload());
@@ -864,6 +916,11 @@ app.delete("/api/admin/products/:slug", requireAdmin, async (req, res) => {
       `,
       [slug],
     );
+    await withTransaction(async (connection) => {
+      const productOptionsMap = await loadProductOptionsMap();
+      delete productOptionsMap[slug];
+      await saveProductOptionsMap(connection, productOptionsMap);
+    });
     res.json(await fetchStorefrontPayload());
   } catch (error) {
     res.status(500).json({ message: error instanceof Error ? error.message : "Unable to delete product." });
@@ -900,6 +957,9 @@ app.put("/api/admin/products/:slug", requireAdmin, async (req, res) => {
       );
       const sortOrder = Number(rows?.[0]?.sort_order) || 1;
       await upsertProductRow(connection, { ...normalizedProduct, slug }, sortOrder);
+      const productOptionsMap = await loadProductOptionsMap();
+      productOptionsMap[slug] = normalizedProduct.productOptions;
+      await saveProductOptionsMap(connection, productOptionsMap);
     });
 
     res.json(await fetchStorefrontPayload());

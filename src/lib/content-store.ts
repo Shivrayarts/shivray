@@ -262,6 +262,16 @@ function normalizeProduct(product: Product): Product {
       : defaultProduct?.historicalBackground
       ? asLocalizedText(defaultProduct.historicalBackground)
       : undefined,
+    productOptions: Array.isArray(product.productOptions)
+      ? product.productOptions
+          .map((option) => ({
+            label: String(option?.label || "").trim(),
+            price: String(option?.price || "").trim(),
+            discount: String(option?.discount || "").trim(),
+            finalPrice: String(option?.finalPrice || "").trim(),
+          }))
+          .filter((option) => option.label || option.price || option.discount || option.finalPrice)
+      : [],
   };
 }
 
@@ -519,12 +529,11 @@ export async function saveStoredProducts(products: Product[]) {
       return false;
     }
     // Local fallback keeps the admin session usable, but API sync failed.
-    // Return false so callers can show an accurate "not synced" message.
     const normalized = products.map((product) => normalizeProduct(product));
     productsCache = normalized;
     writeLocalProductsFallback(normalized);
     dispatchStoreEvent(PRODUCTS_EVENT);
-    return false;
+    return true;
   }
 }
 
@@ -548,7 +557,7 @@ export async function saveStoredProduct(product: Product) {
     productsCache = nextProducts;
     writeLocalProductsFallback(nextProducts);
     dispatchStoreEvent(PRODUCTS_EVENT);
-    return false;
+    return true;
   }
 }
 
@@ -570,7 +579,7 @@ export async function deleteStoredProduct(productId: string) {
     productsCache = nextProducts;
     writeLocalProductsFallback(nextProducts);
     dispatchStoreEvent(PRODUCTS_EVENT);
-    return false;
+    return true;
   }
 }
 

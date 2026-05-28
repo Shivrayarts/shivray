@@ -27,7 +27,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { homeContent as defaultHomeContent } from "@/data/home-content";
-import type { Product } from "@/data/products";
+import type { Product, ProductOption } from "@/data/products";
 import type { CatalogueType } from "@/lib/catalogue-types";
 import { defaultCatalogueTypes } from "@/lib/catalogue-types";
 import { changeAdminPassword, changeAdminUsername, logoutAdmin } from "@/lib/admin-auth";
@@ -70,6 +70,7 @@ const productTemplate: Product = {
   material: "",
   dimensions: "",
   historicalBackground: "",
+  productOptions: [],
 };
 
 const catalogueTemplate: CatalogueType = {
@@ -162,6 +163,46 @@ function formatCurrency(value: number) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
+}
+
+function normalizeDiscountValue(value: string) {
+  const normalized = value.replace(/[^\d.]/g, "");
+  if (!normalized) return "0";
+  const parsed = Number(normalized);
+  if (!Number.isFinite(parsed) || parsed < 0) return "0";
+  return String(Math.min(parsed, 100));
+}
+
+function calculateOptionFinalPrice(price: string, discount: string) {
+  const parsedPrice = parseCurrencyValue(price);
+  const parsedDiscount = Number(normalizeDiscountValue(discount));
+  if (!Number.isFinite(parsedPrice) || parsedPrice <= 0) return "";
+  const finalPrice = parsedPrice - parsedPrice * (parsedDiscount / 100);
+  return finalPrice > 0 ? finalPrice.toFixed(2) : "0.00";
+}
+
+function createEmptyProductOption(): ProductOption {
+  return {
+    label: "",
+    price: "",
+    discount: "0",
+    finalPrice: "",
+  };
+}
+
+function cloneProductTemplate(): Product {
+  return {
+    ...productTemplate,
+    galleryImages: [],
+    productOptions: [],
+    name: "",
+    tag: "",
+    shortDescription: "",
+    details: "",
+    material: "",
+    dimensions: "",
+    historicalBackground: "",
+  };
 }
 
 function formatDate(value: string) {
@@ -282,6 +323,11 @@ function ProductForm({
   onPickGalleryFiles: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
   const localizedName = adminLocalizedText(value.name);
+  const productOptions = value.productOptions ?? [];
+  const selectedTag = adminText(value.tag);
+  const hasProductOptions = productOptions.some(
+    (option) => String(option.label || "").trim() || String(option.price || "").trim(),
+  );
 
   return (
     <div className="space-y-4">
@@ -316,9 +362,119 @@ function ProductForm({
           step="0.01"
           value={value.price}
           onChange={(event) => onChange({ ...value, price: event.target.value })}
-          placeholder="5100"
-          className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+          placeholder={hasProductOptions ? "Auto from options" : "5100"}
+          disabled={hasProductOptions}
+          className={`rounded-2xl border px-4 py-3 text-sm text-[#34180e] outline-none ${
+            hasProductOptions
+              ? "cursor-not-allowed border-[#e7ddd0] bg-[#f4efe8] text-[#8b6c52]"
+              : "border-[#eadbc8] bg-[#fcf8f2]"
+          }`}
         />
+      </div>
+      {hasProductOptions ? (
+        <p className="-mt-1 text-xs text-[#8b6c52]">Base price is calculated automatically from the lowest final option price.</p>
+      ) : null}
+      <div className="rounded-[24px] border border-[#eadbc8] bg-[#fffdf9] p-4">
+        <div className="mb-4">
+          <p className="text-sm font-semibold text-[#34180e]">Product Options (Weight/Size, Price, Discount)</p>
+          <p className="mt-1 text-xs text-[#8b6c52]">Add multiple rows if this product has different sizes or weights.</p>
+        </div>
+        <div className="space-y-3">
+          {productOptions.map((option, index) => (
+            <div key={`product-option-${index}`} className="grid gap-3 md:grid-cols-[1.4fr_1fr_1fr_1fr_auto] md:items-center">
+              <input
+                value={option.label}
+                onChange={(event) =>
+                  onChange({
+                    ...value,
+                    productOptions: productOptions.map((item, itemIndex) =>
+                      itemIndex === index ? { ...item, label: event.target.value } : item,
+                    ),
+                  })
+                }
+                placeholder="Weight/Size"
+                className="rounded-2xl border border-[#eadbc8] bg-white px-4 py-3 text-sm text-[#34180e] outline-none"
+              />
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={option.price}
+                onChange={(event) => {
+                  const nextPrice = event.target.value;
+                  onChange({
+                    ...value,
+                    productOptions: productOptions.map((item, itemIndex) =>
+                      itemIndex === index
+                        ? {
+                            ...item,
+                            price: nextPrice,
+                            finalPrice: calculateOptionFinalPrice(nextPrice, item.discount),
+                          }
+                        : item,
+                    ),
+                  });
+                }}
+                placeholder="Price"
+                className="rounded-2xl border border-[#eadbc8] bg-white px-4 py-3 text-sm text-[#34180e] outline-none"
+              />
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                value={option.discount}
+                onChange={(event) => {
+                  const nextDiscount = normalizeDiscountValue(event.target.value);
+                  onChange({
+                    ...value,
+                    productOptions: productOptions.map((item, itemIndex) =>
+                      itemIndex === index
+                        ? {
+                            ...item,
+                            discount: nextDiscount,
+                            finalPrice: calculateOptionFinalPrice(item.price, nextDiscount),
+                          }
+                        : item,
+                    ),
+                  });
+                }}
+                placeholder="Discount %"
+                className="rounded-2xl border border-[#eadbc8] bg-white px-4 py-3 text-sm text-[#34180e] outline-none"
+              />
+              <input
+                value={option.finalPrice}
+                readOnly
+                placeholder="Final Price"
+                className="rounded-2xl border border-[#eadbc8] bg-[#f8fafc] px-4 py-3 text-sm text-[#34180e] outline-none"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  onChange({
+                    ...value,
+                    productOptions: productOptions.filter((_, itemIndex) => itemIndex !== index),
+                  })
+                }
+                className="rounded-xl border border-[#ffe1e1] bg-[#fff3f3] px-3 py-3 text-xs font-semibold text-[#9f2b2b]"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() =>
+            onChange({
+              ...value,
+              productOptions: [...productOptions, createEmptyProductOption()],
+            })
+          }
+          className="mt-4 rounded-xl border border-[#7c5cff] px-4 py-2 text-sm font-semibold text-[#7c5cff]"
+        >
+          + Add Another Option
+        </button>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <select
@@ -337,12 +493,16 @@ function ProductForm({
             </option>
           ))}
         </select>
-        <input
-          value={adminText(value.tag)}
+        <select
+          value={selectedTag}
           onChange={(event) => onChange({ ...value, tag: event.target.value })}
-          placeholder="Featured / New / Popular"
           className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
-        />
+        >
+          <option value="">Select tag</option>
+          <option value="Featured">Featured</option>
+          <option value="New">New</option>
+          <option value="Popular">Popular</option>
+        </select>
       </div>
       <input
         type="hidden"
@@ -1019,6 +1179,11 @@ export default function AdminPage() {
     );
   }, [products, productDraft]);
 
+  function showSaveError(message: string) {
+    setMediaNotice(message);
+    toast.error(message);
+  }
+
   function handleLogout() {
     logoutAdmin();
     navigate({ to: "/admin" });
@@ -1173,6 +1338,7 @@ export default function AdminPage() {
   }
 
   async function saveProduct() {
+    setMediaNotice("");
     const englishName = adminText(productDraft.name).trim();
     const marathiName = adminLocalizedText(productDraft.name).mr.trim();
     const historicalBackground = adminLocalizedText(productDraft.historicalBackground ?? "");
@@ -1180,21 +1346,49 @@ export default function AdminPage() {
     const coverImage = String(productDraft.image || "").trim();
 
     if (!englishName) {
-      setMediaNotice("Product name (English) is required.");
+      showSaveError("Product name (English) is required.");
       return;
     }
     if (!category) {
-      setMediaNotice("Please select a product category.");
+      showSaveError("Please select a product category.");
       return;
     }
     if (!coverImage) {
-      setMediaNotice("Please add a cover image for this product.");
+      showSaveError("Please add a cover image for this product.");
       return;
     }
 
-    const normalizedPriceValue = parseCurrencyValue(productDraft.price);
+    const normalizedOptions = (productDraft.productOptions ?? [])
+      .map((option) => {
+        const label = String(option.label || "").trim();
+        const price = String(option.price || "").trim();
+        const discount = normalizeDiscountValue(String(option.discount || "0"));
+        const finalPrice = calculateOptionFinalPrice(price, discount);
+
+        return {
+          label,
+          price,
+          discount,
+          finalPrice,
+        };
+      })
+      .filter((option) => option.label || option.price || option.discount !== "0" || option.finalPrice);
+    const validOptions = normalizedOptions.filter(
+      (option) => option.label && parseCurrencyValue(option.price) > 0 && parseCurrencyValue(option.finalPrice) > 0,
+    );
+
+    if (normalizedOptions.length !== validOptions.length) {
+      showSaveError("Each product option needs a weight/size and valid price.");
+      return;
+    }
+
+    const derivedBasePrice =
+      validOptions.length > 0
+        ? Math.min(...validOptions.map((option) => parseCurrencyValue(option.finalPrice))).toFixed(2)
+        : productDraft.price;
+    const normalizedPriceValue = parseCurrencyValue(derivedBasePrice);
     if (!Number.isFinite(normalizedPriceValue) || normalizedPriceValue <= 0) {
-      setMediaNotice("Please enter a valid product price greater than 0.");
+      showSaveError("Please enter a valid product price greater than 0.");
       return;
     }
     const normalizedPrice = normalizedPriceValue.toFixed(2);
@@ -1212,6 +1406,7 @@ export default function AdminPage() {
       image: coverImage,
       price: normalizedPrice,
       galleryImages: (productDraft.galleryImages ?? []).filter(Boolean).slice(0, 4),
+      productOptions: validOptions,
       historicalBackground: {
         en: historicalBackground.en.trim(),
         mr: historicalBackground.mr.trim(),
@@ -1738,6 +1933,7 @@ export default function AdminPage() {
                     type="button"
                     onClick={() => {
                       setActiveSection("products");
+                      setProductDraft(cloneProductTemplate());
                       setProductViewMode("add");
                     }}
                     className="w-full rounded-xl px-3 py-2 text-left text-sm text-[#efeaff] transition hover:bg-white/10"
@@ -2230,12 +2426,17 @@ export default function AdminPage() {
                               </tr>
                             </thead>
                             <tbody>
-                              <tr>
-                                <td className="border-r border-t border-[#e5e7eb] px-3 py-2 text-[#1f2937]">{adminText(item.dimensions) || "-"}</td>
-                                <td className="border-r border-t border-[#e5e7eb] px-3 py-2 text-[#1f2937]">{item.price}</td>
-                                <td className="border-r border-t border-[#e5e7eb] px-3 py-2 text-[#1f2937]">0.00%</td>
-                                <td className="border-t border-[#e5e7eb] px-3 py-2 text-[#1f2937]">{item.price}</td>
-                              </tr>
+                              {(item.productOptions?.length
+                                ? item.productOptions
+                                : [{ label: adminText(item.dimensions) || "-", price: item.price, discount: "0", finalPrice: item.price }]
+                              ).map((option, optionIndex) => (
+                                <tr key={`${item.id}-option-${optionIndex}`}>
+                                  <td className="border-r border-t border-[#e5e7eb] px-3 py-2 text-[#1f2937]">{option.label}</td>
+                                  <td className="border-r border-t border-[#e5e7eb] px-3 py-2 text-[#1f2937]">{formatCurrency(parseCurrencyValue(option.price || item.price))}</td>
+                                  <td className="border-r border-t border-[#e5e7eb] px-3 py-2 text-[#1f2937]">{Number(option.discount || 0).toFixed(2)}%</td>
+                                  <td className="border-t border-[#e5e7eb] px-3 py-2 text-[#1f2937]">{formatCurrency(parseCurrencyValue(option.finalPrice || option.price || item.price))}</td>
+                                </tr>
+                              ))}
                             </tbody>
                           </table>
                           <div className="space-y-4">
@@ -2278,7 +2479,7 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      setProductDraft(productTemplate);
+                      setProductDraft(cloneProductTemplate());
                       setProductViewMode("add");
                     }}
                     className="rounded-lg bg-[#6f55dc] px-4 py-2 text-sm font-semibold text-white"
@@ -2298,9 +2499,7 @@ export default function AdminPage() {
                           />
                           <div>
                             <p className="font-semibold text-[#34180e]">{resolveLocalizedText(item.name, "en")}</p>
-                            <p className="mt-1 text-sm text-[#6c4b33]">
-                              {item.category} • {item.price}
-                            </p>
+                            <p className="mt-1 text-sm text-[#6c4b33]">{item.category} - Starting at {formatCurrency(parseCurrencyValue(item.price))}</p>
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -2319,6 +2518,11 @@ export default function AdminPage() {
               <div className="rounded-[10px] border border-[#dadde3] bg-white p-6">
                 <h2 className="text-center text-2xl font-semibold text-[#111827]">Fill Products Information</h2>
                 <p className="mt-2 text-sm text-[#6c4b33]">Save product changes to update the website catalog.</p>
+                {mediaNotice ? (
+                  <div className="mt-4 rounded-xl border border-[#f3d0a4] bg-[#fff7ed] px-4 py-3 text-sm font-medium text-[#9a3412]">
+                    {mediaNotice}
+                  </div>
+                ) : null}
                 <div className="mt-6">
                   <ProductForm
                     value={productDraft}
