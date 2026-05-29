@@ -385,11 +385,27 @@ async function ensureHomepageSettingsTable(connection) {
     `
     CREATE TABLE IF NOT EXISTS homepage_settings (
       setting_key VARCHAR(100) NOT NULL PRIMARY KEY,
-      setting_value TEXT NULL,
+      setting_value MEDIUMTEXT NULL,
       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `,
   );
+}
+
+async function ensureHomepageSettingsValueColumnSupportsLargePayloads() {
+  try {
+    await query(
+      `
+      ALTER TABLE homepage_settings
+      MODIFY COLUMN setting_value MEDIUMTEXT NULL
+      `,
+    );
+  } catch (error) {
+    console.warn(
+      "Unable to expand homepage settings storage for product galleries.",
+      error instanceof Error ? error.message : error,
+    );
+  }
 }
 
 async function ensureProductsCategoryColumnSupportsCustomValues() {
@@ -1692,6 +1708,10 @@ app.use((error, _req, res, _next) => {
 });
 
 async function startServer() {
+  await withTransaction(async (connection) => {
+    await ensureHomepageSettingsTable(connection);
+  });
+  await ensureHomepageSettingsValueColumnSupportsLargePayloads();
   await ensureProductsCategoryColumnSupportsCustomValues();
   await ensureProductsLocalizedColumnsSupportJson();
   await ensureProductsDiscountColumns();

@@ -1906,11 +1906,16 @@ export default function AdminPage() {
     }
 
     try {
-      const dataUrl = await fileToDataUrl(file, 4);
+      const dataUrl = await imageFileToOptimizedDataUrl(file, {
+        maxDimension: 1400,
+        quality: 0.82,
+      });
       setProductDraft((current) => ({ ...current, image: dataUrl }));
       setMediaNotice(`Product image "${file.name}" loaded successfully.`);
     } catch (error) {
       setMediaNotice(error instanceof Error ? error.message : "Unable to load the product image file.");
+    } finally {
+      event.currentTarget.value = "";
     }
   }
 
@@ -1925,7 +1930,21 @@ export default function AdminPage() {
     }
 
     try {
-      const nextGalleryImages = await Promise.all(files.slice(0, 4).map((file) => fileToDataUrl(file, 4)));
+      const availableSlots = Math.max(0, 4 - (productDraft.galleryImages ?? []).length);
+      if (availableSlots === 0) {
+        setMediaNotice("Product gallery already has 4 images. Remove one before adding another.");
+        event.currentTarget.value = "";
+        return;
+      }
+
+      const nextGalleryImages = await Promise.all(
+        files.slice(0, availableSlots).map((file) =>
+          imageFileToOptimizedDataUrl(file, {
+            maxDimension: 1200,
+            quality: 0.78,
+          }),
+        ),
+      );
       setProductDraft((current) => ({
         ...current,
         galleryImages: [...(current.galleryImages ?? []), ...nextGalleryImages].slice(0, 4),
@@ -1933,6 +1952,8 @@ export default function AdminPage() {
       setMediaNotice("Product gallery images loaded successfully.");
     } catch (error) {
       setMediaNotice(error instanceof Error ? error.message : "Unable to load gallery image files.");
+    } finally {
+      event.currentTarget.value = "";
     }
   }
 
