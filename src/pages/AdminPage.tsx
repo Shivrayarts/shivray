@@ -2738,6 +2738,7 @@ export default function AdminPage() {
                   <div>
                     <h2 className="text-2xl font-semibold text-[#34180e]">Homepage Banners</h2>
                     <p className="mt-2 text-sm text-[#6c4b33]">Upload image or video banners for the home hero section.</p>
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#8b4d1d]">Banner UI v3</p>
                   </div>
                   <button
                     type="button"
@@ -2790,38 +2791,40 @@ export default function AdminPage() {
                             </p>
                           </div>
                         </button>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-col gap-2 md:flex-row md:flex-wrap">
                           <button
                             type="button"
                             onClick={() => {
                               setBannerDraft(item);
                               setBannerNotice("");
                             }}
-                            className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm font-semibold text-[#6c4b33]"
+                            className="w-full rounded-xl border border-[#eadbc8] bg-white px-4 py-2 text-left text-sm font-semibold text-[#6c4b33] md:w-auto md:rounded-full"
                           >
                             Edit Banner
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => void reorderBanner(index, -1)}
-                            className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm font-semibold text-[#6c4b33]"
-                          >
-                            Move Up
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void reorderBanner(index, 1)}
-                            className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm font-semibold text-[#6c4b33]"
-                          >
-                            Move Down
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void deleteBanner(item.id)}
-                            className="rounded-full border border-[#ffe1e1] bg-[#fff3f3] px-4 py-2 text-sm font-semibold text-[#9f2b2b]"
-                          >
-                            Delete Banner
-                          </button>
+                          <div className="grid grid-cols-1 gap-2 md:flex md:flex-wrap">
+                            <button
+                              type="button"
+                              onClick={() => void reorderBanner(index, -1)}
+                              className="rounded-xl border border-[#eadbc8] bg-white px-4 py-2 text-left text-sm font-semibold text-[#6c4b33] md:rounded-full"
+                            >
+                              Move Up
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void reorderBanner(index, 1)}
+                              className="rounded-xl border border-[#eadbc8] bg-white px-4 py-2 text-left text-sm font-semibold text-[#6c4b33] md:rounded-full"
+                            >
+                              Move Down
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void deleteBanner(item.id)}
+                              className="rounded-xl border border-[#ffe1e1] bg-[#fff3f3] px-4 py-2 text-left text-sm font-semibold text-[#9f2b2b] md:rounded-full"
+                            >
+                              Delete Banner
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
