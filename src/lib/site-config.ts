@@ -20,4 +20,5 @@ export const siteConfig = {
     youtube: "https://youtube.com/@shivrayart?si=MkDdK6biQDpxfrkB",
     pinterest: "https://pin.it/4T2tDXNBV",
   },
+  googleBusinessHref: "https://share.google/EI67m0O5pQSHEujca",
 } as const;

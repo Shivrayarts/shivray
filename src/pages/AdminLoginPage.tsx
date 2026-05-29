@@ -3,7 +3,6 @@ import { LockKeyhole, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
 import { isValidEmail } from "@/lib/form-validation";
 import {
-  changeAdminPassword,
   isAdminAuthenticated,
   loginAdmin,
   useAdminAuthState,
@@ -15,23 +14,7 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [changeError, setChangeError] = useState("");
-  const [changeSuccess, setChangeSuccess] = useState("");
-  const [changingPassword, setChangingPassword] = useState(false);
-  const [showChangePassword, setShowChangePassword] = useState(false);
-  const [changeForm, setChangeForm] = useState({
-    email: "",
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
   const [touched, setTouched] = useState({ email: false, password: false });
-  const [changeTouched, setChangeTouched] = useState({
-    email: false,
-    currentPassword: false,
-    newPassword: false,
-    confirmPassword: false,
-  });
 
   useEffect(() => {
     if (resolved && (authenticated || isAdminAuthenticated())) {
@@ -53,62 +36,6 @@ export default function AdminLoginPage() {
       navigate({ to: "/admin" });
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Invalid admin email or password.");
-    }
-  }
-
-  async function handleChangePassword(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setChangeSuccess("");
-    setChangeError("");
-    setChangeTouched({
-      email: true,
-      currentPassword: true,
-      newPassword: true,
-      confirmPassword: true,
-    });
-
-    const nextEmail = changeForm.email.trim().toLowerCase();
-    if (!isValidEmail(nextEmail)) {
-      setChangeError("Enter a valid admin email.");
-      return;
-    }
-    if (!changeForm.currentPassword.trim()) {
-      setChangeError("Enter your current password.");
-      return;
-    }
-    if (changeForm.newPassword.length < 8) {
-      setChangeError("New password must be at least 8 characters.");
-      return;
-    }
-    if (changeForm.newPassword === changeForm.currentPassword) {
-      setChangeError("New password must be different from current password.");
-      return;
-    }
-    if (changeForm.newPassword !== changeForm.confirmPassword) {
-      setChangeError("New password and confirm password do not match.");
-      return;
-    }
-
-    setChangingPassword(true);
-    try {
-      await changeAdminPassword(nextEmail, changeForm.currentPassword, changeForm.newPassword);
-      setChangeSuccess("Password changed successfully. You can now login with the new password.");
-      setChangeForm({
-        email: nextEmail,
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-      setPassword("");
-      setEmail(nextEmail);
-    } catch (submitError) {
-      setChangeError(
-        submitError instanceof Error
-          ? submitError.message
-          : "Unable to change password right now.",
-      );
-    } finally {
-      setChangingPassword(false);
     }
   }
 
@@ -184,132 +111,6 @@ export default function AdminLoginPage() {
               Login as Admin
             </button>
           </form>
-
-          <div className="mt-6 rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] p-4">
-            <button
-              type="button"
-              onClick={() => setShowChangePassword((value) => !value)}
-              className="w-full text-left text-sm font-semibold uppercase tracking-[0.16em] text-[#8b4d1d]"
-            >
-              {showChangePassword ? "Hide Password Change" : "Change Admin Password"}
-            </button>
-
-            {showChangePassword ? (
-              <form onSubmit={handleChangePassword} className="mt-4 space-y-3">
-                <div>
-                  <label htmlFor="change-admin-email" className="text-sm font-medium text-[#34180e]">
-                    Admin Email
-                  </label>
-                  <input
-                    id="change-admin-email"
-                    type="email"
-                    value={changeForm.email}
-                    onBlur={() => setChangeTouched((value) => ({ ...value, email: true }))}
-                    onChange={(event) =>
-                      setChangeForm((value) => ({ ...value, email: event.target.value }))
-                    }
-                    placeholder="Enter admin email"
-                    className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm text-[#34180e] outline-none ${
-                      changeTouched.email && !isValidEmail(changeForm.email)
-                        ? "border-[#b42318]"
-                        : "border-[#eadbc8]"
-                    }`}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="change-current-password" className="text-sm font-medium text-[#34180e]">
-                    Current Password
-                  </label>
-                  <input
-                    id="change-current-password"
-                    type="password"
-                    value={changeForm.currentPassword}
-                    onBlur={() =>
-                      setChangeTouched((value) => ({ ...value, currentPassword: true }))
-                    }
-                    onChange={(event) =>
-                      setChangeForm((value) => ({
-                        ...value,
-                        currentPassword: event.target.value,
-                      }))
-                    }
-                    placeholder="Enter current password"
-                    className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm text-[#34180e] outline-none ${
-                      changeTouched.currentPassword && !changeForm.currentPassword.trim()
-                        ? "border-[#b42318]"
-                        : "border-[#eadbc8]"
-                    }`}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="change-new-password" className="text-sm font-medium text-[#34180e]">
-                    New Password
-                  </label>
-                  <input
-                    id="change-new-password"
-                    type="password"
-                    value={changeForm.newPassword}
-                    onBlur={() =>
-                      setChangeTouched((value) => ({ ...value, newPassword: true }))
-                    }
-                    onChange={(event) =>
-                      setChangeForm((value) => ({ ...value, newPassword: event.target.value }))
-                    }
-                    placeholder="Minimum 8 characters"
-                    className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm text-[#34180e] outline-none ${
-                      changeTouched.newPassword && changeForm.newPassword.length < 8
-                        ? "border-[#b42318]"
-                        : "border-[#eadbc8]"
-                    }`}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="change-confirm-password" className="text-sm font-medium text-[#34180e]">
-                    Confirm New Password
-                  </label>
-                  <input
-                    id="change-confirm-password"
-                    type="password"
-                    value={changeForm.confirmPassword}
-                    onBlur={() =>
-                      setChangeTouched((value) => ({ ...value, confirmPassword: true }))
-                    }
-                    onChange={(event) =>
-                      setChangeForm((value) => ({
-                        ...value,
-                        confirmPassword: event.target.value,
-                      }))
-                    }
-                    placeholder="Re-enter new password"
-                    className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm text-[#34180e] outline-none ${
-                      changeTouched.confirmPassword &&
-                      changeForm.confirmPassword !== changeForm.newPassword
-                        ? "border-[#b42318]"
-                        : "border-[#eadbc8]"
-                    }`}
-                    required
-                  />
-                </div>
-
-                {changeError ? <p className="text-sm text-[#b42318]">{changeError}</p> : null}
-                {changeSuccess ? <p className="text-sm text-[#2d7a31]">{changeSuccess}</p> : null}
-
-                <button
-                  type="submit"
-                  disabled={changingPassword}
-                  className="w-full rounded-full border border-[#d8b48b] bg-white py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#34180e] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {changingPassword ? "Updating..." : "Update Password"}
-                </button>
-              </form>
-            ) : null}
-          </div>
 
           <Link
             to="/"

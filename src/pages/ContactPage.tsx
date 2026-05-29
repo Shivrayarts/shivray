@@ -129,6 +129,14 @@ export default function ContactPage() {
                   <div>
                     <p className="font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "आमच्या स्टुडिओला भेट द्या" : "Visit our studio"}</p>
                     <p className="mt-1 text-sm leading-6 text-[#7e624b]">{siteConfig.address}</p>
+                    <a
+                      href={siteConfig.googleBusinessHref}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-flex text-sm font-semibold text-[#8b4d1d] underline underline-offset-4"
+                    >
+                      {resolvedLocale === "mr" ? "Google Business प्रोफाइल उघडा" : "Open Google Business Profile"}
+                    </a>
                   </div>
                 </div>
               </div>
