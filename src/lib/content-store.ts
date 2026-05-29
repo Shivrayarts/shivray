@@ -219,6 +219,84 @@ function asLocalizedText(value: Translatable, fallback?: Translatable): Localize
   return { en: value, mr: value };
 }
 
+const productNameMarathiFallbacks: Record<string, string> = {
+  "chh. sambhaji maharaj": "छ. संभाजी महाराज",
+  "chh sambhaji maharaj": "छ. संभाजी महाराज",
+  "rajdanddhari shivaji maharaj statue": "राजदंडधारी शिवाजी महाराज मूर्ती",
+  "rajdanddhari shivaji maharaj": "राजदंडधारी शिवाजी महाराज",
+};
+
+const productNameWordFallbacks: Record<string, string> = {
+  ashwarudh: "अश्वारूढ",
+  battle: "युद्ध",
+  black: "काळी",
+  brass: "पितळी",
+  ceremonial: "समारंभिक",
+  chh: "छ.",
+  chhatrapati: "छत्रपती",
+  chatrapati: "छत्रपती",
+  coloured: "रंगीत",
+  colored: "रंगीत",
+  curved: "वक्र",
+  dandpatta: "दांडपट्टा",
+  decorated: "सजावटी",
+  dhoop: "धूप",
+  gada: "गदा",
+  khanjar: "खंजीर",
+  maharaj: "महाराज",
+  maharaja: "महाराज",
+  maratha: "मराठा",
+  murti: "मूर्ती",
+  rajdanddhari: "राजदंडधारी",
+  roudra: "रौद्र",
+  royal: "रॉयल",
+  saffron: "केशरी",
+  sambhaji: "संभाजी",
+  shambhu: "शंभू",
+  shastradhari: "शस्त्रधारी",
+  sheath: "म्यान",
+  shield: "ढाल",
+  shivaji: "शिवाजी",
+  stand: "स्टँड",
+  statue: "मूर्ती",
+  straight: "सरळ",
+  sword: "तलवार",
+  talwar: "तलवार",
+  vita: "वीटा",
+  war: "युद्ध",
+  weapon: "शस्त्र",
+  weapons: "शस्त्रे",
+  with: "सह",
+};
+
+function createMarathiProductNameFallback(englishName: string) {
+  const normalizedName = englishName.trim().toLowerCase().replace(/\s+/g, " ");
+  if (!normalizedName) return "";
+  const exactFallback = productNameMarathiFallbacks[normalizedName];
+  if (exactFallback) return exactFallback;
+
+  const words = normalizedName
+    .replace(/[()]/g, " ")
+    .replace(/[^a-z0-9.]+/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (!words.length) return "";
+
+  const translatedWords = words.map((word) => productNameWordFallbacks[word.replace(/\.$/, "")] ?? word);
+  const hasTranslation = translatedWords.some((word, index) => word !== words[index]);
+  return hasTranslation ? translatedWords.join(" ") : "";
+}
+
+function normalizeProductName(value: Translatable, fallback?: Translatable) {
+  const localizedName = asLocalizedText(value, fallback);
+  if (!localizedName.mr || localizedName.mr === localizedName.en) {
+    const marathiFallback = createMarathiProductNameFallback(localizedName.en);
+    if (marathiFallback) return { ...localizedName, mr: marathiFallback };
+  }
+  return localizedName;
+}
+
 function isDefaultText(value: Translatable, fixedValue: Translatable) {
   return getEnglishText(value) === getEnglishText(fixedValue);
 }
@@ -259,7 +337,7 @@ function normalizeProduct(product: Product): Product {
     image: normalizeAssetUrl(product.image),
     discount: String(product.discount || "0").trim(),
     finalPrice: String(product.finalPrice || "").trim(),
-    name: asLocalizedText(safeValue(product.name, defaultProduct?.name), defaultProduct?.name),
+    name: normalizeProductName(safeValue(product.name, defaultProduct?.name), defaultProduct?.name),
     tag: asLocalizedText(safeValue(product.tag, defaultProduct?.tag), defaultProduct?.tag),
     shortDescription: asLocalizedText(
       safeValue(product.shortDescription, defaultProduct?.shortDescription),
