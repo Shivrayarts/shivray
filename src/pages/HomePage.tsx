@@ -279,7 +279,7 @@ export default function HomePage() {
           )
         ) : null}
         <div className="absolute inset-0 bg-black/10" />
-        <div className="layout-shell relative flex min-h-[460px] items-center justify-center px-5 py-0 text-center md:min-h-[720px] md:px-8 md:py-24">
+        <div className="relative flex w-full min-h-[460px] items-center justify-center px-0 py-0 text-center md:mx-auto md:min-h-[720px] md:max-w-[72rem] md:px-8 md:py-24">
           <div className="mx-auto max-w-5xl">
             {activeHeroSlide ? (
               <div className="hidden">

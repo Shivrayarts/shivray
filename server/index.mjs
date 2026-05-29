@@ -52,6 +52,7 @@ app.use((req, res, next) => {
 const memoryCustomers = [];
 const memoryOrders = [];
 const PRODUCT_OPTIONS_SETTING_KEY = "product_options_map";
+const PRODUCT_GALLERY_SETTING_KEY = "product_gallery_map";
 
 function formatCurrency(value) {
   return `Rs. ${Number(value || 0).toLocaleString("en-IN", {
@@ -135,6 +136,12 @@ function normalizeProductForDb(product) {
     material: encodeLocalizedValue(product?.material),
     dimensions: encodeLocalizedValue(product?.dimensions),
     historicalBackground: encodeLocalizedValue(product?.historicalBackground),
+    galleryImages: Array.isArray(product?.galleryImages)
+      ? product.galleryImages
+          .map((image) => String(image || "").trim())
+          .filter(Boolean)
+          .slice(0, 4)
+      : [],
     productOptions,
   };
 }
@@ -562,6 +569,40 @@ async function saveProductOptionsMap(connection, productOptionsMap) {
   );
 }
 
+async function loadProductGalleryMap() {
+  const rows = await query(
+    `
+    SELECT setting_value
+    FROM homepage_settings
+    WHERE setting_key = ?
+    LIMIT 1
+    `,
+    [PRODUCT_GALLERY_SETTING_KEY],
+  ).catch(() => []);
+
+  const rawValue = rows?.[0]?.setting_value;
+  if (typeof rawValue !== "string" || !rawValue.trim()) return {};
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+async function saveProductGalleryMap(connection, productGalleryMap) {
+  await ensureHomepageSettingsTable(connection);
+  await connection.query(
+    `
+    INSERT INTO homepage_settings (setting_key, setting_value)
+    VALUES (?, ?)
+    ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+    `,
+    [PRODUCT_GALLERY_SETTING_KEY, JSON.stringify(productGalleryMap)],
+  );
+}
+
 async function findUserByEmail(email) {
   const rows = await query(
     `
@@ -588,7 +629,7 @@ function requireAdmin(req, res, next) {
 }
 
 async function fetchStorefrontPayload() {
-  const [products, catalogues, banners, reviews, videos, spotlightSettings, productOptionsMap] = await Promise.all([
+  const [products, catalogues, banners, reviews, videos, spotlightSettings, productOptionsMap, productGalleryMap] = await Promise.all([
     query(
       `
       SELECT slug, name, price, image_url, category, tag, short_description, details, material, dimensions, history_background
@@ -638,6 +679,7 @@ async function fetchStorefrontPayload() {
       `,
     ).catch(() => []),
     loadProductOptionsMap(),
+    loadProductGalleryMap(),
   ]);
 
   let spotlightProductIds = [];
@@ -668,6 +710,7 @@ async function fetchStorefrontPayload() {
       material: decodeLocalizedValue(row.material),
       dimensions: decodeLocalizedValue(row.dimensions),
       historicalBackground: decodeLocalizedValue(row.history_background ?? ""),
+      galleryImages: Array.isArray(productGalleryMap?.[row.slug]) ? productGalleryMap[row.slug] : [],
       productOptions: Array.isArray(productOptionsMap?.[row.slug]) ? productOptionsMap[row.slug] : [],
     })),
     catalogueTypes: catalogues.map((row) => ({
@@ -1072,12 +1115,15 @@ app.put("/api/admin/products", requireAdmin, async (req, res) => {
 
     await withTransaction(async (connection) => {
       const productOptionsMap = {};
+      const productGalleryMap = {};
       for (let index = 0; index < normalizedProducts.length; index += 1) {
         const product = normalizedProducts[index];
         await upsertProductRow(connection, product, index + 1);
         productOptionsMap[product.slug] = product.productOptions;
+        productGalleryMap[product.slug] = product.galleryImages;
       }
       await saveProductOptionsMap(connection, productOptionsMap);
+      await saveProductGalleryMap(connection, productGalleryMap);
     });
 
     res.json(await fetchStorefrontPayload());
@@ -1103,8 +1149,11 @@ app.delete("/api/admin/products/:slug", requireAdmin, async (req, res) => {
     );
     await withTransaction(async (connection) => {
       const productOptionsMap = await loadProductOptionsMap();
+      const productGalleryMap = await loadProductGalleryMap();
       delete productOptionsMap[slug];
+      delete productGalleryMap[slug];
       await saveProductOptionsMap(connection, productOptionsMap);
+      await saveProductGalleryMap(connection, productGalleryMap);
     });
     res.json(await fetchStorefrontPayload());
   } catch (error) {
@@ -1143,8 +1192,11 @@ app.put("/api/admin/products/:slug", requireAdmin, async (req, res) => {
       const sortOrder = Number(rows?.[0]?.sort_order) || 1;
       await upsertProductRow(connection, { ...normalizedProduct, slug }, sortOrder);
       const productOptionsMap = await loadProductOptionsMap();
+      const productGalleryMap = await loadProductGalleryMap();
       productOptionsMap[slug] = normalizedProduct.productOptions;
+      productGalleryMap[slug] = normalizedProduct.galleryImages;
       await saveProductOptionsMap(connection, productOptionsMap);
+      await saveProductGalleryMap(connection, productGalleryMap);
     });
 
     res.json(await fetchStorefrontPayload());
