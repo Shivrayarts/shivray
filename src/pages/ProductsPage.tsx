@@ -13,14 +13,11 @@ import {
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useStoredCatalogueTypes, useStoredProducts } from "@/lib/content-store";
 import { getSearchableText, resolveLocalizedText, useLanguage } from "@/lib/language";
-import productDhoop1 from "@/assets/Products/product-1.png";
-import productStatue1 from "@/assets/Products/product-2.jpeg";
-import productWeapon1 from "@/assets/Products/product-5.jpeg";
 import { getProductPricing, parseCurrencyAmount } from "@/lib/utils";
 import ProductGalleryCard from "@/components/ProductGalleryCard";
 
 const PRODUCTS_PER_PAGE = 12;
-const heroBanner3 = "/assets/hero-banner-3.jpg";
+const PLACEHOLDER_IMAGE = "/placeholder.svg";
 
 export default function ProductsPage() {
   const { resolvedLocale } = useLanguage();
@@ -59,14 +56,7 @@ export default function ProductsPage() {
   }, [categories, location.search]);
 
   const categoryCards = useMemo(() => {
-    const fallbackImages: Record<string, string> = {
-      Statues: productStatue1,
-      Weapons: productWeapon1,
-      Shields: heroBanner3,
-      Dhoop: productDhoop1,
-    };
-
-    const adminCards = catalogueTypes
+    return catalogueTypes
       .filter((catalogue) => catalogue.isActive)
       .map((catalogue) => {
         const key =
@@ -80,18 +70,9 @@ export default function ProductsPage() {
           title,
           key,
           count: `${products.filter((product) => product.category === key).length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
-          image: catalogue.image || fallbackImages[key] || productStatue1,
+          image: catalogue.image || products.find((product) => product.category === key)?.image || PLACEHOLDER_IMAGE,
         };
       });
-
-    if (adminCards.length > 0) return adminCards;
-
-    return ["Statues", "Weapons", "Shields", "Dhoop"].map((key) => ({
-      title: key,
-      key,
-      count: `${products.filter((product) => product.category === key).length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
-      image: fallbackImages[key] || productStatue1,
-    }));
   }, [catalogueTypes, products, resolvedLocale]);
 
   const visibleCategoryCards = useMemo(
@@ -204,37 +185,39 @@ export default function ProductsPage() {
           </h1>
         </div>
       </section> */}
-      <section className="px-4 py-6 md:px-6 md:py-10">
-        <div className="layout-shell rounded-[34px] bg-[#fffdf8] px-4 py-6 md:px-8 md:py-8">
-          <div className="text-center">
-            <h2 className="font-body text-3xl font-semibold text-[#1d150f] md:text-4xl">
-              {resolvedLocale === "mr" ? "\u0932\u094b\u0915\u092a\u094d\u0930\u093f\u092f \u0936\u094d\u0930\u0947\u0923\u0940" : "Popular Categories"}
-            </h2>
+      {visibleCategoryCards.length > 0 ? (
+        <section className="px-4 py-6 md:px-6 md:py-10">
+          <div className="layout-shell rounded-[34px] bg-[#fffdf8] px-4 py-6 md:px-8 md:py-8">
+            <div className="text-center">
+              <h2 className="font-body text-3xl font-semibold text-[#1d150f] md:text-4xl">
+                {resolvedLocale === "mr" ? "\u0932\u094b\u0915\u092a\u094d\u0930\u093f\u092f \u0936\u094d\u0930\u0947\u0923\u0940" : "Popular Categories"}
+              </h2>
+            </div>
+            <div ref={categoriesRef} onScroll={handleCategoriesScroll} className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2">
+              {visibleCategoryCards.map((card) => (
+                <button key={card.key} type="button" data-catalogue-category-card onClick={() => setCategory(card.key)} className="group w-[78vw] max-w-[22rem] shrink-0 snap-center text-center sm:w-[19rem] md:w-[16.5rem]">
+                  <div className="relative overflow-hidden rounded-[30px] bg-[#b65a73] shadow-[0_18px_45px_-30px_rgba(89,34,49,0.65)]">
+                    <img src={card.image} alt={card.title} className="aspect-square w-full object-cover opacity-90 saturate-[0.7] transition duration-500 group-hover:scale-105" />
+                  </div>
+                  <h3 className="mt-4 font-body text-xl font-semibold text-[#1c140f] md:text-2xl">{card.title}</h3>
+                  <p className="mt-1 text-base text-[#7d766f]">{card.count}</p>
+                </button>
+              ))}
+            </div>
+            <div className="mt-7 flex items-center justify-center gap-3">
+              {visibleCategoryCards.map((card, index) => (
+                <button
+                  key={card.key}
+                  type="button"
+                  aria-label={`Go to category slide ${index + 1}`}
+                  onClick={() => scrollToCategorySlide(index)}
+                  className={`rounded-full ${index === categorySlide ? "h-4 w-4 border border-[#1d150f] bg-white shadow-[inset_0_0_0_4px_#1d150f]" : "h-2.5 w-2.5 bg-[#a9a29c]"}`}
+                />
+              ))}
+            </div>
           </div>
-          <div ref={categoriesRef} onScroll={handleCategoriesScroll} className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2">
-            {visibleCategoryCards.map((card) => (
-              <button key={card.key} type="button" data-catalogue-category-card onClick={() => setCategory(card.key)} className="group w-[78vw] max-w-[22rem] shrink-0 snap-center text-center sm:w-[19rem] md:w-[16.5rem]">
-                <div className="relative overflow-hidden rounded-[30px] bg-[#b65a73] shadow-[0_18px_45px_-30px_rgba(89,34,49,0.65)]">
-                  <img src={card.image} alt={card.title} className="aspect-square w-full object-cover opacity-90 saturate-[0.7] transition duration-500 group-hover:scale-105" />
-                </div>
-                <h3 className="mt-4 font-body text-xl font-semibold text-[#1c140f] md:text-2xl">{card.title}</h3>
-                <p className="mt-1 text-base text-[#7d766f]">{card.count}</p>
-              </button>
-            ))}
-          </div>
-          <div className="mt-7 flex items-center justify-center gap-3">
-            {visibleCategoryCards.map((card, index) => (
-              <button
-                key={card.key}
-                type="button"
-                aria-label={`Go to category slide ${index + 1}`}
-                onClick={() => scrollToCategorySlide(index)}
-                className={`rounded-full ${index === categorySlide ? "h-4 w-4 border border-[#1d150f] bg-white shadow-[inset_0_0_0_4px_#1d150f]" : "h-2.5 w-2.5 bg-[#a9a29c]"}`}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
       <section className="px-4 pt-3 md:hidden">
         <div className="layout-shell sticky top-[4.45rem] z-20 rounded-[18px] border border-[#e9e5df] bg-white px-4 py-3 shadow-[0_10px_30px_-24px_rgba(0,0,0,0.45)]">
           <div className="flex items-center gap-3">
