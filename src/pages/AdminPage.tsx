@@ -765,12 +765,62 @@ function BannerForm({
 
   return (
     <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-2">
+        <input
+          value={adminText(value.eyebrow)}
+          onChange={(event) => onChange({ ...value, eyebrow: event.target.value })}
+          placeholder="Eyebrow text"
+          className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+        />
+        <select
+          value={selectedType}
+          onChange={(event) =>
+            onChange({
+              ...value,
+              mediaType: event.target.value as HomeBanner["mediaType"],
+              image: event.target.value === "video" ? value.image : value.image,
+              videoUrl: event.target.value === "video" ? value.videoUrl || value.image : "",
+            })
+          }
+          className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+        >
+          <option value="image">Image Banner</option>
+          <option value="video">Video Banner</option>
+        </select>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <input
+          value={adminText(value.titleTop)}
+          onChange={(event) => onChange({ ...value, titleTop: event.target.value })}
+          placeholder="Title top"
+          className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+        />
+        <input
+          value={adminText(value.titleBottom)}
+          onChange={(event) => onChange({ ...value, titleBottom: event.target.value })}
+          placeholder="Title bottom"
+          className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+        />
+      </div>
+      <textarea
+        value={adminText(value.copy)}
+        onChange={(event) => onChange({ ...value, copy: event.target.value })}
+        rows={4}
+        placeholder="Banner copy"
+        className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+      />
       <div className="grid grid-cols-2 gap-2 rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] p-1">
         {(["image", "video"] as const).map((type) => (
           <button
             key={type}
             type="button"
-            onClick={() => onChange({ ...value, mediaType: type })}
+            onClick={() =>
+              onChange({
+                ...value,
+                mediaType: type,
+                videoUrl: type === "video" ? value.videoUrl || value.image : "",
+              })
+            }
             className={`rounded-xl px-4 py-3 text-sm font-semibold capitalize transition ${
               selectedType === type ? "bg-[#34180e] text-white" : "text-[#6c4b33] hover:bg-white"
             }`}
@@ -791,6 +841,16 @@ function BannerForm({
         </p>
         <input type="file" accept={selectedType === "video" ? "video/*" : "image/*"} onChange={onPickFile} className="mt-2 block w-full text-sm" />
       </label>
+      {selectedType === "image" && value.image ? (
+        <div className="rounded-xl border border-[#eadbc8] bg-white p-2">
+          <img src={value.image} alt="Banner preview" className="h-40 w-full rounded-lg object-cover" />
+        </div>
+      ) : null}
+      {selectedType === "video" && value.videoUrl ? (
+        <div className="rounded-xl border border-[#eadbc8] bg-white p-2">
+          <video src={value.videoUrl} className="h-40 w-full rounded-lg object-cover" muted controls playsInline preload="metadata" />
+        </div>
+      ) : null}
       <button
         type="button"
         onClick={onSave}
@@ -1676,12 +1736,11 @@ export default function AdminPage() {
 
   async function saveBanner() {
     const normalizedType = bannerDraft.mediaType ?? (bannerDraft.videoUrl ? "video" : "image");
-    const normalizedImage =
-      normalizedType === "video"
-        ? String(bannerDraft.videoUrl || bannerDraft.image || "").trim()
-        : String(bannerDraft.image || "").trim();
+    const normalizedImage = String(bannerDraft.image || "").trim();
+    const normalizedVideoUrl = String(bannerDraft.videoUrl || "").trim();
+    const normalizedMediaUrl = normalizedType === "video" ? normalizedVideoUrl : normalizedImage;
 
-    if (!normalizedImage) {
+    if (!normalizedMediaUrl) {
       setBannerNotice("Please upload/select a banner before saving.");
       setMediaNotice(
         normalizedType === "video"
@@ -1695,8 +1754,8 @@ export default function AdminPage() {
       ...bannerDraft,
       id: bannerDraft.id || uniqueId("banner"),
       mediaType: normalizedType,
-      image: normalizedImage,
-      videoUrl: normalizedType === "video" ? normalizedImage : "",
+      image: normalizedType === "video" ? normalizedImage : normalizedMediaUrl,
+      videoUrl: normalizedType === "video" ? normalizedMediaUrl : "",
     };
     const next = [...storedHomeContent.banners];
     const existingIndex = next.findIndex((item) => item.id === nextBanner.id);
@@ -1816,7 +1875,13 @@ export default function AdminPage() {
 
     try {
       const isVideo = file.type.startsWith("video/");
-      const dataUrl = await fileToDataUrl(file, isVideo ? 6 : 4);
+      const dataUrl = isVideo
+        ? await fileToDataUrl(file, 6)
+        : await imageFileToOptimizedDataUrl(file, {
+            maxDimension: 1800,
+            quality: 0.78,
+            mimeType: "image/webp",
+          });
       setBannerDraft((current) => ({
         ...current,
         mediaType: isVideo ? "video" : "image",
@@ -2689,15 +2754,32 @@ export default function AdminPage() {
                   {storedHomeContent.banners.map((item, index) => (
                     <div key={item.id} className="rounded-[24px] border border-[#efe1cf] bg-[#fcf8f2] p-4">
                       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div className="h-20 w-full overflow-hidden rounded-2xl border border-[#eadbc8] bg-white md:w-36">
+                          {(item.mediaType ?? "image") === "video" ? (
+                            <video
+                              src={item.videoUrl || item.image}
+                              className="h-full w-full object-cover"
+                              muted
+                              playsInline
+                              preload="metadata"
+                            />
+                          ) : (
+                            <img src={item.image} alt={adminText(item.titleTop) || "Banner"} className="h-full w-full object-cover" />
+                          )}
+                        </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-3">
                             <span className="rounded-full bg-[#fff1d9] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b4d1d]">
                               {(item.mediaType ?? "image") === "video" ? "Video" : "Image"}
                             </span>
-                            <p className="truncate text-sm text-[#6c4b33]">
-                              {(item.mediaType ?? "image") === "video" ? item.videoUrl || "No video selected" : item.image || "No image selected"}
+                            <p className="truncate text-sm font-semibold text-[#34180e]">
+                              {adminText(item.titleTop) || adminText(item.titleBottom) || "Untitled banner"}
                             </p>
                           </div>
+                          <p className="mt-2 truncate text-sm text-[#6c4b33]">{adminText(item.eyebrow) || "No eyebrow text"}</p>
+                          <p className="mt-1 truncate text-xs text-[#8b6c52]">
+                            {(item.mediaType ?? "image") === "video" ? item.videoUrl || "No video selected" : item.image || "No image selected"}
+                          </p>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <button type="button" onClick={() => setBannerDraft(item)} className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm text-[#6c4b33]">Edit</button>

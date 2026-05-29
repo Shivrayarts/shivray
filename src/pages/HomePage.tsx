@@ -193,6 +193,11 @@ export default function HomePage() {
 
   const activeReview = hasReviews ? reviews[currentReview] : null;
   const activeHeroSlide = hasHeroSlides ? heroSlides[currentSlide] : null;
+  const activeHeroMediaType = activeHeroSlide?.mediaType ?? (activeHeroSlide?.videoUrl ? "video" : "image");
+  const activeHeroMediaUrl =
+    activeHeroMediaType === "video"
+      ? activeHeroSlide?.videoUrl || activeHeroSlide?.image || ""
+      : activeHeroSlide?.image || "";
 
   const handleCategoriesScroll = () => {
     const node = categoriesRef.current;
@@ -251,16 +256,12 @@ export default function HomePage() {
   return (
     <div className="bg-[#f7f1e7]">
       <section className="relative isolate overflow-hidden bg-[#2b0b08] text-white">
-        {heroSlides.map((slide, index) => {
-          const mediaType = slide.mediaType ?? (slide.videoUrl ? "video" : "image");
-          const mediaUrl = mediaType === "video" ? slide.videoUrl || slide.image : slide.image;
-          if (!mediaUrl) return null;
-
-          return mediaType === "video" ? (
+        {activeHeroSlide && activeHeroMediaUrl ? (
+          activeHeroMediaType === "video" ? (
             <video
-              key={slide.id}
-              src={mediaUrl}
-              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${index === currentSlide ? "opacity-100" : "opacity-0"}`}
+              key={activeHeroSlide.id}
+              src={activeHeroMediaUrl}
+              className="absolute inset-0 h-full w-full object-cover"
               autoPlay
               muted
               loop
@@ -269,13 +270,14 @@ export default function HomePage() {
             />
           ) : (
             <img
-              key={slide.id}
-              src={mediaUrl}
-              alt={resolveLocalizedText(slide.titleTop, resolvedLocale) || "Homepage banner"}
-              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${index === currentSlide ? "opacity-100" : "opacity-0"}`}
+              key={activeHeroSlide.id}
+              src={activeHeroMediaUrl}
+              alt={resolveLocalizedText(activeHeroSlide.titleTop, resolvedLocale) || "Homepage banner"}
+              className="absolute inset-0 h-full w-full object-cover"
+              fetchPriority="high"
             />
-          );
-        })}
+          )
+        ) : null}
         <div className="absolute inset-0 bg-black/10" />
         <div className="layout-shell relative flex min-h-[560px] items-center justify-center px-5 py-16 text-center md:min-h-[720px] md:px-8 md:py-24">
           <div className="mx-auto max-w-5xl">
