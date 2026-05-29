@@ -27,6 +27,8 @@ export type Product = {
   id: string;
   name: Translatable;
   price: string;
+  discount?: string;
+  finalPrice?: string;
   image: string;
   galleryImages?: string[];
   category: ProductCategory;

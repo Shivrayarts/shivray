@@ -2,7 +2,7 @@ import { Heart } from "lucide-react";
 import { Link } from "@/lib/spa-router";
 import { getCategoryLabel, type Product } from "@/data/products";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
-import { normalizeDisplayCase } from "@/lib/utils";
+import { getProductPricing, normalizeDisplayCase } from "@/lib/utils";
 
 type ProductGalleryCardProps = {
   product: Product;
@@ -24,8 +24,7 @@ export default function ProductGalleryCard({
   const { resolvedLocale } = useLanguage();
   const localizedName = normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale), "sentence");
   const productOptions = product.productOptions ?? [];
-  const highlightedOption =
-    productOptions.find((option) => Number(option.discount || 0) > 0) ?? productOptions[0] ?? null;
+  const pricing = getProductPricing(product);
   const optionChips = productOptions.slice(0, 2);
   const isMarathi = resolvedLocale === "mr";
   const marathiTextStyle = isMarathi
@@ -94,10 +93,15 @@ export default function ProductGalleryCard({
         ) : null}
         <div className={`${isMarathi ? "mt-2" : "mt-3"}`}>
           <p className="text-[1.15rem] font-semibold text-[#b46a16] md:text-[1.35rem]">
-            {highlightedOption?.finalPrice || product.price}
+            {pricing.finalPrice}
           </p>
-          {highlightedOption && Number(highlightedOption.discount || 0) > 0 ? (
-            <p className="mt-1 text-base font-medium text-[#a8a29b] line-through">{highlightedOption.price}</p>
+          {pricing.hasDiscount ? (
+            <div className="mt-1 flex items-center gap-2">
+              <p className="text-base font-medium text-[#a8a29b] line-through">{pricing.originalPrice}</p>
+              <p className="rounded-full bg-[#45ae4a] px-2 py-0.5 text-xs font-semibold text-white">
+                {pricing.discountPercentage.toFixed(0)}% OFF
+              </p>
+            </div>
           ) : null}
         </div>
       </div>

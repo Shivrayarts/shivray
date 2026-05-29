@@ -257,6 +257,8 @@ function normalizeProduct(product: Product): Product {
   return {
     ...product,
     image: normalizeAssetUrl(product.image),
+    discount: String(product.discount || "0").trim(),
+    finalPrice: String(product.finalPrice || "").trim(),
     name: asLocalizedText(safeValue(product.name, defaultProduct?.name), defaultProduct?.name),
     tag: asLocalizedText(safeValue(product.tag, defaultProduct?.tag), defaultProduct?.tag),
     shortDescription: asLocalizedText(

@@ -135,6 +135,8 @@ export default function HomePage() {
       id: matchedProduct.id,
       name: matchedProduct.name,
       price: matchedProduct.price,
+      discount: matchedProduct.discount,
+      finalPrice: matchedProduct.finalPrice,
       image: matchedProduct.image || productStatue1,
       category: matchedProduct.category ?? "Statues",
       tag: matchedProduct.tag ?? "",
@@ -142,6 +144,7 @@ export default function HomePage() {
       details: matchedProduct.details ?? "",
       material: matchedProduct.material ?? "",
       dimensions: matchedProduct.dimensions ?? "",
+      productOptions: matchedProduct.productOptions ?? [],
     }];
   });
 
@@ -152,6 +155,8 @@ export default function HomePage() {
           id: product.id,
           name: product.name,
           price: product.price,
+          discount: product.discount,
+          finalPrice: product.finalPrice,
           image: product.image || productStatue1,
           category: product.category ?? "Statues",
           tag: product.tag ?? "",
@@ -159,6 +164,7 @@ export default function HomePage() {
           details: product.details ?? "",
           material: product.material ?? "",
           dimensions: product.dimensions ?? "",
+          productOptions: product.productOptions ?? [],
         }));
 
   useEffect(() => {

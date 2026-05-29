@@ -5,7 +5,7 @@ import { getCategoryLabel, type Product } from "@/data/products";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { useStoredProducts } from "@/lib/content-store";
 import { siteConfig } from "@/lib/site-config";
-import { normalizeDisplayCase } from "@/lib/utils";
+import { getProductPricing, normalizeDisplayCase } from "@/lib/utils";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
 import ProductGalleryCard from "@/components/ProductGalleryCard";
@@ -157,9 +157,10 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   const isInCart = cart.some((item) => item.id === product.id);
   const productOptions = product.productOptions ?? [];
   const selectedOption = productOptions[selectedOptionIndex] ?? null;
-  const selectedOriginalPrice = selectedOption?.price || product.price;
-  const selectedFinalPrice = selectedOption?.finalPrice || selectedOption?.price || product.price;
-  const selectedDiscount = Number(selectedOption?.discount || 0);
+  const basePricing = getProductPricing(product);
+  const selectedOriginalPrice = selectedOption?.price || basePricing.originalPrice;
+  const selectedFinalPrice = selectedOption?.finalPrice || selectedOption?.price || basePricing.finalPrice;
+  const selectedDiscount = Number(selectedOption?.discount || 0) || basePricing.discountPercentage;
 
   return (
     <div className="bg-[#f7f1e7] pb-8 md:pb-12">
@@ -225,7 +226,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
             <div className="flex items-center justify-between gap-3">
               <span className="rounded-full bg-[#fcf1dc] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#b17024]">{resolveLocalizedText(product.tag, resolvedLocale) || (resolvedLocale === "mr" ? "\u0935\u093f\u0936\u0947\u0937 \u0924\u0941\u0915\u0921\u093e" : "Featured piece")}</span>
               <p className="text-right text-2xl font-semibold text-[#8b4d1d]">
-                {productOptions.length ? `${resolvedLocale === "mr" ? "सुरुवात" : "Starting at"} ${product.price}` : product.price}
+                {productOptions.length ? `${resolvedLocale === "mr" ? "सुरुवात" : "Starting at"} ${product.price}` : basePricing.finalPrice}
               </p>
             </div>
             {productOptions.length ? (
@@ -264,6 +265,17 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                   {selectedDiscount > 0 ? (
                     <p className="mt-1 text-xl font-medium text-[#b6aea3] line-through">{selectedOriginalPrice}</p>
                   ) : null}
+                </div>
+              </div>
+            ) : null}
+            {!productOptions.length && basePricing.hasDiscount ? (
+              <div className="mt-5">
+                <p className="text-[2rem] font-semibold text-[#34180e]">{basePricing.finalPrice}</p>
+                <div className="mt-1 flex items-center gap-3">
+                  <p className="text-xl font-medium text-[#b6aea3] line-through">{basePricing.originalPrice}</p>
+                  <p className="rounded-full bg-[#45ae4a] px-3 py-1 text-sm font-semibold text-white">
+                    {basePricing.discountPercentage.toFixed(0)}% OFF
+                  </p>
                 </div>
               </div>
             ) : null}

@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import type { Product } from "@/data/products"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -44,4 +45,62 @@ export function parseCurrencyAmount(value: string) {
   if (!matchedNumber) return 0
 
   return Number(matchedNumber[0].replace(/,/g, "")) || 0
+}
+
+export function formatCurrencyAmount(value: number) {
+  return `Rs. ${value.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`
+}
+
+export function normalizeDiscountPercentage(value: string) {
+  const normalized = String(value || "").replace(/[^\d.]/g, "").trim()
+  if (!normalized) return 0
+  const parsed = Number(normalized)
+  if (!Number.isFinite(parsed) || parsed <= 0) return 0
+  return Math.min(parsed, 100)
+}
+
+export function calculateDiscountedPrice(price: string, discount: string) {
+  const originalPrice = parseCurrencyAmount(price)
+  const discountPercentage = normalizeDiscountPercentage(discount)
+  if (!originalPrice || discountPercentage <= 0) return 0
+  return Number((originalPrice - originalPrice * (discountPercentage / 100)).toFixed(2))
+}
+
+export function getProductPricing(product: Pick<Product, "price" | "discount" | "finalPrice" | "productOptions">) {
+  const discountedOption =
+    (product.productOptions ?? []).find((option) => normalizeDiscountPercentage(option.discount) > 0) ??
+    null
+  const highlightedOption = discountedOption ?? (product.productOptions ?? [])[0] ?? null
+
+  if (highlightedOption) {
+    const optionDiscount = normalizeDiscountPercentage(highlightedOption.discount)
+    const optionOriginalPrice = highlightedOption.price || product.price
+    const optionFinalPrice = highlightedOption.finalPrice || highlightedOption.price || product.price
+    return {
+      hasDiscount: optionDiscount > 0,
+      originalPrice: optionOriginalPrice,
+      finalPrice: optionFinalPrice,
+      discountPercentage: optionDiscount,
+    }
+  }
+
+  const productDiscount = normalizeDiscountPercentage(product.discount || "0")
+  const originalPrice = product.price
+  const computedFinalPrice = calculateDiscountedPrice(product.price, String(productDiscount))
+  const finalPrice =
+    product.finalPrice && parseCurrencyAmount(product.finalPrice) > 0
+      ? product.finalPrice
+      : productDiscount > 0
+        ? formatCurrencyAmount(computedFinalPrice)
+        : product.price
+
+  return {
+    hasDiscount: productDiscount > 0,
+    originalPrice,
+    finalPrice,
+    discountPercentage: productDiscount,
+  }
 }

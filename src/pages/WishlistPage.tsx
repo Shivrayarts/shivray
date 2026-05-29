@@ -5,7 +5,7 @@ import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { useCart } from "@/hooks/use-cart";
 import { useStoredProducts } from "@/lib/content-store";
 import { useWishlist } from "@/hooks/use-wishlist";
-import { normalizeDisplayCase } from "@/lib/utils";
+import { getProductPricing, normalizeDisplayCase } from "@/lib/utils";
 import { toast } from "sonner";
 
 export default function WishlistPage() {
@@ -49,7 +49,9 @@ export default function WishlistPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {items.map((product) => (
+              {items.map((product) => {
+                const pricing = getProductPricing(product);
+                return (
                 <div
                   key={product.id}
                   className="grid grid-cols-1 gap-4 rounded-lg border border-border bg-card p-4 sm:grid-cols-[96px_1fr_auto]"
@@ -71,7 +73,13 @@ export default function WishlistPage() {
                     >
                       {normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}
                     </Link>
-                    <p className="mt-1 text-sm font-bold text-primary">{product.price}</p>
+                    <p className="mt-1 text-sm font-bold text-primary">{pricing.finalPrice}</p>
+                    {pricing.hasDiscount ? (
+                      <div className="mt-1 flex items-center gap-2">
+                        <p className="text-xs text-muted-foreground line-through">{pricing.originalPrice}</p>
+                        <p className="rounded-full bg-[#45ae4a] px-2 py-0.5 text-[10px] font-semibold text-white">{pricing.discountPercentage.toFixed(0)}% OFF</p>
+                      </div>
+                    ) : null}
                     <p className="mt-2 text-sm text-muted-foreground">
                       {resolveLocalizedText(product.shortDescription, resolvedLocale)}
                     </p>
@@ -106,7 +114,7 @@ export default function WishlistPage() {
                     </button>
                   </div>
                 </div>
-              ))}
+              )})}
               <div className="flex flex-wrap gap-3 pt-2">
                 <button
                   onClick={clearWishlist}

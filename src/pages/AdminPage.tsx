@@ -32,7 +32,7 @@ import type { CatalogueType } from "@/lib/catalogue-types";
 import { defaultCatalogueTypes } from "@/lib/catalogue-types";
 import { changeAdminPassword, changeAdminUsername, logoutAdmin } from "@/lib/admin-auth";
 import { resolveLocalizedText } from "@/lib/language";
-import { parseCurrencyAmount } from "@/lib/utils";
+import { calculateDiscountedPrice, formatCurrencyAmount, normalizeDiscountPercentage, parseCurrencyAmount } from "@/lib/utils";
 import { isValidEmail, isValidName, isValidPhone } from "@/lib/form-validation";
 import {
   deleteStoredProduct,
@@ -61,6 +61,8 @@ const productTemplate: Product = {
   id: "",
   name: "",
   price: "",
+  discount: "0",
+  finalPrice: "",
   image: "",
   galleryImages: [],
   category: "Statues",
@@ -159,26 +161,17 @@ function parseCurrencyValue(value: string) {
 }
 
 function formatCurrency(value: number) {
-  return `Rs. ${value.toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
+  return formatCurrencyAmount(value);
 }
 
 function normalizeDiscountValue(value: string) {
-  const normalized = value.replace(/[^\d.]/g, "");
-  if (!normalized) return "0";
-  const parsed = Number(normalized);
-  if (!Number.isFinite(parsed) || parsed < 0) return "0";
-  return String(Math.min(parsed, 100));
+  return String(normalizeDiscountPercentage(value));
 }
 
 function calculateOptionFinalPrice(price: string, discount: string) {
-  const parsedPrice = parseCurrencyValue(price);
-  const parsedDiscount = Number(normalizeDiscountValue(discount));
-  if (!Number.isFinite(parsedPrice) || parsedPrice <= 0) return "";
-  const finalPrice = parsedPrice - parsedPrice * (parsedDiscount / 100);
-  return finalPrice > 0 ? finalPrice.toFixed(2) : "0.00";
+  const finalPrice = calculateDiscountedPrice(price, discount);
+  if (!finalPrice) return parseCurrencyValue(price) > 0 ? Number(parseCurrencyValue(price)).toFixed(2) : "";
+  return finalPrice.toFixed(2);
 }
 
 function createEmptyProductOption(): ProductOption {
@@ -195,6 +188,8 @@ function cloneProductTemplate(): Product {
     ...productTemplate,
     galleryImages: [],
     productOptions: [],
+    discount: "0",
+    finalPrice: "",
     name: "",
     tag: "",
     shortDescription: "",
@@ -328,6 +323,11 @@ function ProductForm({
   const hasProductOptions = productOptions.some(
     (option) => String(option.label || "").trim() || String(option.price || "").trim(),
   );
+  const baseDiscount = normalizeDiscountValue(String(value.discount || "0"));
+  const baseFinalPrice =
+    hasProductOptions
+      ? ""
+      : calculateOptionFinalPrice(String(value.price || ""), baseDiscount);
 
   return (
     <div className="space-y-4">
@@ -355,19 +355,56 @@ function ProductForm({
           className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
         />
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         <input
           type="number"
           min="1"
           step="0.01"
           value={value.price}
-          onChange={(event) => onChange({ ...value, price: event.target.value })}
+          onChange={(event) =>
+            onChange({
+              ...value,
+              price: event.target.value,
+              finalPrice: calculateOptionFinalPrice(event.target.value, String(value.discount || "0")),
+            })
+          }
           placeholder={hasProductOptions ? "Auto from options" : "5100"}
           disabled={hasProductOptions}
           className={`rounded-2xl border px-4 py-3 text-sm text-[#34180e] outline-none ${
             hasProductOptions
               ? "cursor-not-allowed border-[#e7ddd0] bg-[#f4efe8] text-[#8b6c52]"
               : "border-[#eadbc8] bg-[#fcf8f2]"
+          }`}
+        />
+        <input
+          type="number"
+          min="0"
+          max="100"
+          step="0.01"
+          value={baseDiscount}
+          onChange={(event) =>
+            onChange({
+              ...value,
+              discount: normalizeDiscountValue(event.target.value),
+              finalPrice: calculateOptionFinalPrice(String(value.price || ""), event.target.value),
+            })
+          }
+          placeholder={hasProductOptions ? "Managed by options" : "Discount %"}
+          disabled={hasProductOptions}
+          className={`rounded-2xl border px-4 py-3 text-sm text-[#34180e] outline-none ${
+            hasProductOptions
+              ? "cursor-not-allowed border-[#e7ddd0] bg-[#f4efe8] text-[#8b6c52]"
+              : "border-[#eadbc8] bg-[#fcf8f2]"
+          }`}
+        />
+        <input
+          value={hasProductOptions ? "" : baseFinalPrice}
+          readOnly
+          placeholder={hasProductOptions ? "Managed by options" : "Final price"}
+          className={`rounded-2xl border px-4 py-3 text-sm text-[#34180e] outline-none ${
+            hasProductOptions
+              ? "cursor-not-allowed border-[#e7ddd0] bg-[#f4efe8] text-[#8b6c52]"
+              : "border-[#eadbc8] bg-[#f8fafc]"
           }`}
         />
       </div>
@@ -1385,6 +1422,7 @@ export default function AdminPage() {
       return;
     }
 
+    const normalizedBaseDiscount = validOptions.length > 0 ? "0" : normalizeDiscountValue(String(productDraft.discount || "0"));
     const derivedBasePrice =
       validOptions.length > 0
         ? Math.min(...validOptions.map((option) => parseCurrencyValue(option.finalPrice))).toFixed(2)
@@ -1395,6 +1433,10 @@ export default function AdminPage() {
       return;
     }
     const normalizedPrice = normalizedPriceValue.toFixed(2);
+    const normalizedFinalPrice =
+      validOptions.length > 0
+        ? ""
+        : calculateOptionFinalPrice(normalizedPrice, normalizedBaseDiscount);
 
     const baseProductId = productDraft.id || slugify(englishName) || uniqueId("product");
     const nextProductId =
@@ -1408,6 +1450,8 @@ export default function AdminPage() {
       category,
       image: coverImage,
       price: normalizedPrice,
+      discount: normalizedBaseDiscount,
+      finalPrice: normalizedFinalPrice,
       galleryImages: (productDraft.galleryImages ?? []).filter(Boolean).slice(0, 4),
       productOptions: validOptions,
       historicalBackground: {
@@ -2435,7 +2479,7 @@ export default function AdminPage() {
                             <tbody>
                               {(item.productOptions?.length
                                 ? item.productOptions
-                                : [{ label: adminText(item.dimensions) || "-", price: item.price, discount: "0", finalPrice: item.price }]
+                                : [{ label: adminText(item.dimensions) || "-", price: item.price, discount: String(item.discount || "0"), finalPrice: item.finalPrice || item.price }]
                               ).map((option, optionIndex) => (
                                 <tr key={`${item.id}-option-${optionIndex}`}>
                                   <td className="border-r border-t border-[#e5e7eb] px-3 py-2 text-[#1f2937]">{option.label}</td>
@@ -2455,6 +2499,12 @@ export default function AdminPage() {
                               <p className="text-sm text-[#8b95a4]">Brand</p>
                               <p className="text-2xl font-semibold text-[#111827]">{adminText(item.tag) || "Active"}</p>
                             </div>
+                            {!item.productOptions?.length && Number(item.discount || 0) > 0 ? (
+                              <div>
+                                <p className="text-sm text-[#8b95a4]">Offer</p>
+                                <p className="text-2xl font-semibold text-[#16a34a]">{Number(item.discount || 0).toFixed(0)}% OFF</p>
+                              </div>
+                            ) : null}
                           </div>
                         </div>
                         <div className="mt-4">

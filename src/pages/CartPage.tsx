@@ -6,7 +6,7 @@ import { useCart } from "@/hooks/use-cart";
 import { useStoredProducts } from "@/lib/content-store";
 import { isValidEmail, isValidName, isValidPhone, normalizeDigits } from "@/lib/form-validation";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
-import { normalizeDisplayCase, parseCurrencyAmount } from "@/lib/utils";
+import { getProductPricing, normalizeDisplayCase, parseCurrencyAmount } from "@/lib/utils";
 import {
   type CustomerProfile,
   getStoredCustomers,
@@ -47,7 +47,7 @@ export default function CartPage() {
   const orderTotal = useMemo(
     () =>
       items.reduce((sum, item) => {
-        const unitPrice = parseCurrencyAmount(item.product.price);
+        const unitPrice = parseCurrencyAmount(getProductPricing(item.product).finalPrice);
         return sum + unitPrice * item.quantity;
       }, 0),
     [items],
@@ -98,7 +98,7 @@ export default function CartPage() {
         items: items.map(({ product, quantity }) => ({
           productId: product.id,
           productName: resolveLocalizedText(product.name, resolvedLocale),
-          price: product.price,
+          price: getProductPricing(product).finalPrice,
           quantity,
           image: product.image,
         })),
@@ -125,10 +125,12 @@ export default function CartPage() {
             <div className="rounded-lg border border-border bg-card p-8 text-center"><p className="text-muted-foreground">Your cart is currently empty.</p><Link to="/products" className="mt-4 inline-flex rounded-md bg-primary px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-primary-foreground">Browse Products</Link></div>
           ) : (
             <div className="space-y-4">
-              {items.map(({ product, quantity }) => (
+              {items.map(({ product, quantity }) => {
+                const pricing = getProductPricing(product);
+                return (
                 <div key={product.id} className="grid grid-cols-1 gap-4 rounded-lg border border-border bg-card p-4 sm:grid-cols-[96px_1fr_auto]">
                   <img src={product.image} alt={normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))} className="h-24 w-24 rounded-md object-cover" loading="lazy" />
-                  <div><p className="text-xs uppercase tracking-wide text-gold">{getCategoryLabel(product.category, resolvedLocale)}</p><Link to="/products/$productId" params={{ productId: product.id }} className="mt-1 block font-heading text-base font-semibold text-foreground hover:text-primary">{normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}</Link><p className="mt-1 text-sm font-bold text-primary">{product.price}</p></div>
+                  <div><p className="text-xs uppercase tracking-wide text-gold">{getCategoryLabel(product.category, resolvedLocale)}</p><Link to="/products/$productId" params={{ productId: product.id }} className="mt-1 block font-heading text-base font-semibold text-foreground hover:text-primary">{normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}</Link><p className="mt-1 text-sm font-bold text-primary">{pricing.finalPrice}</p>{pricing.hasDiscount ? <div className="mt-1 flex items-center gap-2"><p className="text-xs text-muted-foreground line-through">{pricing.originalPrice}</p><p className="rounded-full bg-[#45ae4a] px-2 py-0.5 text-[10px] font-semibold text-white">{pricing.discountPercentage.toFixed(0)}% OFF</p></div> : null}</div>
                   <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end">
                     <div className="flex items-center gap-2 rounded-md border border-border p-1">
                       <button onClick={() => updateQuantity(product.id, quantity - 1)} className="rounded p-1 hover:bg-muted" aria-label={`${resolvedLocale === "mr" ? "प्रमाण कमी करा" : "Decrease quantity of"} ${normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}`}><Minus className="h-4 w-4" /></button>
@@ -138,7 +140,7 @@ export default function CartPage() {
                     <button onClick={() => removeFromCart(product.id)} className="inline-flex items-center gap-1 text-xs text-destructive hover:opacity-80"><Trash2 className="h-3.5 w-3.5" />{resolvedLocale === "mr" ? "काढा" : "Remove"}</button>
                   </div>
                 </div>
-              ))}
+              )})}
               <div className="flex flex-wrap gap-3 pt-2">
                 <button onClick={clearCart} className="rounded-md border border-border px-4 py-2 text-sm font-semibold uppercase tracking-wider hover:bg-muted">{resolvedLocale === "mr" ? "कार्ट साफ करा" : "Clear Cart"}</button>
                 <Link to="/contact" className="rounded-md bg-primary px-5 py-2 text-sm font-semibold uppercase tracking-wider text-primary-foreground">{resolvedLocale === "mr" ? "चौकशी / ऑर्डर" : "Enquire / Order"}</Link>

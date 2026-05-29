@@ -17,7 +17,7 @@ import productDhoop1 from "@/assets/Products/product-1.png";
 import productStatue1 from "@/assets/Products/product-2.jpeg";
 import heroBanner3 from "@/assets/hero-banner-3.jpg";
 import productWeapon1 from "@/assets/Products/product-5.jpeg";
-import { parseCurrencyAmount } from "@/lib/utils";
+import { getProductPricing, parseCurrencyAmount } from "@/lib/utils";
 import ProductGalleryCard from "@/components/ProductGalleryCard";
 
 const PRODUCTS_PER_PAGE = 12;
@@ -129,8 +129,8 @@ export default function ProductsPage() {
       return matchesSearch && matchesCategory;
     });
     const sortedProducts = [...matchedProducts];
-    if (sortBy === "price-low") sortedProducts.sort((a, b) => parseCurrencyAmount(a.price) - parseCurrencyAmount(b.price));
-    if (sortBy === "price-high") sortedProducts.sort((a, b) => parseCurrencyAmount(b.price) - parseCurrencyAmount(a.price));
+    if (sortBy === "price-low") sortedProducts.sort((a, b) => parseCurrencyAmount(getProductPricing(a).finalPrice) - parseCurrencyAmount(getProductPricing(b).finalPrice));
+    if (sortBy === "price-high") sortedProducts.sort((a, b) => parseCurrencyAmount(getProductPricing(b).finalPrice) - parseCurrencyAmount(getProductPricing(a).finalPrice));
     if (sortBy === "name") sortedProducts.sort((a, b) => resolveLocalizedText(a.name, resolvedLocale).localeCompare(resolveLocalizedText(b.name, resolvedLocale)));
     return sortedProducts;
   }, [category, products, resolvedLocale, search, sortBy]);

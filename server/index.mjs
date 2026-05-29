@@ -94,9 +94,21 @@ function parseProductPrice(value) {
   return parsed;
 }
 
+function parseDiscountPercentage(value) {
+  const normalized = String(value ?? "").replace(/[^\d.]/g, "").trim();
+  if (!normalized) return 0;
+  const parsed = Number(normalized);
+  if (!Number.isFinite(parsed) || parsed <= 0) return 0;
+  return Math.min(parsed, 100);
+}
+
 function normalizeProductForDb(product) {
   const parsedPrice = parseProductPrice(product?.price);
   if (parsedPrice === null) return null;
+  const discountPercentage = parseDiscountPercentage(product?.discount);
+  const parsedFinalPrice = discountPercentage > 0
+    ? Number((parsedPrice - parsedPrice * (discountPercentage / 100)).toFixed(2))
+    : null;
 
   const productOptions = Array.isArray(product?.productOptions)
     ? product.productOptions
@@ -113,6 +125,8 @@ function normalizeProductForDb(product) {
     slug: slugify(product?.id || getEnglishText(product?.name), "product"),
     name: encodeLocalizedValue(product?.name),
     price: parsedPrice,
+    discountPercentage,
+    finalPrice: parsedFinalPrice,
     image: product?.image,
     category: product?.category,
     tag: encodeLocalizedValue(product?.tag),
@@ -129,12 +143,14 @@ async function upsertProductRow(connection, product, sortOrder) {
   await connection.query(
     `
     INSERT INTO products (
-      slug, name, price, image_url, category, tag, short_description, details, material, dimensions, history_background, stock_quantity, is_published, sort_order
+      slug, name, price, discount_percentage, final_price, image_url, category, tag, short_description, details, material, dimensions, history_background, stock_quantity, is_published, sort_order
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1, ?)
     ON DUPLICATE KEY UPDATE
       name = VALUES(name),
       price = VALUES(price),
+      discount_percentage = VALUES(discount_percentage),
+      final_price = VALUES(final_price),
       image_url = VALUES(image_url),
       category = VALUES(category),
       tag = VALUES(tag),
@@ -150,6 +166,8 @@ async function upsertProductRow(connection, product, sortOrder) {
       product.slug,
       product.name,
       product.price,
+      product.discountPercentage,
+      product.finalPrice,
       product.image,
       product.category,
       product.tag,
@@ -169,6 +187,12 @@ function toBoolean(value) {
 
 function toSha256(value) {
   return crypto.createHash("sha256").update(value).digest("hex");
+}
+
+function createHttpError(statusCode, message) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
 }
 
 function slugify(value, fallbackPrefix) {
@@ -388,6 +412,122 @@ async function ensureProductsCategoryColumnSupportsCustomValues() {
   }
 }
 
+async function ensureProductsLocalizedColumnsSupportJson() {
+  try {
+    await query(
+      `
+      ALTER TABLE products
+      MODIFY COLUMN name TEXT NOT NULL,
+      MODIFY COLUMN tag TEXT NULL,
+      MODIFY COLUMN short_description TEXT NOT NULL,
+      MODIFY COLUMN material TEXT NOT NULL,
+      MODIFY COLUMN dimensions TEXT NOT NULL
+      `,
+    );
+  } catch (error) {
+    console.warn(
+      "Unable to expand product text columns for localized admin content.",
+      error instanceof Error ? error.message : error,
+    );
+  }
+}
+
+async function ensureProductsDiscountColumns() {
+  try {
+    await query(
+      `
+      ALTER TABLE products
+      ADD COLUMN IF NOT EXISTS discount_percentage DECIMAL(5,2) NOT NULL DEFAULT 0.00 AFTER price,
+      ADD COLUMN IF NOT EXISTS final_price DECIMAL(10,2) NULL AFTER discount_percentage
+      `,
+    );
+
+    await query(
+      `
+      UPDATE products
+      SET final_price = NULL
+      WHERE discount_percentage <= 0
+      `,
+    );
+
+    await query(
+      `
+      UPDATE products
+      SET final_price = ROUND(price - (price * discount_percentage / 100), 2)
+      WHERE discount_percentage > 0
+      `,
+    );
+  } catch (error) {
+    console.warn(
+      "Unable to verify product discount columns.",
+      error instanceof Error ? error.message : error,
+    );
+  }
+}
+
+async function ensureOrderItemsProductSlugSnapshotColumn() {
+  try {
+    const rows = await query(
+      `
+      SHOW COLUMNS FROM order_items LIKE 'product_slug_snapshot'
+      `,
+    );
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+      await query(
+        `
+        ALTER TABLE order_items
+        ADD COLUMN product_slug_snapshot VARCHAR(191) NULL AFTER product_id
+        `,
+      );
+    }
+
+    await query(
+      `
+      UPDATE order_items order_items_row
+      LEFT JOIN products products_row ON products_row.id = order_items_row.product_id
+      SET order_items_row.product_slug_snapshot = products_row.slug
+      WHERE order_items_row.product_slug_snapshot IS NULL
+        AND order_items_row.product_id IS NOT NULL
+      `,
+    );
+  } catch (error) {
+    console.warn(
+      "Unable to verify order item slug snapshots.",
+      error instanceof Error ? error.message : error,
+    );
+  }
+}
+
+async function normalizeLegacySeedAssetPaths() {
+  const replacements = [
+    ["/assets/product-statue-2.jpg", "/assets/product-statue-2.jpeg"],
+    ["/assets/product-statue-3.jpg", "/assets/product-statue-3.jpeg"],
+    ["/assets/product-weapon-1.jpg", "/assets/product-weapon-1.jpeg"],
+    ["/assets/product-weapon-2.jpg", "/assets/product-weapon-2.jpeg"],
+    ["/assets/product-weapon-3.jpg", "/assets/product-weapon-3.jpeg"],
+    ["/assets/product-talwar-1.jpg", "/assets/product-talwar-1.jpeg"],
+  ];
+
+  try {
+    for (const [fromPath, toPath] of replacements) {
+      await query(
+        `
+        UPDATE products
+        SET image_url = ?
+        WHERE image_url = ?
+        `,
+        [toPath, fromPath],
+      );
+    }
+  } catch (error) {
+    console.warn(
+      "Unable to normalize legacy product asset paths.",
+      error instanceof Error ? error.message : error,
+    );
+  }
+}
+
 async function loadProductOptionsMap() {
   const rows = await query(
     `
@@ -422,6 +562,20 @@ async function saveProductOptionsMap(connection, productOptionsMap) {
   );
 }
 
+async function findUserByEmail(email) {
+  const rows = await query(
+    `
+    SELECT id, role
+    FROM users
+    WHERE email = ?
+    LIMIT 1
+    `,
+    [email],
+  );
+
+  return rows[0] ?? null;
+}
+
 function requireAdmin(req, res, next) {
   const session = getAdminSession(req);
   if (!session?.userId) {
@@ -438,6 +592,7 @@ async function fetchStorefrontPayload() {
     query(
       `
       SELECT slug, name, price, image_url, category, tag, short_description, details, material, dimensions, history_background
+      , discount_percentage, final_price
       FROM products
       WHERE is_published = 1
       ORDER BY sort_order ASC, id DESC
@@ -503,6 +658,8 @@ async function fetchStorefrontPayload() {
       id: row.slug,
       name: decodeLocalizedValue(row.name),
       price: formatCurrency(row.price),
+      discount: Number(row.discount_percentage || 0).toFixed(2),
+      finalPrice: row.final_price ? formatCurrency(row.final_price) : "",
       image: row.image_url,
       category: row.category,
       tag: decodeLocalizedValue(row.tag ?? ""),
@@ -658,6 +815,7 @@ async function fetchOrdersPayload() {
     SELECT
       order_id,
       product_id,
+      product_slug_snapshot,
       product_name_snapshot,
       product_image_snapshot,
       unit_price,
@@ -671,7 +829,7 @@ async function fetchOrdersPayload() {
   for (const row of orderItemRows) {
     const list = itemsByOrderId.get(row.order_id) ?? [];
     list.push({
-      productId: row.product_id ? String(row.product_id) : "",
+      productId: row.product_slug_snapshot || (row.product_id ? String(row.product_id) : ""),
       productName: row.product_name_snapshot,
       price: formatCurrency(row.unit_price),
       quantity: Number(row.quantity),
@@ -1134,6 +1292,12 @@ app.post("/api/customers/login", async (req, res) => {
   }
 
   try {
+    const existingUser = await findUserByEmail(email);
+    if (existingUser && existingUser.role !== "customer") {
+      res.status(409).json({ message: "This email is reserved for an admin account. Use a different customer email." });
+      return;
+    }
+
     const customer = await withTransaction(async (connection) => {
       const [existingRows] = await connection.query(
         `
@@ -1227,6 +1391,14 @@ app.put("/api/customers/:customerId", async (req, res) => {
   const lastLoginAt = req.body?.lastLoginAt ? new Date(req.body.lastLoginAt) : new Date();
 
   try {
+    if (email) {
+      const existingUser = await findUserByEmail(email);
+      if (existingUser && existingUser.role !== "customer" && existingUser.id !== customerId) {
+        res.status(409).json({ message: "This email is reserved for an admin account. Use a different customer email." });
+        return;
+      }
+    }
+
     if (!customerId && rawCustomerId.startsWith("customer-local-")) {
       updateMemoryCustomer(rawCustomerId, {
         name,
@@ -1279,6 +1451,13 @@ app.post("/api/orders", async (req, res) => {
   }
 
   try {
+    const customerEmail = String(customer.email).toLowerCase();
+    const existingUser = await findUserByEmail(customerEmail);
+    if (!parseCustomerId(customer.id) && existingUser && existingUser.role !== "customer") {
+      res.status(409).json({ message: "This email is reserved for an admin account. Use a different customer email for orders." });
+      return;
+    }
+
     const order = await withTransaction(async (connection) => {
       let customerId = parseCustomerId(customer.id);
 
@@ -1298,8 +1477,8 @@ app.post("/api/orders", async (req, res) => {
           `,
           [
             customer.name,
-            String(customer.email).toLowerCase(),
-            toSha256(`${String(customer.email).toLowerCase()}:customer`),
+            customerEmail,
+            toSha256(`${customerEmail}:customer`),
             customer.phone,
             customer.address,
             new Date(),
@@ -1314,7 +1493,7 @@ app.post("/api/orders", async (req, res) => {
           SET full_name = ?, email = ?, phone = ?, address = ?, last_login_at = ?
           WHERE id = ? AND role = 'customer'
           `,
-          [customer.name, String(customer.email).toLowerCase(), customer.phone, customer.address, new Date(), customerId],
+          [customer.name, customerEmail, customer.phone, customer.address, new Date(), customerId],
         );
       }
 
@@ -1334,14 +1513,14 @@ app.post("/api/orders", async (req, res) => {
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
-        [
-          orderNumber,
-          customerId,
-          customer.name,
-          String(customer.email).toLowerCase(),
-          customer.phone,
-          totalAmount,
-          orderStatus,
+          [
+            orderNumber,
+            customerId,
+            customer.name,
+            customerEmail,
+            customer.phone,
+            totalAmount,
+            orderStatus,
           customer.address,
           paymentMethod,
           paymentInfo,
@@ -1359,13 +1538,14 @@ app.post("/api/orders", async (req, res) => {
         await connection.query(
           `
           INSERT INTO order_items (
-            order_id, product_id, product_name_snapshot, product_image_snapshot, unit_price, quantity
+            order_id, product_id, product_slug_snapshot, product_name_snapshot, product_image_snapshot, unit_price, quantity
           )
-          VALUES (?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
           `,
           [
             orderResult.insertId,
             productId,
+            productSlug,
             item.productName,
             item.image || "",
             parseCurrencyAmount(item.price),
@@ -1378,7 +1558,7 @@ app.post("/api/orders", async (req, res) => {
         id: orderNumber,
         customerId: `customer-${customerId}`,
         customerName: customer.name,
-        customerEmail: String(customer.email).toLowerCase(),
+        customerEmail: customerEmail,
         customerPhone: customer.phone,
         customerAddress: customer.address,
         items: items.map((item) => ({
@@ -1461,6 +1641,10 @@ app.use((error, _req, res, _next) => {
 
 async function startServer() {
   await ensureProductsCategoryColumnSupportsCustomValues();
+  await ensureProductsLocalizedColumnsSupportJson();
+  await ensureProductsDiscountColumns();
+  await ensureOrderItemsProductSlugSnapshotColumn();
+  await normalizeLegacySeedAssetPaths();
 
   app.listen(env.PORT, () => {
     console.log(`Shivray backend listening on http://localhost:${env.PORT}`);
