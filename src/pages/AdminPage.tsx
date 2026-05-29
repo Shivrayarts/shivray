@@ -2754,7 +2754,14 @@ export default function AdminPage() {
                   {storedHomeContent.banners.map((item, index) => (
                     <div key={item.id} className="rounded-[24px] border border-[#efe1cf] bg-[#fcf8f2] p-4">
                       <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-4 md:flex-row md:items-center">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setBannerDraft(item);
+                            setBannerNotice("");
+                          }}
+                          className="flex w-full flex-col gap-4 rounded-2xl p-1 text-left transition hover:bg-[#fff6ea] md:flex-row md:items-center"
+                        >
                           <div className="h-20 w-full overflow-hidden rounded-2xl border border-[#eadbc8] bg-white md:w-36">
                             {(item.mediaType ?? "image") === "video" ? (
                               <video
@@ -2782,12 +2789,39 @@ export default function AdminPage() {
                               {(item.mediaType ?? "image") === "video" ? item.videoUrl || "No video selected" : item.image || "No image selected"}
                             </p>
                           </div>
-                        </div>
+                        </button>
                         <div className="flex flex-wrap gap-2">
-                          <button type="button" onClick={() => setBannerDraft(item)} className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm font-semibold text-[#6c4b33]">Edit</button>
-                          <button type="button" onClick={() => void reorderBanner(index, -1)} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowUp className="h-4 w-4" /></button>
-                          <button type="button" onClick={() => void reorderBanner(index, 1)} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowDown className="h-4 w-4" /></button>
-                          <button type="button" onClick={() => void deleteBanner(item.id)} className="rounded-full border border-[#ffe1e1] bg-[#fff3f3] px-3 py-2 text-sm text-[#9f2b2b]"><Trash2 className="h-4 w-4" /></button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setBannerDraft(item);
+                              setBannerNotice("");
+                            }}
+                            className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm font-semibold text-[#6c4b33]"
+                          >
+                            Edit Banner
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void reorderBanner(index, -1)}
+                            className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm font-semibold text-[#6c4b33]"
+                          >
+                            Move Up
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void reorderBanner(index, 1)}
+                            className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm font-semibold text-[#6c4b33]"
+                          >
+                            Move Down
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void deleteBanner(item.id)}
+                            className="rounded-full border border-[#ffe1e1] bg-[#fff3f3] px-4 py-2 text-sm font-semibold text-[#9f2b2b]"
+                          >
+                            Delete Banner
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -2821,6 +2855,16 @@ export default function AdminPage() {
                   )}
                 </div>
                 <div className="mt-6">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBannerDraft(bannerTemplate);
+                      setBannerNotice("");
+                    }}
+                    className="mb-4 rounded-full bg-[#34180e] px-4 py-2 text-sm font-semibold text-white"
+                  >
+                    Create New Banner
+                  </button>
                   <BannerForm
                     value={bannerDraft}
                     onChange={setBannerDraft}
