@@ -22,7 +22,7 @@ import productDhoop1 from "@/assets/Products/product-1.png";
 import productStatue1 from "@/assets/Products/product-2.jpeg";
 import productShowcase1 from "@/assets/Products/product-1.png";
 import productWeapon1 from "@/assets/Products/product-5.jpeg";
-import heroBanner3 from "@/assets/hero-banner-3.jpg";
+const heroBanner3 = "/assets/hero-banner-3.jpg";
 
 // const features = [
 //   { icon: ShieldCheck, title: "Trusted Craftsmanship", copy: "Hand-finished products inspired by heritage, made for display, gifting, and devotion." },
@@ -119,14 +119,7 @@ export default function HomePage() {
         };
       });
 
-    if (adminCards.length > 0) return adminCards;
-
-    return ["Statues", "Weapons", "Shields", "Dhoop"].map((key) => ({
-      title: key,
-      key,
-      count: `${products.filter((product) => product.category === key).length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
-      image: fallbackImages[key] || productStatue1,
-    }));
+    return adminCards;
   }, [catalogueTypes, products, resolvedLocale]);
   const spotlightProductCards = spotlightIds.flatMap((productId) => {
     const matchedProduct = products.find((item) => item.id === productId);
@@ -174,6 +167,16 @@ export default function HomePage() {
     }, 5000);
     return () => window.clearInterval(timer);
   }, [heroSlides.length]);
+
+  useEffect(() => {
+    heroSlides.forEach((slide) => {
+      const mediaType = slide.mediaType ?? (slide.videoUrl ? "video" : "image");
+      const mediaUrl = mediaType === "video" ? slide.videoUrl || slide.image : slide.image;
+      if (!mediaUrl || mediaType !== "image") return;
+      const image = new Image();
+      image.src = mediaUrl;
+    });
+  }, [heroSlides]);
 
   useEffect(() => {
     if (reviews.length <= 1) return;
@@ -335,34 +338,44 @@ export default function HomePage() {
           <div className="text-center">
             <h2 className="font-body text-3xl font-semibold text-[#1d150f] md:text-4xl">{resolvedLocale === "mr" ? "लोकप्रिय श्रेणी" : "Popular Categories"}</h2>
           </div>
-          <div ref={categoriesRef} onScroll={handleCategoriesScroll} className="category-carousel-scroll mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2">
-            {homeCategoryCards.map((card) => (
-              <Link
-                key={card.key}
-                to="/products"
-                search={{ category: card.key }}
-                data-category-card
-                className="group w-[78vw] max-w-[22rem] shrink-0 snap-center text-center sm:w-[19rem] md:w-[16.5rem]"
-              >
-                <div className="relative overflow-hidden rounded-[30px] bg-[#b65a73] shadow-[0_18px_45px_-30px_rgba(89,34,49,0.65)]">
-                  <img src={card.image} alt={card.title} className="aspect-square w-full object-cover opacity-90 saturate-[0.7] transition duration-500 group-hover:scale-105" />
-                </div>
-                <h3 className="mt-4 font-body text-xl font-semibold text-[#1c140f] md:text-2xl">{card.title}</h3>
-                <p className="mt-1 text-base text-[#7d766f]">{card.count}</p>
-              </Link>
-            ))}
-          </div>
-          <div className="mt-7 flex items-center justify-center gap-3">
-            {homeCategoryCards.map((card, index) => (
-              <button
-                key={card.key}
-                type="button"
-                aria-label={`Go to category slide ${index + 1}`}
-                onClick={() => scrollToCategorySlide(index)}
-                className={`rounded-full ${index === categorySlide ? "h-4 w-4 border border-[#1d150f] bg-white shadow-[inset_0_0_0_4px_#1d150f]" : "h-2.5 w-2.5 bg-[#a9a29c]"}`}
-              />
-            ))}
-          </div>
+          {homeCategoryCards.length > 0 ? (
+            <>
+              <div ref={categoriesRef} onScroll={handleCategoriesScroll} className="category-carousel-scroll mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2">
+                {homeCategoryCards.map((card) => (
+                  <Link
+                    key={card.key}
+                    to="/products"
+                    search={{ category: card.key }}
+                    data-category-card
+                    className="group w-[78vw] max-w-[22rem] shrink-0 snap-center text-center sm:w-[19rem] md:w-[16.5rem]"
+                  >
+                    <div className="relative overflow-hidden rounded-[30px] bg-[#b65a73] shadow-[0_18px_45px_-30px_rgba(89,34,49,0.65)]">
+                      <img src={card.image} alt={card.title} className="aspect-square w-full object-cover opacity-90 saturate-[0.7] transition duration-500 group-hover:scale-105" />
+                    </div>
+                    <h3 className="mt-4 font-body text-xl font-semibold text-[#1c140f] md:text-2xl">{card.title}</h3>
+                    <p className="mt-1 text-base text-[#7d766f]">{card.count}</p>
+                  </Link>
+                ))}
+              </div>
+              <div className="mt-7 flex items-center justify-center gap-3">
+                {homeCategoryCards.map((card, index) => (
+                  <button
+                    key={card.key}
+                    type="button"
+                    aria-label={`Go to category slide ${index + 1}`}
+                    onClick={() => scrollToCategorySlide(index)}
+                    className={`rounded-full ${index === categorySlide ? "h-4 w-4 border border-[#1d150f] bg-white shadow-[inset_0_0_0_4px_#1d150f]" : "h-2.5 w-2.5 bg-[#a9a29c]"}`}
+                  />
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="mt-8 text-center text-base text-[#7d766f]">
+              {resolvedLocale === "mr"
+                ? "सध्या कोणत्याही श्रेणी प्रकाशित केलेल्या नाहीत."
+                : "No categories are currently published."}
+            </p>
+          )}
         </div>
       </section>
 

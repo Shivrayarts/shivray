@@ -15,12 +15,12 @@ import { useStoredCatalogueTypes, useStoredProducts } from "@/lib/content-store"
 import { getSearchableText, resolveLocalizedText, useLanguage } from "@/lib/language";
 import productDhoop1 from "@/assets/Products/product-1.png";
 import productStatue1 from "@/assets/Products/product-2.jpeg";
-import heroBanner3 from "@/assets/hero-banner-3.jpg";
 import productWeapon1 from "@/assets/Products/product-5.jpeg";
 import { getProductPricing, parseCurrencyAmount } from "@/lib/utils";
 import ProductGalleryCard from "@/components/ProductGalleryCard";
 
 const PRODUCTS_PER_PAGE = 12;
+const heroBanner3 = "/assets/hero-banner-3.jpg";
 
 export default function ProductsPage() {
   const { resolvedLocale } = useLanguage();

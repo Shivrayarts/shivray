@@ -23,6 +23,13 @@ const hasBuiltClient = existsSync(path.join(distDir, "index.html"));
 app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 
+app.use("/api", (_req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  next();
+});
+
 const allowedOrigins = new Set(
   String(env.CORS_ORIGIN || "")
     .split(",")

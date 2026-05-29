@@ -537,7 +537,7 @@ function applyStorefrontPayload(payload: Partial<StorefrontPayload>) {
 }
 
 async function refreshStorefrontData() {
-  const payload = await apiRequest<StorefrontPayload>("/api/storefront");
+  const payload = await apiRequest<StorefrontPayload>(`/api/storefront?ts=${Date.now()}`);
   applyStorefrontPayload(payload);
   clearLocalProductsFallback();
   clearLocalHomeContentFallback();

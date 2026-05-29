@@ -2,6 +2,7 @@ type ApiOptions = {
   method?: string;
   body?: unknown;
   headers?: HeadersInit;
+  cache?: RequestCache;
 };
 
 const API_BASE_URL = String(import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
@@ -14,9 +15,11 @@ function buildApiUrl(path: string) {
 }
 
 export async function apiRequest<T>(path: string, options: ApiOptions = {}): Promise<T> {
+  const method = options.method ?? "GET";
   const response = await fetch(buildApiUrl(path), {
-    method: options.method ?? "GET",
+    method,
     credentials: "include",
+    cache: options.cache ?? "no-store",
     headers: {
       "Content-Type": "application/json",
       ...options.headers,

@@ -1,7 +1,7 @@
 ﻿import type { LocalizedText } from "@/lib/language";
-import heroBanner1 from "@/assets/products-poster.jpg";
-import heroBanner2 from "@/assets/hero-banner-2.jpg";
-import heroBanner3 from "@/assets/hero-banner-3.jpg";
+const heroBanner1 = "/assets/products-poster.jpg";
+const heroBanner2 = "/assets/hero-banner-2.jpg";
+const heroBanner3 = "/assets/hero-banner-3.jpg";
 
 type Translatable = string | LocalizedText;
 
