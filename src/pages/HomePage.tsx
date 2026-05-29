@@ -273,13 +273,13 @@ export default function HomePage() {
               key={activeHeroSlide.id}
               src={activeHeroMediaUrl}
               alt={resolveLocalizedText(activeHeroSlide.titleTop, resolvedLocale) || "Homepage banner"}
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-contain md:object-cover"
               fetchPriority="high"
             />
           )
         ) : null}
         <div className="absolute inset-0 bg-black/10" />
-        <div className="layout-shell relative flex min-h-[560px] items-center justify-center px-5 py-16 text-center md:min-h-[720px] md:px-8 md:py-24">
+        <div className="layout-shell relative flex min-h-[460px] items-center justify-center px-5 py-12 text-center md:min-h-[720px] md:px-8 md:py-24">
           <div className="mx-auto max-w-5xl">
             {activeHeroSlide ? (
               <div className="hidden">
