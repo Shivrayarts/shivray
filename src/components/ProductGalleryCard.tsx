@@ -2,7 +2,7 @@ import { Heart } from "lucide-react";
 import { Link } from "@/lib/spa-router";
 import { getCategoryLabel, type Product } from "@/data/products";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
-import { getProductPricing, normalizeDisplayCase } from "@/lib/utils";
+import { getProductPricing, normalizeDisplayCase, normalizeDiscountPercentage } from "@/lib/utils";
 
 type ProductGalleryCardProps = {
   product: Product;
@@ -74,21 +74,24 @@ export default function ProductGalleryCard({
         </Link>
         {optionChips.length ? (
           <div className="mt-3 flex flex-wrap gap-2">
-            {optionChips.map((option, index) => (
+            {optionChips.map((option, index) => {
+              const optionDiscount = normalizeDiscountPercentage(option.discount);
+              return (
               <div
                 key={`${product.id}-chip-${index}`}
                 className={`overflow-hidden rounded-2xl border text-center ${
-                  Number(option.discount || 0) > 0
+                  optionDiscount > 0
                     ? "border-[#59b85c]"
                     : "border-[#d7d7d7]"
                 }`}
               >
                 <p className="bg-[#f8faf7] px-4 py-2 text-sm font-semibold text-[#5f645f]">{option.label}</p>
-                {Number(option.discount || 0) > 0 ? (
-                  <p className="bg-[#45ae4a] px-4 py-1 text-sm font-semibold text-white">{Number(option.discount || 0).toFixed(0)}%</p>
+                {optionDiscount > 0 ? (
+                  <p className="bg-[#45ae4a] px-4 py-1 text-sm font-semibold text-white">{optionDiscount.toFixed(0)}%</p>
                 ) : null}
               </div>
-            ))}
+              );
+            })}
           </div>
         ) : null}
         <div className={`${isMarathi ? "mt-2" : "mt-3"}`}>

@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import type { Product } from "@/data/products"
+import type { Product, ProductOption } from "@/data/products"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -69,6 +69,25 @@ export function calculateDiscountedPrice(price: string, discount: string) {
   return Number((originalPrice - originalPrice * (discountPercentage / 100)).toFixed(2))
 }
 
+export function getProductOptionPricing(option: ProductOption, fallbackPrice = "") {
+  const discountPercentage = normalizeDiscountPercentage(option.discount)
+  const originalPrice = option.price || fallbackPrice
+  const computedFinalPrice = calculateDiscountedPrice(originalPrice, String(discountPercentage))
+  const savedFinalPrice = parseCurrencyAmount(option.finalPrice) > 0 ? option.finalPrice : ""
+  const finalPrice =
+    savedFinalPrice ||
+    (discountPercentage > 0 && computedFinalPrice > 0
+      ? formatCurrencyAmount(computedFinalPrice)
+      : originalPrice)
+
+  return {
+    hasDiscount: discountPercentage > 0,
+    originalPrice,
+    finalPrice,
+    discountPercentage,
+  }
+}
+
 export function getProductPricing(product: Pick<Product, "price" | "discount" | "finalPrice" | "productOptions">) {
   const discountedOption =
     (product.productOptions ?? []).find((option) => normalizeDiscountPercentage(option.discount) > 0) ??
@@ -76,15 +95,7 @@ export function getProductPricing(product: Pick<Product, "price" | "discount" | 
   const highlightedOption = discountedOption ?? (product.productOptions ?? [])[0] ?? null
 
   if (highlightedOption) {
-    const optionDiscount = normalizeDiscountPercentage(highlightedOption.discount)
-    const optionOriginalPrice = highlightedOption.price || product.price
-    const optionFinalPrice = highlightedOption.finalPrice || highlightedOption.price || product.price
-    return {
-      hasDiscount: optionDiscount > 0,
-      originalPrice: optionOriginalPrice,
-      finalPrice: optionFinalPrice,
-      discountPercentage: optionDiscount,
-    }
+    return getProductOptionPricing(highlightedOption, product.price)
   }
 
   const productDiscount = normalizeDiscountPercentage(product.discount || "0")

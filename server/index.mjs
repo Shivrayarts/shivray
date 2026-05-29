@@ -120,12 +120,20 @@ function normalizeProductForDb(product) {
 
   const productOptions = Array.isArray(product?.productOptions)
     ? product.productOptions
-        .map((option) => ({
-          label: String(option?.label || "").trim(),
-          price: formatCurrency(parseCurrencyAmount(option?.price)),
-          discount: String(option?.discount || "0").trim(),
-          finalPrice: formatCurrency(parseCurrencyAmount(option?.finalPrice)),
-        }))
+        .map((option) => {
+          const price = parseCurrencyAmount(option?.price);
+          const discount = parseDiscountPercentage(option?.discount);
+          const finalPrice = discount > 0
+            ? Number((price - price * (discount / 100)).toFixed(2))
+            : parseCurrencyAmount(option?.finalPrice) || price;
+
+          return {
+            label: String(option?.label || "").trim(),
+            price: formatCurrency(price),
+            discount: discount.toFixed(2),
+            finalPrice: formatCurrency(finalPrice),
+          };
+        })
         .filter((option) => option.label && parseCurrencyAmount(option.price) > 0 && parseCurrencyAmount(option.finalPrice) > 0)
     : [];
 

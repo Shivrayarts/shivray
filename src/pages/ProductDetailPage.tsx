@@ -5,7 +5,7 @@ import { getCategoryLabel, type Product } from "@/data/products";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { useStoredProducts } from "@/lib/content-store";
 import { siteConfig } from "@/lib/site-config";
-import { getProductPricing, normalizeDisplayCase } from "@/lib/utils";
+import { getProductOptionPricing, getProductPricing, normalizeDisplayCase } from "@/lib/utils";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
 import ProductGalleryCard from "@/components/ProductGalleryCard";
@@ -158,9 +158,10 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   const productOptions = product.productOptions ?? [];
   const selectedOption = productOptions[selectedOptionIndex] ?? null;
   const basePricing = getProductPricing(product);
-  const selectedOriginalPrice = selectedOption?.price || basePricing.originalPrice;
-  const selectedFinalPrice = selectedOption?.finalPrice || selectedOption?.price || basePricing.finalPrice;
-  const selectedDiscount = Number(selectedOption?.discount || 0) || basePricing.discountPercentage;
+  const selectedOptionPricing = selectedOption ? getProductOptionPricing(selectedOption, product.price) : null;
+  const selectedOriginalPrice = selectedOptionPricing?.originalPrice || basePricing.originalPrice;
+  const selectedFinalPrice = selectedOptionPricing?.finalPrice || basePricing.finalPrice;
+  const selectedDiscount = selectedOptionPricing?.discountPercentage ?? basePricing.discountPercentage;
 
   return (
     <div className="bg-[#f7f1e7] pb-8 md:pb-12">
@@ -288,14 +289,17 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                   <p className="px-4 py-3">{resolvedLocale === "mr" ? "सवलत" : "Discount"}</p>
                   <p className="px-4 py-3">{resolvedLocale === "mr" ? "अंतिम किंमत" : "Final Price"}</p>
                 </div>
-                {productOptions.map((option, index) => (
-                  <div key={`${product.id}-option-${index}`} className="grid grid-cols-4 border-t border-[#eadbc8] text-sm text-[#34180e]">
-                    <p className="px-4 py-3">{option.label}</p>
-                    <p className="px-4 py-3">{formatDisplayPrice(parseDisplayPrice(option.price))}</p>
-                    <p className="px-4 py-3">{Number(option.discount || 0).toFixed(2)}%</p>
-                    <p className="px-4 py-3">{formatDisplayPrice(parseDisplayPrice(option.finalPrice || option.price))}</p>
-                  </div>
-                ))}
+                {productOptions.map((option, index) => {
+                  const optionPricing = getProductOptionPricing(option, product.price);
+                  return (
+                    <div key={`${product.id}-option-${index}`} className="grid grid-cols-4 border-t border-[#eadbc8] text-sm text-[#34180e]">
+                      <p className="px-4 py-3">{option.label}</p>
+                      <p className="px-4 py-3">{formatDisplayPrice(parseDisplayPrice(optionPricing.originalPrice))}</p>
+                      <p className="px-4 py-3">{optionPricing.discountPercentage.toFixed(2)}%</p>
+                      <p className="px-4 py-3">{formatDisplayPrice(parseDisplayPrice(optionPricing.finalPrice))}</p>
+                    </div>
+                  );
+                })}
               </div>
             ) : null}
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
