@@ -5,6 +5,7 @@ import { useLanguage } from "@/lib/language";
 import {
   ChevronDown,
   Facebook,
+  Globe,
   Instagram,
   Mail,
   MapPin,
@@ -134,6 +135,15 @@ export default function Footer() {
               <a href={siteConfig.socialLinks.pinterest} aria-label="Pinterest" className="transition hover:text-[#ffd68d]">
                 <PinterestIcon className="h-6 w-6" />
               </a>
+              <a
+                href={siteConfig.googleBusinessHref}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Google Business"
+                className="transition hover:text-[#ffd68d]"
+              >
+                <Globe className="h-6 w-6" />
+              </a>
             </div>
           </div>
 
@@ -241,6 +251,7 @@ export default function Footer() {
             <a href={siteConfig.socialLinks.instagram} aria-label="Instagram"><Instagram className="h-5 w-5" /></a>
             <a href={siteConfig.socialLinks.youtube} aria-label="YouTube"><Youtube className="h-5 w-5" /></a>
             <a href={siteConfig.socialLinks.pinterest} aria-label="Pinterest"><PinterestIcon className="h-5 w-5" /></a>
+            <a href={siteConfig.googleBusinessHref} target="_blank" rel="noreferrer" aria-label="Google Business"><Globe className="h-5 w-5" /></a>
           </div>
 
           <div className="mt-8 space-y-1">

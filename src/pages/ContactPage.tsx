@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Mail, MapPin, Phone, Send, Youtube } from "lucide-react";
+import { Facebook, Globe, Instagram, Mail, MapPin, Phone, Send, Youtube } from "lucide-react";
 import { useMemo, useState } from "react";
 import { isValidMessage, isValidName, isValidPhone, normalizeDigits } from "@/lib/form-validation";
 import { useLanguage } from "@/lib/language";
@@ -89,6 +89,15 @@ export default function ContactPage() {
                 </a>
                 <a href={siteConfig.socialLinks.pinterest} aria-label="Pinterest" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#eadbc8] bg-white text-[#34180e]">
                   <PinterestIcon className="h-4 w-4" />
+                </a>
+                <a
+                  href={siteConfig.googleBusinessHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Google Business"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#eadbc8] bg-white text-[#34180e]"
+                >
+                  <Globe className="h-4 w-4" />
                 </a>
               </div>
             </div>
