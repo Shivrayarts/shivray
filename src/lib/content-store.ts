@@ -389,7 +389,7 @@ function clearLocalProductsFallback() {
 }
 
 function readLocalCataloguesFallback(): CatalogueType[] | null {
-  if (!canUseWindow()) return null;
+  if (!canUseLocalFallback()) return null;
   const raw = window.localStorage.getItem(LOCAL_CATALOGUES_FALLBACK_KEY);
   if (!raw) return null;
   try {
@@ -402,7 +402,7 @@ function readLocalCataloguesFallback(): CatalogueType[] | null {
 }
 
 function writeLocalCataloguesFallback(catalogues: CatalogueType[]) {
-  if (!canUseWindow()) return;
+  if (!canUseLocalFallback()) return;
   window.localStorage.setItem(LOCAL_CATALOGUES_FALLBACK_KEY, JSON.stringify(catalogues));
 }
 
@@ -412,7 +412,7 @@ function clearLocalCataloguesFallback() {
 }
 
 function readLocalHomeContentFallback(): StoredHomeContent | null {
-  if (!canUseWindow()) return null;
+  if (!canUseLocalFallback()) return null;
   const raw = window.localStorage.getItem(LOCAL_HOME_CONTENT_FALLBACK_KEY);
   if (!raw) return null;
   try {
@@ -424,7 +424,7 @@ function readLocalHomeContentFallback(): StoredHomeContent | null {
 }
 
 function writeLocalHomeContentFallback(content: StoredHomeContent) {
-  if (!canUseWindow()) return;
+  if (!canUseLocalFallback()) return;
   window.localStorage.setItem(LOCAL_HOME_CONTENT_FALLBACK_KEY, JSON.stringify(content));
 }
 
@@ -616,6 +616,10 @@ export async function saveStoredCatalogueTypes(catalogues: CatalogueType[]) {
     return true;
   } catch (error) {
     logSyncError("catalogues", error);
+    if (!canUseLocalFallback()) {
+      void refreshStorefrontData().catch(() => undefined);
+      return false;
+    }
     // Localhost/dev fallback: keep category edits/deletes after refresh if backend sync fails.
     catalogueCache = [...catalogues];
     writeLocalCataloguesFallback(catalogues);
@@ -644,6 +648,10 @@ export async function saveStoredHomeContent(content: StoredHomeContent) {
     return true;
   } catch (error) {
     logSyncError("home content", error);
+    if (!canUseLocalFallback()) {
+      void refreshStorefrontData().catch(() => undefined);
+      return false;
+    }
     const normalized = normalizeStoredHomeContent(content);
     homeContentCache = normalized;
     writeLocalHomeContentFallback(normalized);
