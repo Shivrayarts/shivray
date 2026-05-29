@@ -2732,9 +2732,9 @@ export default function AdminPage() {
           ) : null}
 
           {activeSection === "banners" ? (
-            <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+            <section className="space-y-6">
               <div className="rounded-[30px] bg-white p-6 shadow-[0_18px_40px_-30px_rgba(70,36,15,0.22)]">
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
                     <h2 className="text-2xl font-semibold text-[#34180e]">Homepage Banners</h2>
                     <p className="mt-2 text-sm text-[#6c4b33]">Upload image or video banners for the home hero section.</p>
@@ -2753,36 +2753,38 @@ export default function AdminPage() {
                 <div className="mt-6 space-y-4">
                   {storedHomeContent.banners.map((item, index) => (
                     <div key={item.id} className="rounded-[24px] border border-[#efe1cf] bg-[#fcf8f2] p-4">
-                      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                        <div className="h-20 w-full overflow-hidden rounded-2xl border border-[#eadbc8] bg-white md:w-36">
-                          {(item.mediaType ?? "image") === "video" ? (
-                            <video
-                              src={item.videoUrl || item.image}
-                              className="h-full w-full object-cover"
-                              muted
-                              playsInline
-                              preload="metadata"
-                            />
-                          ) : (
-                            <img src={item.image} alt={adminText(item.titleTop) || "Banner"} className="h-full w-full object-cover" />
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-3">
-                            <span className="rounded-full bg-[#fff1d9] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b4d1d]">
-                              {(item.mediaType ?? "image") === "video" ? "Video" : "Image"}
-                            </span>
-                            <p className="truncate text-sm font-semibold text-[#34180e]">
-                              {adminText(item.titleTop) || adminText(item.titleBottom) || "Untitled banner"}
+                      <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-center">
+                          <div className="h-20 w-full overflow-hidden rounded-2xl border border-[#eadbc8] bg-white md:w-36">
+                            {(item.mediaType ?? "image") === "video" ? (
+                              <video
+                                src={item.videoUrl || item.image}
+                                className="h-full w-full object-cover"
+                                muted
+                                playsInline
+                                preload="metadata"
+                              />
+                            ) : (
+                              <img src={item.image} alt={adminText(item.titleTop) || "Banner"} className="h-full w-full object-cover" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-3">
+                              <span className="rounded-full bg-[#fff1d9] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b4d1d]">
+                                {(item.mediaType ?? "image") === "video" ? "Video" : "Image"}
+                              </span>
+                              <p className="truncate text-sm font-semibold text-[#34180e]">
+                                {adminText(item.titleTop) || adminText(item.titleBottom) || "Untitled banner"}
+                              </p>
+                            </div>
+                            <p className="mt-2 truncate text-sm text-[#6c4b33]">{adminText(item.eyebrow) || "No eyebrow text"}</p>
+                            <p className="mt-1 truncate text-xs text-[#8b6c52]">
+                              {(item.mediaType ?? "image") === "video" ? item.videoUrl || "No video selected" : item.image || "No image selected"}
                             </p>
                           </div>
-                          <p className="mt-2 truncate text-sm text-[#6c4b33]">{adminText(item.eyebrow) || "No eyebrow text"}</p>
-                          <p className="mt-1 truncate text-xs text-[#8b6c52]">
-                            {(item.mediaType ?? "image") === "video" ? item.videoUrl || "No video selected" : item.image || "No image selected"}
-                          </p>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          <button type="button" onClick={() => setBannerDraft(item)} className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm text-[#6c4b33]">Edit</button>
+                          <button type="button" onClick={() => setBannerDraft(item)} className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm font-semibold text-[#6c4b33]">Edit</button>
                           <button type="button" onClick={() => void reorderBanner(index, -1)} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowUp className="h-4 w-4" /></button>
                           <button type="button" onClick={() => void reorderBanner(index, 1)} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowDown className="h-4 w-4" /></button>
                           <button type="button" onClick={() => void deleteBanner(item.id)} className="rounded-full border border-[#ffe1e1] bg-[#fff3f3] px-3 py-2 text-sm text-[#9f2b2b]"><Trash2 className="h-4 w-4" /></button>
@@ -2803,8 +2805,21 @@ export default function AdminPage() {
                 </div>
               </div>
               <div className="rounded-[30px] bg-white p-6 shadow-[0_18px_40px_-30px_rgba(70,36,15,0.22)]">
-                <h2 className="text-2xl font-semibold text-[#34180e]">Edit Banner</h2>
-                <p className="mt-2 text-sm text-[#6c4b33]">Upload only the image or video used in the homepage hero.</p>
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h2 className="text-2xl font-semibold text-[#34180e]">Edit Banner</h2>
+                    <p className="mt-2 text-sm text-[#6c4b33]">Upload only the image or video used in the homepage hero.</p>
+                  </div>
+                  {bannerDraft.id ? (
+                    <p className="rounded-full bg-[#fff1d9] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#8b4d1d]">
+                      Editing existing banner
+                    </p>
+                  ) : (
+                    <p className="rounded-full bg-[#f4fbf4] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#2f7a34]">
+                      Creating new banner
+                    </p>
+                  )}
+                </div>
                 <div className="mt-6">
                   <BannerForm
                     value={bannerDraft}
