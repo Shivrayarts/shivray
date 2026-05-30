@@ -459,9 +459,12 @@ const LOCAL_CATALOGUES_FALLBACK_KEY = "shivray-catalogues-local-fallback-v1";
 const LOCAL_HOME_CONTENT_FALLBACK_KEY = "shivray-home-content-local-fallback-v1";
 
 let storefrontBootstrapPromise: Promise<void> | null = null;
-let productsCache: Product[] = [];
-let catalogueCache: CatalogueType[] = [];
-let homeContentCache: StoredHomeContent = { ...emptyHomeContent };
+let productsCache: Product[] = defaultProducts.map((product) => normalizeProduct(product));
+let catalogueCache: CatalogueType[] = defaultCatalogueTypes.map((catalogue) => ({
+  ...catalogue,
+  image: normalizeAssetUrl(catalogue.image),
+}));
+let homeContentCache: StoredHomeContent = normalizeStoredHomeContent(defaultHomeContent);
 
 function canUseWindow() {
   return typeof window !== "undefined";
@@ -568,7 +571,7 @@ function applyStorefrontPayload(payload: Partial<StorefrontPayload>) {
 }
 
 async function refreshStorefrontData() {
-  const payload = await apiRequest<StorefrontPayload>(`/api/storefront?ts=${Date.now()}`);
+  const payload = await apiRequest<StorefrontPayload>("/api/storefront");
   applyStorefrontPayload(payload);
   clearLocalProductsFallback();
   clearLocalHomeContentFallback();
@@ -707,7 +710,7 @@ export async function deleteStoredProduct(productId: string) {
 }
 
 export function resetStoredProducts() {
-  productsCache = [...defaultProducts];
+  productsCache = defaultProducts.map((product) => normalizeProduct(product));
   dispatchStoreEvent(PRODUCTS_EVENT);
 }
 
@@ -738,7 +741,10 @@ export async function saveStoredCatalogueTypes(catalogues: CatalogueType[]) {
 }
 
 export function resetStoredCatalogueTypes() {
-  catalogueCache = [...defaultCatalogueTypes];
+  catalogueCache = defaultCatalogueTypes.map((catalogue) => ({
+    ...catalogue,
+    image: normalizeAssetUrl(catalogue.image),
+  }));
   dispatchStoreEvent(CATALOGUES_EVENT);
 }
 

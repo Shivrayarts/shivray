@@ -19,7 +19,7 @@ export async function apiRequest<T>(path: string, options: ApiOptions = {}): Pro
   const response = await fetch(buildApiUrl(path), {
     method,
     credentials: "include",
-    cache: options.cache ?? "no-store",
+    cache: options.cache ?? (method === "GET" ? "default" : "no-store"),
     headers: {
       "Content-Type": "application/json",
       ...options.headers,

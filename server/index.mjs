@@ -61,6 +61,10 @@ const memoryOrders = [];
 const PRODUCT_OPTIONS_SETTING_KEY = "product_options_map";
 const PRODUCT_GALLERY_SETTING_KEY = "product_gallery_map";
 const BLOG_POSTS_SETTING_KEY = "blog_posts";
+const STOREFRONT_CACHE_TTL_MS = 60 * 1000;
+
+let storefrontPayloadCache = null;
+let storefrontPayloadCacheExpiresAt = 0;
 
 function formatCurrency(value) {
   return `Rs. ${Number(value || 0).toLocaleString("en-IN", {
@@ -864,6 +868,23 @@ async function fetchStorefrontPayload() {
   };
 }
 
+function invalidateStorefrontPayloadCache() {
+  storefrontPayloadCache = null;
+  storefrontPayloadCacheExpiresAt = 0;
+}
+
+async function fetchCachedStorefrontPayload({ forceFresh = false } = {}) {
+  const now = Date.now();
+  if (!forceFresh && storefrontPayloadCache && storefrontPayloadCacheExpiresAt > now) {
+    return storefrontPayloadCache;
+  }
+
+  const payload = await fetchStorefrontPayload();
+  storefrontPayloadCache = payload;
+  storefrontPayloadCacheExpiresAt = now + STOREFRONT_CACHE_TTL_MS;
+  return payload;
+}
+
 async function fetchCustomersPayload() {
   const rows = await query(
     `
@@ -1020,7 +1041,8 @@ app.get("/api/health", async (_req, res) => {
 
 app.get("/api/storefront", async (_req, res) => {
   try {
-    res.json(await fetchStorefrontPayload());
+    res.setHeader("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+    res.json(await fetchCachedStorefrontPayload());
   } catch (error) {
     res.status(500).json({ message: error instanceof Error ? error.message : "Unable to load storefront data." });
   }
@@ -1238,7 +1260,8 @@ app.put("/api/admin/products", requireAdmin, async (req, res) => {
       await saveProductGalleryMap(connection, productGalleryMap);
     });
 
-    res.json(await fetchStorefrontPayload());
+    invalidateStorefrontPayloadCache();
+    res.json(await fetchCachedStorefrontPayload({ forceFresh: true }));
   } catch (error) {
     res.status(500).json({ message: error instanceof Error ? error.message : "Unable to save products." });
   }
@@ -1267,7 +1290,8 @@ app.delete("/api/admin/products/:slug", requireAdmin, async (req, res) => {
       await saveProductOptionsMap(connection, productOptionsMap);
       await saveProductGalleryMap(connection, productGalleryMap);
     });
-    res.json(await fetchStorefrontPayload());
+    invalidateStorefrontPayloadCache();
+    res.json(await fetchCachedStorefrontPayload({ forceFresh: true }));
   } catch (error) {
     res.status(500).json({ message: error instanceof Error ? error.message : "Unable to delete product." });
   }
@@ -1311,7 +1335,8 @@ app.put("/api/admin/products/:slug", requireAdmin, async (req, res) => {
       await saveProductGalleryMap(connection, productGalleryMap);
     });
 
-    res.json(await fetchStorefrontPayload());
+    invalidateStorefrontPayloadCache();
+    res.json(await fetchCachedStorefrontPayload({ forceFresh: true }));
   } catch (error) {
     res.status(500).json({ message: error instanceof Error ? error.message : "Unable to save product." });
   }
@@ -1347,7 +1372,8 @@ app.put("/api/admin/catalogues", requireAdmin, async (req, res) => {
       }
     });
 
-    res.json(await fetchStorefrontPayload());
+    invalidateStorefrontPayloadCache();
+    res.json(await fetchCachedStorefrontPayload({ forceFresh: true }));
   } catch (error) {
     res.status(500).json({ message: error instanceof Error ? error.message : "Unable to save catalogues." });
   }
@@ -1440,7 +1466,8 @@ app.put("/api/admin/home-content", requireAdmin, async (req, res) => {
       }
     });
 
-    res.json(await fetchStorefrontPayload());
+    invalidateStorefrontPayloadCache();
+    res.json(await fetchCachedStorefrontPayload({ forceFresh: true }));
   } catch (error) {
     res.status(500).json({ message: error instanceof Error ? error.message : "Unable to save home content." });
   }
