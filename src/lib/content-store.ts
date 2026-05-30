@@ -486,10 +486,7 @@ const LOCAL_HOME_CONTENT_FALLBACK_KEY = "shivray-home-content-local-fallback-v1"
 
 let storefrontBootstrapPromise: Promise<void> | null = null;
 let productsCache: Product[] = defaultProducts.map((product) => normalizeProduct(product));
-let catalogueCache: CatalogueType[] = defaultCatalogueTypes.map((catalogue) => ({
-  ...catalogue,
-  image: normalizeAssetUrl(catalogue.image),
-}));
+let catalogueCache: CatalogueType[] = [];
 let homeContentCache: StoredHomeContent = { ...emptyHomeContent };
 
 function canUseWindow() {
