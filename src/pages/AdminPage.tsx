@@ -41,6 +41,7 @@ import {
   saveStoredHomeContent,
   saveStoredProducts,
   type HomeBanner,
+  type HomeBlogPost,
   type HomeReview,
   type HomeVideo,
   useStoredCatalogueTypes,
@@ -114,6 +115,15 @@ const videoTemplate: HomeVideo = {
   thumbnail: "",
 };
 
+const blogTemplate: HomeBlogPost = {
+  id: "",
+  title: "",
+  excerpt: "",
+  image: "",
+  tag: "",
+  href: "",
+};
+
 const customerTemplate = {
   name: "",
   email: "",
@@ -127,6 +137,7 @@ type AdminSection =
   | "categories"
   | "banners"
   | "videos"
+  | "blogs"
   | "orders"
   | "customers"
   | "reviews";
@@ -1022,6 +1033,70 @@ function ReviewForm({
   );
 }
 
+function BlogForm({
+  value,
+  onChange,
+  onSave,
+  onPickImageFile,
+}: {
+  value: HomeBlogPost;
+  onChange: (value: HomeBlogPost) => void;
+  onSave: () => void;
+  onPickImageFile: (event: ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-2">
+        <input
+          value={adminText(value.title)}
+          onChange={(event) => onChange({ ...value, title: event.target.value })}
+          placeholder="Blog title"
+          className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+        />
+        <input
+          value={adminText(value.tag)}
+          onChange={(event) => onChange({ ...value, tag: event.target.value })}
+          placeholder="Tag (Latest, Story, News)"
+          className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+        />
+      </div>
+      <input
+        value={String(value.href || "")}
+        onChange={(event) => onChange({ ...value, href: event.target.value })}
+        placeholder="Optional blog link"
+        className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+      />
+      <textarea
+        value={adminText(value.excerpt)}
+        onChange={(event) => onChange({ ...value, excerpt: event.target.value })}
+        rows={5}
+        placeholder="Short excerpt"
+        className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+      />
+      <label className="block rounded-2xl border border-dashed border-[#d8b48b] bg-[#fffaf4] p-4 text-sm text-[#6c4b33]">
+        <span className="mb-2 flex items-center gap-2 font-semibold text-[#34180e]">
+          <ImagePlus className="h-4 w-4" />
+          Upload blog cover image
+        </span>
+        <input type="file" accept="image/*" onChange={onPickImageFile} className="mt-2 block w-full text-sm" />
+      </label>
+      {value.image ? (
+        <div className="rounded-xl border border-[#eadbc8] bg-white p-2">
+          <img src={value.image} alt="Blog cover preview" className="h-40 w-full rounded-lg object-cover" />
+        </div>
+      ) : null}
+      <button
+        type="button"
+        onClick={onSave}
+        className="inline-flex items-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white"
+      >
+        <Save className="h-4 w-4" />
+        Save Blog
+      </button>
+    </div>
+  );
+}
+
 function StatCard({
   label,
   value,
@@ -1060,6 +1135,7 @@ export default function AdminPage() {
   const [bannerDraft, setBannerDraft] = useState<HomeBanner>(bannerTemplate);
   const [reviewDraft, setReviewDraft] = useState<HomeReview>(reviewTemplate);
   const [videoDraft, setVideoDraft] = useState<HomeVideo>(videoTemplate);
+  const [blogDraft, setBlogDraft] = useState<HomeBlogPost>(blogTemplate);
   const [orderStatusFilter, setOrderStatusFilter] = useState<"All" | OrderStatus>("All");
   const [orderSearch, setOrderSearch] = useState("");
   const [customerSearch, setCustomerSearch] = useState("");
@@ -1199,6 +1275,7 @@ export default function AdminPage() {
     categories: "Categories",
     banners: "Home Banners",
     videos: "Featured Videos",
+    blogs: "Blogs",
     orders: "Orders",
     customers: "Customers",
     reviews: "Customer Reviews",
@@ -1869,6 +1946,45 @@ export default function AdminPage() {
     setMediaNotice("Review saved successfully.");
   }
 
+  async function saveBlog() {
+    const title = adminText(blogDraft.title).trim();
+    const excerpt = adminText(blogDraft.excerpt).trim();
+    const image = String(blogDraft.image || "").trim();
+    const tag = adminText(blogDraft.tag).trim();
+
+    if (!title || !excerpt) {
+      setMediaNotice("Blog title and excerpt are required.");
+      return;
+    }
+    if (!image) {
+      setMediaNotice("Please upload a blog cover image before saving.");
+      return;
+    }
+
+    const nextBlog = {
+      ...blogDraft,
+      id: blogDraft.id || uniqueId("blog"),
+      title,
+      excerpt,
+      image,
+      tag: tag || "Latest",
+      href: String(blogDraft.href || "").trim(),
+    };
+    const next = [...storedHomeContent.blogPosts];
+    const existingIndex = next.findIndex((item) => item.id === nextBlog.id);
+
+    if (existingIndex >= 0) next[existingIndex] = nextBlog;
+    else next.push(nextBlog);
+
+    const saved = await saveStoredHomeContent({ ...storedHomeContent, blogPosts: next });
+    if (!saved) {
+      setMediaNotice("Unable to save blog right now. Please try again.");
+      return;
+    }
+    setBlogDraft(nextBlog);
+    setMediaNotice("Blog saved successfully.");
+  }
+
   async function handleBannerFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -2004,6 +2120,24 @@ export default function AdminPage() {
     }
   }
 
+  async function handleBlogImageFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const dataUrl = await imageFileToOptimizedDataUrl(file, {
+        maxDimension: 1600,
+        quality: 0.82,
+      });
+      setBlogDraft((current) => ({ ...current, image: dataUrl }));
+      setMediaNotice(`Blog image "${file.name}" loaded successfully.`);
+    } catch (error) {
+      setMediaNotice(error instanceof Error ? error.message : "Unable to load the blog image file.");
+    } finally {
+      event.currentTarget.value = "";
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#ececec] px-2 py-3 md:px-4 md:py-5">
       <div className="mx-auto w-full max-w-[1920px] rounded-[10px] border border-[#dfdfdf] bg-white p-4">
@@ -2118,6 +2252,19 @@ export default function AdminPage() {
             >
               <Film className="h-4 w-4" />
               Videos
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveSection("blogs")}
+              className={`flex w-full items-center gap-3 rounded-[18px] px-4 py-3 text-left text-sm font-semibold transition ${
+                activeSection === "blogs"
+                  ? "bg-white/16 text-[#ffe08a]"
+                  : "bg-white/8 text-[#f3eeff] hover:bg-white/12"
+              }`}
+            >
+              <SquarePen className="h-4 w-4" />
+              Blogs
             </button>
 
             <div className="rounded-[18px] bg-white/8 p-1.5">
@@ -2964,6 +3111,79 @@ export default function AdminPage() {
                     onSave={saveVideo}
                     onPickFile={handleVideoFileChange}
                     onPickThumbnailFile={handleVideoThumbnailFileChange}
+                  />
+                </div>
+              </div>
+            </section>
+          ) : null}
+
+          {activeSection === "blogs" ? (
+            <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+              <div className="rounded-[30px] bg-white p-6 shadow-[0_18px_40px_-30px_rgba(70,36,15,0.22)]">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-2xl font-semibold text-[#34180e]">Blog Posts</h2>
+                    <p className="mt-2 text-sm text-[#6c4b33]">Add and edit story cards shown on the News & Stories page.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setBlogDraft(blogTemplate)}
+                    className="rounded-full bg-[#34180e] px-4 py-2 text-sm font-semibold text-white"
+                  >
+                    <Plus className="mr-1 inline h-4 w-4" />
+                    New Blog
+                  </button>
+                </div>
+                <div className="mt-6 space-y-4">
+                  {storedHomeContent.blogPosts.map((item, index) => (
+                    <div key={item.id} className="rounded-[24px] border border-[#efe1cf] bg-[#fcf8f2] p-4">
+                      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div className="flex min-w-0 flex-1 items-start gap-4">
+                          {item.image ? (
+                            <img src={item.image} alt={resolveLocalizedText(item.title, "en")} className="h-20 w-20 rounded-2xl object-cover" />
+                          ) : null}
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-[#34180e]">{resolveLocalizedText(item.title, "en")}</p>
+                            <p className="mt-1 text-sm text-[#8b6c52]">{resolveLocalizedText(item.tag, "en") || "Latest"}</p>
+                            <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#6c4b33]">{resolveLocalizedText(item.excerpt, "en")}</p>
+                            {item.href ? <p className="mt-2 truncate text-xs text-[#8b6c52]">{item.href}</p> : null}
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <button type="button" onClick={() => setBlogDraft(item)} className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-sm text-[#6c4b33]">Edit</button>
+                          <button type="button" onClick={() => saveStoredHomeContent({ ...storedHomeContent, blogPosts: moveItem(storedHomeContent.blogPosts, index, -1) })} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowUp className="h-4 w-4" /></button>
+                          <button type="button" onClick={() => saveStoredHomeContent({ ...storedHomeContent, blogPosts: moveItem(storedHomeContent.blogPosts, index, 1) })} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowDown className="h-4 w-4" /></button>
+                          <button type="button" onClick={() => saveStoredHomeContent({ ...storedHomeContent, blogPosts: storedHomeContent.blogPosts.filter((blog) => blog.id !== item.id) })} className="rounded-full border border-[#ffe1e1] bg-[#fff3f3] px-3 py-2 text-sm text-[#9f2b2b]"><Trash2 className="h-4 w-4" /></button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {storedHomeContent.blogPosts.length === 0 ? (
+                    <div className="rounded-[24px] border border-dashed border-[#eadbc8] bg-[#fffaf4] p-6 text-sm text-[#8b6c52]">
+                      No blog posts added yet.
+                    </div>
+                  ) : null}
+                </div>
+                <div className="mt-6">
+                  <button
+                    type="button"
+                    onClick={() => saveStoredHomeContent({ ...storedHomeContent, blogPosts: defaultHomeContent.blogPosts.map((item) => ({ ...item })) })}
+                    className="inline-flex items-center gap-2 rounded-full border border-[#eadbc8] bg-[#fffaf4] px-4 py-2 text-sm font-semibold text-[#8b4d1d]"
+                  >
+                    <RefreshCcw className="h-4 w-4" />
+                    Reset Blogs
+                  </button>
+                </div>
+              </div>
+              <div className="rounded-[30px] bg-white p-6 shadow-[0_18px_40px_-30px_rgba(70,36,15,0.22)]">
+                <h2 className="text-2xl font-semibold text-[#34180e]">Edit Blog</h2>
+                <p className="mt-2 text-sm text-[#6c4b33]">Create card-style stories with title, image, excerpt, and optional external link.</p>
+                <div className="mt-6">
+                  <BlogForm
+                    value={blogDraft}
+                    onChange={setBlogDraft}
+                    onSave={saveBlog}
+                    onPickImageFile={handleBlogImageFileChange}
                   />
                 </div>
               </div>

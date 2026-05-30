@@ -35,11 +35,21 @@ export type HomeVideo = {
   thumbnail?: string;
 };
 
+export type HomeBlogPost = {
+  id: string;
+  title: Translatable;
+  excerpt: Translatable;
+  image: string;
+  tag: Translatable;
+  href?: string;
+};
+
 export type StoredHomeContent = {
   spotlightProductIds: string[];
   banners: HomeBanner[];
   reviews: HomeReview[];
   videos: HomeVideo[];
+  blogPosts: HomeBlogPost[];
 };
 
 type StorefrontPayload = {
@@ -68,6 +78,12 @@ const defaultHomeVideos: HomeVideo[] = defaultHomeContent.videos.map((video) => 
     thumbnail: typeof raw.thumbnail === "string" ? raw.thumbnail : "",
   };
 });
+const defaultHomeBlogPosts: HomeBlogPost[] = (
+  (defaultHomeContent as { blogPosts?: readonly HomeBlogPost[] }).blogPosts ?? []
+).map((post) => ({
+  ...post,
+  href: typeof post.href === "string" ? post.href : "",
+}));
 
 const apiAssetBaseUrl = String(import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
 
@@ -186,6 +202,17 @@ function normalizeHomeBanner(banner: HomeBanner): HomeBanner {
     image: normalizedImage,
     mediaType,
     videoUrl: banner.videoUrl ? normalizeAssetUrl(banner.videoUrl) : mediaType === "video" ? normalizedImage : "",
+  };
+}
+
+function normalizeHomeBlogPost(post: HomeBlogPost): HomeBlogPost {
+  return {
+    ...post,
+    title: asLocalizedText(post.title),
+    excerpt: asLocalizedText(post.excerpt),
+    tag: asLocalizedText(post.tag),
+    image: normalizeAssetUrl(String(post.image || "").trim()),
+    href: String(post.href || "").trim(),
   };
 }
 
@@ -376,6 +403,7 @@ const emptyHomeContent: StoredHomeContent = {
   banners: [],
   reviews: [],
   videos: [],
+  blogPosts: [],
 };
 
 function normalizeStoredHomeContent(
@@ -385,6 +413,7 @@ function normalizeStoredHomeContent(
     banners: defaultHomeBanners,
     reviews: defaultHomeReviews,
     videos: defaultHomeVideos,
+    blogPosts: defaultHomeBlogPosts,
   },
 ): StoredHomeContent {
   const spotlightProductIds = ensureArray<string>(value?.spotlightProductIds, fallback.spotlightProductIds)
@@ -397,6 +426,7 @@ function normalizeStoredHomeContent(
     banners: ensureArray<HomeBanner>(value?.banners, fallback.banners).map((banner) => normalizeHomeBanner(banner)),
     reviews: ensureArray<HomeReview>(value?.reviews, fallback.reviews).map((review) => normalizeHomeReview(review)),
     videos: ensureArray<HomeVideo>(value?.videos, fallback.videos).map((video) => normalizeHomeVideo(video)),
+    blogPosts: ensureArray<HomeBlogPost>(value?.blogPosts, fallback.blogPosts).map((post) => normalizeHomeBlogPost(post)),
   };
 }
 
@@ -412,9 +442,10 @@ function normalizeStorefrontPayload(payload: Partial<StorefrontPayload>) {
       ? {
           ...payload.homeContent,
           spotlightProductIds: payload.homeContent.spotlightProductIds,
-          banners: payload.homeContent.banners.map((banner) => normalizeHomeBanner(banner)),
-          reviews: payload.homeContent.reviews.map((review) => normalizeHomeReview(review)),
-          videos: payload.homeContent.videos.map((video) => normalizeHomeVideo(video)),
+          banners: ensureArray<HomeBanner>(payload.homeContent.banners, []).map((banner) => normalizeHomeBanner(banner)),
+          reviews: ensureArray<HomeReview>(payload.homeContent.reviews, []).map((review) => normalizeHomeReview(review)),
+          videos: ensureArray<HomeVideo>(payload.homeContent.videos, []).map((video) => normalizeHomeVideo(video)),
+          blogPosts: ensureArray<HomeBlogPost>(payload.homeContent.blogPosts, []).map((post) => normalizeHomeBlogPost(post)),
         }
       : payload.homeContent,
   };
@@ -744,6 +775,7 @@ export function resetStoredHomeContent() {
     banners: defaultHomeBanners,
     reviews: defaultHomeReviews,
     videos: defaultHomeVideos,
+    blogPosts: defaultHomeBlogPosts,
   });
   dispatchStoreEvent(HOME_CONTENT_EVENT);
 }

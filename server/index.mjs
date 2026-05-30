@@ -60,6 +60,7 @@ const memoryCustomers = [];
 const memoryOrders = [];
 const PRODUCT_OPTIONS_SETTING_KEY = "product_options_map";
 const PRODUCT_GALLERY_SETTING_KEY = "product_gallery_map";
+const BLOG_POSTS_SETTING_KEY = "blog_posts";
 
 function formatCurrency(value) {
   return `Rs. ${Number(value || 0).toLocaleString("en-IN", {
@@ -423,6 +424,43 @@ async function ensureHomepageSettingsValueColumnSupportsLargePayloads() {
   }
 }
 
+async function ensureHomepageVideosSchema() {
+  try {
+    const rows = await query(
+      `
+      SHOW COLUMNS FROM homepage_videos
+      `,
+    );
+
+    const columns = new Set(
+      Array.isArray(rows) ? rows.map((row) => String(row.Field || row.field || "").trim()) : [],
+    );
+
+    if (!columns.has("video_type")) {
+      await query(
+        `
+        ALTER TABLE homepage_videos
+        ADD COLUMN video_type ENUM('reel', 'youtube') NOT NULL DEFAULT 'youtube' AFTER video_url
+        `,
+      );
+    }
+
+    if (!columns.has("thumbnail_url")) {
+      await query(
+        `
+        ALTER TABLE homepage_videos
+        ADD COLUMN thumbnail_url MEDIUMTEXT NULL AFTER video_type
+        `,
+      );
+    }
+  } catch (error) {
+    console.warn(
+      "Unable to verify homepage video schema.",
+      error instanceof Error ? error.message : error,
+    );
+  }
+}
+
 async function ensureProductsCategoryColumnSupportsCustomValues() {
   try {
     const rows = await query(
@@ -634,6 +672,40 @@ async function saveProductGalleryMap(connection, productGalleryMap) {
   );
 }
 
+async function loadBlogPosts() {
+  const rows = await query(
+    `
+    SELECT setting_value
+    FROM homepage_settings
+    WHERE setting_key = ?
+    LIMIT 1
+    `,
+    [BLOG_POSTS_SETTING_KEY],
+  ).catch(() => []);
+
+  const rawValue = rows?.[0]?.setting_value;
+  if (typeof rawValue !== "string" || !rawValue.trim()) return [];
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+async function saveBlogPosts(connection, blogPosts) {
+  await ensureHomepageSettingsTable(connection);
+  await connection.query(
+    `
+    INSERT INTO homepage_settings (setting_key, setting_value)
+    VALUES (?, ?)
+    ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+    `,
+    [BLOG_POSTS_SETTING_KEY, JSON.stringify(blogPosts)],
+  );
+}
+
 async function findUserByEmail(email) {
   const rows = await query(
     `
@@ -660,7 +732,7 @@ function requireAdmin(req, res, next) {
 }
 
 async function fetchStorefrontPayload() {
-  const [products, catalogues, banners, reviews, videos, spotlightSettings, productOptionsMap, productGalleryMap] = await Promise.all([
+  const [products, catalogues, banners, reviews, videos, spotlightSettings, productOptionsMap, productGalleryMap, blogPosts] = await Promise.all([
     query(
       `
       SELECT slug, name, price, image_url, category, tag, short_description, details, material, dimensions, history_background
@@ -711,6 +783,7 @@ async function fetchStorefrontPayload() {
     ).catch(() => []),
     loadProductOptionsMap(),
     loadProductGalleryMap(),
+    loadBlogPosts(),
   ]);
 
   let spotlightProductIds = [];
@@ -778,6 +851,14 @@ async function fetchStorefrontPayload() {
         videoType: row.video_type === "reel" ? "reel" : "youtube",
         videoUrl: row.video_url,
         thumbnail: row.thumbnail_url ?? "",
+      })),
+      blogPosts: blogPosts.map((post, index) => ({
+        id: String(post?.id || `blog-${index + 1}`),
+        title: post?.title || "",
+        excerpt: post?.excerpt || "",
+        image: post?.image || "",
+        tag: post?.tag || "",
+        href: post?.href || "",
       })),
     },
   };
@@ -1280,6 +1361,7 @@ app.put("/api/admin/home-content", requireAdmin, async (req, res) => {
   const banners = Array.isArray(content.banners) ? content.banners : [];
   const reviews = Array.isArray(content.reviews) ? content.reviews : [];
   const videos = Array.isArray(content.videos) ? content.videos : [];
+  const blogPosts = Array.isArray(content.blogPosts) ? content.blogPosts : [];
 
   try {
     await withTransaction(async (connection) => {
@@ -1295,6 +1377,7 @@ app.put("/api/admin/home-content", requireAdmin, async (req, res) => {
         `,
         [JSON.stringify(spotlightProductIds)],
       );
+      await saveBlogPosts(connection, blogPosts);
 
       for (let index = 0; index < banners.length; index += 1) {
         const item = banners[index];
@@ -1727,6 +1810,7 @@ async function startServer() {
     await ensureHomepageSettingsTable(connection);
   });
   await ensureHomepageSettingsValueColumnSupportsLargePayloads();
+  await ensureHomepageVideosSchema();
   await ensureProductsCategoryColumnSupportsCustomValues();
   await ensureProductsLocalizedColumnsSupportJson();
   await ensureProductsDiscountColumns();

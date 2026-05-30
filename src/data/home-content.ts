@@ -93,4 +93,5 @@ export const homeContent = {
       videoUrl: "https://youtube.com/shorts/nmTdnfcxtLk?si=VxODZbTQOtagwAvy",
     },
   ],
+  blogPosts: [],
 } as const;
