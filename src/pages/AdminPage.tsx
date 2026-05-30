@@ -3053,13 +3053,9 @@ export default function AdminPage() {
                 <p className="mt-2 text-sm text-[#6c4b33]">This preview uses your maroon-gold website theme instead of a plain black strip.</p>
                 <div className="mt-6 overflow-hidden rounded-[28px] border border-[#d8b48b] bg-[linear-gradient(90deg,#2b0b08_0%,#4a1e10_48%,#2b0b08_100%)] shadow-[0_22px_40px_-30px_rgba(36,12,6,0.95)]">
                   <div className="border-b border-[#c89b59]/60 px-4 py-3 text-center text-[#f7e8d1]">
-                    <div className="flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#efc16e]">
-                      <Bell className="h-3.5 w-3.5" />
-                      Notice
-                    </div>
-                    <p className="mx-auto mt-2 max-w-xl text-sm leading-6 md:text-base">
+                    <marquee behavior="scroll" direction="left" scrollAmount={5} className="text-sm leading-6 md:text-base">
                       {adminLocalizedText(announcementDraft.text).en.trim() || "Your announcement text will appear here once you add and save it."}
-                    </p>
+                    </marquee>
                   </div>
                   <div className="bg-[#fffaf4] px-5 py-4 text-sm text-[#6c4b33]">
                     Status: <span className="font-semibold text-[#34180e]">{announcementDraft.enabled ? "Visible on website" : "Hidden until enabled"}</span>

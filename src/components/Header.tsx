@@ -61,9 +61,10 @@ export default function Header() {
     <header className="sticky top-0 z-50 border-b border-[#eadbc8] bg-[#fffaf4]/95 backdrop-blur-md">
       {showAnnouncement ? (
         <div className="border-b border-[#c89b59] bg-[linear-gradient(90deg,#2b0b08_0%,#4a1e10_48%,#2b0b08_100%)] px-4 py-2.5 text-center text-[#f7e8d1] shadow-[0_10px_24px_-20px_rgba(32,12,6,0.9)]">
-          <div className="layout-shell flex items-center justify-center gap-2 text-xs font-medium leading-6 md:text-sm">
-            <span className="text-[#efc16e]">Notice</span>
-            <span className="max-w-5xl">{announcementText}</span>
+          <div className="layout-shell text-xs font-medium leading-6 md:text-sm">
+            <marquee behavior="scroll" direction="left" scrollAmount={5}>
+              {announcementText}
+            </marquee>
           </div>
         </div>
       ) : null}
