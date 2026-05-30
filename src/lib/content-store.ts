@@ -464,7 +464,7 @@ let catalogueCache: CatalogueType[] = defaultCatalogueTypes.map((catalogue) => (
   ...catalogue,
   image: normalizeAssetUrl(catalogue.image),
 }));
-let homeContentCache: StoredHomeContent = normalizeStoredHomeContent(defaultHomeContent);
+let homeContentCache: StoredHomeContent = { ...emptyHomeContent };
 
 function canUseWindow() {
   return typeof window !== "undefined";
