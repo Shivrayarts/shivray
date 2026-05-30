@@ -1,6 +1,6 @@
 import { Facebook, Globe, Instagram, Mail, MapPin, Phone, Send, Youtube } from "lucide-react";
 import { useMemo, useState } from "react";
-import { isValidMessage, isValidName, isValidPhone, normalizeDigits } from "@/lib/form-validation";
+import { isValidName, isValidPhone, normalizeDigits } from "@/lib/form-validation";
 import { useLanguage } from "@/lib/language";
 import { siteConfig } from "@/lib/site-config";
 
@@ -14,20 +14,19 @@ function PinterestIcon({ className }: { className?: string }) {
 
 export default function ContactPage() {
   const { resolvedLocale } = useLanguage();
-  const [form, setForm] = useState({ name: "", phone: "", city: "", message: "" });
-  const [touched, setTouched] = useState({ name: false, phone: false, city: false, message: false });
+  const [form, setForm] = useState({ name: "", phone: "", city: "" });
+  const [touched, setTouched] = useState({ name: false, phone: false, city: false });
 
   const isNameValid = isValidName(form.name);
   const isPhoneValid = isValidPhone(form.phone);
   const isCityValid = isValidName(form.city);
-  const isMessageValid = isValidMessage(form.message);
-  const isFormValid = isNameValid && isPhoneValid && isCityValid && isMessageValid;
+  const isFormValid = isNameValid && isPhoneValid && isCityValid;
 
   const whatsappLink = useMemo(() => {
     const query = encodeURIComponent(
       `Hi Shivrayart, I am ${form.name || "interested in your products"}. ${
         form.phone ? `My number is ${form.phone}. ` : ""
-      }${form.city ? `I am from ${form.city}. ` : ""}${form.message || "Please contact me back."}`,
+      }${form.city ? `I am from ${form.city}. ` : ""}Please contact me back.`,
     );
     return `${siteConfig.whatsappHref}?text=${query}`;
   }, [form]);
@@ -42,8 +41,7 @@ export default function ContactPage() {
         `Number: ${form.phone || "-"}`,
         `City: ${form.city || "-"}`,
         "",
-        "Message:",
-        form.message || "Please contact me back.",
+        "Please contact me back.",
       ].join("\n"),
     );
 
@@ -51,7 +49,7 @@ export default function ContactPage() {
   }, [form]);
 
   const markAllTouched = () => {
-    setTouched({ name: true, phone: true, city: true, message: true });
+    setTouched({ name: true, phone: true, city: true });
   };
 
   const handleWhatsappClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -231,24 +229,6 @@ export default function ContactPage() {
                 />
                 {touched.city && !isCityValid ? (
                   <p className="mt-2 text-sm text-[#b42318]">{resolvedLocale === "mr" ? "कृपया तुमचे शहर टाका." : "Please enter your city."}</p>
-                ) : null}
-              </div>
-
-              <div>
-                <label htmlFor="contact-message" className="text-sm font-medium text-[#34180e]">
-                  {resolvedLocale === "mr" ? "संदेश" : "Message"}
-                </label>
-                <textarea
-                  id="contact-message"
-                  rows={5}
-                  value={form.message}
-                  onBlur={() => setTouched((value) => ({ ...value, message: true }))}
-                  onChange={(event) => setForm((value) => ({ ...value, message: event.target.value }))}
-                  placeholder={resolvedLocale === "mr" ? "तुम्हाला काय खरेदी करायचे आहे किंवा काय विचारायचे आहे ते लिहा" : "Tell us what you want to buy or ask for"}
-                  className={`mt-2 w-full resize-none rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${touched.message && !isMessageValid ? "border-[#b42318]" : "border-[#eadbc8]"}`}
-                />
-                {touched.message && !isMessageValid ? (
-                  <p className="mt-2 text-sm text-[#b42318]">{resolvedLocale === "mr" ? "कृपया किमान १० अक्षरांचा संदेश टाका." : "Please enter at least 10 characters in your message."}</p>
                 ) : null}
               </div>
 
