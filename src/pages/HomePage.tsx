@@ -87,12 +87,7 @@ export default function HomePage() {
   const homeProducts = products.slice(0, 8);
   const spotlightIds = storedHomeContent.spotlightProductIds?.length
     ? storedHomeContent.spotlightProductIds
-    : [
-        "shastradhari-maharaj-coloured",
-        "roudra-shambhu-chatrapati",
-        "royal-khanjar-with-sheath",
-        "brass-dhoop-stand",
-      ];
+    : [];
   const homeCategoryCards = useMemo(() => {
     const fallbackImages: Record<string, string> = {
       Statues: productStatue1,

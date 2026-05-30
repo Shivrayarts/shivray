@@ -63,6 +63,28 @@ const PRODUCT_GALLERY_SETTING_KEY = "product_gallery_map";
 const BLOG_POSTS_SETTING_KEY = "blog_posts";
 const ANNOUNCEMENT_BAR_SETTING_KEY = "announcement_bar";
 const STOREFRONT_CACHE_TTL_MS = 60 * 1000;
+const LEGACY_SEEDED_PRODUCT_SLUGS = [
+  "shastradhari-maharaj-coloured",
+  "ashwarudh-maharaj",
+  "roudra-shambhu-chatrapati",
+  "royal-khanjar-with-sheath",
+  "vita-battle-axe",
+  "ceremonial-gada",
+  "brass-dhoop-stand",
+  "maratha-war-shield",
+  "talwar-curved-sword",
+  "saffron-straight-sword",
+  "black-curved-talwar",
+  "decorated-talwar-with-sheath",
+  "royal-straight-blade",
+];
+const LEGACY_SEEDED_CATALOGUE_SLUGS = [
+  "statues-catalogue",
+  "weapons-catalogue",
+  "shield-catalogue",
+  "dhoop-catalogue",
+  "full-catalogue",
+];
 
 let storefrontPayloadCache = null;
 let storefrontPayloadCacheExpiresAt = 0;
@@ -1518,6 +1540,50 @@ app.put("/api/admin/home-content", requireAdmin, async (req, res) => {
     res.json(await fetchCachedStorefrontPayload({ forceFresh: true }));
   } catch (error) {
     res.status(500).json({ message: error instanceof Error ? error.message : "Unable to save home content." });
+  }
+});
+
+app.delete("/api/admin/cleanup-legacy-seeded-content", requireAdmin, async (_req, res) => {
+  try {
+    await withTransaction(async (connection) => {
+      if (LEGACY_SEEDED_PRODUCT_SLUGS.length > 0) {
+        const placeholders = LEGACY_SEEDED_PRODUCT_SLUGS.map(() => "?").join(", ");
+        await connection.query(
+          `
+          DELETE FROM products
+          WHERE slug IN (${placeholders})
+          `,
+          LEGACY_SEEDED_PRODUCT_SLUGS,
+        );
+      }
+
+      if (LEGACY_SEEDED_CATALOGUE_SLUGS.length > 0) {
+        const placeholders = LEGACY_SEEDED_CATALOGUE_SLUGS.map(() => "?").join(", ");
+        await connection.query(
+          `
+          DELETE FROM catalogues
+          WHERE slug IN (${placeholders})
+          `,
+          LEGACY_SEEDED_CATALOGUE_SLUGS,
+        );
+      }
+
+      const productOptionsMap = await loadProductOptionsMap();
+      const productGalleryMap = await loadProductGalleryMap();
+
+      for (const slug of LEGACY_SEEDED_PRODUCT_SLUGS) {
+        delete productOptionsMap[slug];
+        delete productGalleryMap[slug];
+      }
+
+      await saveProductOptionsMap(connection, productOptionsMap);
+      await saveProductGalleryMap(connection, productGalleryMap);
+    });
+
+    invalidateStorefrontPayloadCache();
+    res.json(await fetchCachedStorefrontPayload({ forceFresh: true }));
+  } catch (error) {
+    res.status(500).json({ message: error instanceof Error ? error.message : "Unable to clean legacy content." });
   }
 });
 

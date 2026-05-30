@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { type Product, allProducts as defaultProducts } from "@/data/products";
+import { type Product } from "@/data/products";
 import { defaultCatalogueTypes, type CatalogueType } from "@/lib/catalogue-types";
 import { homeContent as defaultHomeContent } from "@/data/home-content";
 import { apiRequest } from "@/lib/api";
@@ -64,9 +64,7 @@ type StorefrontPayload = {
   homeContent: StoredHomeContent;
 };
 
-const defaultProductById = new Map<string, Product>(
-  defaultProducts.map((product) => [product.id, product]),
-);
+const defaultProductById = new Map<string, Product>();
 
 const defaultBannerImageById = new Map<string, string>(
   defaultHomeContent.banners.map((banner) => [banner.id, banner.image]),
@@ -343,33 +341,12 @@ function normalizeProductName(value: Translatable, fallback?: Translatable) {
   return localizedName;
 }
 
-function isDefaultText(value: Translatable, fixedValue: Translatable) {
-  return getEnglishText(value) === getEnglishText(fixedValue);
-}
-
 function normalizeHomeReview(review: HomeReview): HomeReview {
-  const defaultReview = fixedDefaultReviews.get(review.id);
-
-  if (!defaultReview) return review;
-
   return {
     ...review,
-    authorName: asLocalizedText(
-      isDefaultText(review.authorName, defaultReview.authorName)
-        ? defaultReview.authorName
-        : review.authorName,
-      defaultReview.authorName,
-    ),
-    reviewText: asLocalizedText(
-      isDefaultText(review.reviewText, defaultReview.reviewText)
-        ? defaultReview.reviewText
-        : review.reviewText,
-      defaultReview.reviewText,
-    ),
-    location: asLocalizedText(
-      isDefaultText(review.location, defaultReview.location) ? defaultReview.location : review.location,
-      defaultReview.location,
-    ),
+    authorName: asLocalizedText(review.authorName),
+    reviewText: asLocalizedText(review.reviewText),
+    location: asLocalizedText(review.location),
   };
 }
 
@@ -485,7 +462,7 @@ const LOCAL_CATALOGUES_FALLBACK_KEY = "shivray-catalogues-local-fallback-v1";
 const LOCAL_HOME_CONTENT_FALLBACK_KEY = "shivray-home-content-local-fallback-v1";
 
 let storefrontBootstrapPromise: Promise<void> | null = null;
-let productsCache: Product[] = defaultProducts.map((product) => normalizeProduct(product));
+let productsCache: Product[] = [];
 let catalogueCache: CatalogueType[] = [];
 let homeContentCache: StoredHomeContent = { ...emptyHomeContent };
 
@@ -761,7 +738,7 @@ export async function deleteStoredProduct(productId: string) {
 }
 
 export function resetStoredProducts() {
-  productsCache = defaultProducts.map((product) => normalizeProduct(product));
+  productsCache = [];
   dispatchStoreEvent(PRODUCTS_EVENT);
 }
 
