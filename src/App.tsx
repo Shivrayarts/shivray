@@ -125,11 +125,11 @@ function AppShell() {
 
       exitTimer = window.setTimeout(() => {
         setPreloaderPhase("exit");
-        hiddenTimer = window.setTimeout(() => setPreloaderPhase("hidden"), 750);
-      }, 350);
+        hiddenTimer = window.setTimeout(() => setPreloaderPhase("hidden"), 240);
+      }, 80);
     };
 
-    const failSafeTimer = window.setTimeout(hideLoader, 1400);
+    const failSafeTimer = window.setTimeout(hideLoader, 450);
 
     if (document.readyState === "complete") {
       hideLoader();

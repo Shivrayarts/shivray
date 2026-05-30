@@ -194,11 +194,15 @@ function createEmptyProductOption(): ProductOption {
   };
 }
 
+function createDefaultProductOptions() {
+  return [createEmptyProductOption(), createEmptyProductOption()];
+}
+
 function cloneProductTemplate(): Product {
   return {
     ...productTemplate,
     galleryImages: [],
-    productOptions: [],
+    productOptions: createDefaultProductOptions(),
     discount: "0",
     finalPrice: "",
     name: "",
@@ -330,6 +334,10 @@ function ProductForm({
 }) {
   const localizedName = adminLocalizedText(value.name);
   const productOptions = value.productOptions ?? [];
+  const visibleProductOptions =
+    productOptions.length >= 2
+      ? productOptions
+      : [...productOptions, ...Array.from({ length: 2 - productOptions.length }, () => createEmptyProductOption())];
   const selectedTag = adminText(value.tag);
   const hasProductOptions = productOptions.some(
     (option) => String(option.label || "").trim() || String(option.price || "").trim(),
@@ -366,7 +374,7 @@ function ProductForm({
           className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
         />
       </div>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className={`grid gap-4 ${hasProductOptions ? "md:grid-cols-1" : "md:grid-cols-3"}`}>
         <input
           type="number"
           min="1"
@@ -387,55 +395,52 @@ function ProductForm({
               : "border-[#eadbc8] bg-[#fcf8f2]"
           }`}
         />
-        <input
-          type="number"
-          min="0"
-          max="100"
-          step="0.01"
-          value={baseDiscount}
-          onChange={(event) =>
-            onChange({
-              ...value,
-              discount: normalizeDiscountValue(event.target.value),
-              finalPrice: calculateOptionFinalPrice(String(value.price || ""), event.target.value),
-            })
-          }
-          placeholder={hasProductOptions ? "Managed by options" : "Discount %"}
-          disabled={hasProductOptions}
-          className={`rounded-2xl border px-4 py-3 text-sm text-[#34180e] outline-none ${
-            hasProductOptions
-              ? "cursor-not-allowed border-[#e7ddd0] bg-[#f4efe8] text-[#8b6c52]"
-              : "border-[#eadbc8] bg-[#fcf8f2]"
-          }`}
-        />
-        <input
-          value={hasProductOptions ? "" : baseFinalPrice}
-          readOnly
-          placeholder={hasProductOptions ? "Managed by options" : "Final price"}
-          className={`rounded-2xl border px-4 py-3 text-sm text-[#34180e] outline-none ${
-            hasProductOptions
-              ? "cursor-not-allowed border-[#e7ddd0] bg-[#f4efe8] text-[#8b6c52]"
-              : "border-[#eadbc8] bg-[#f8fafc]"
-          }`}
-        />
+        {!hasProductOptions ? (
+          <>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              value={baseDiscount}
+              onChange={(event) =>
+                onChange({
+                  ...value,
+                  discount: normalizeDiscountValue(event.target.value),
+                  finalPrice: calculateOptionFinalPrice(String(value.price || ""), event.target.value),
+                })
+              }
+              placeholder="Discount %"
+              className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+            />
+            <input
+              value={baseFinalPrice}
+              readOnly
+              placeholder="Final price"
+              className="rounded-2xl border border-[#eadbc8] bg-[#f8fafc] px-4 py-3 text-sm text-[#34180e] outline-none"
+            />
+          </>
+        ) : null}
       </div>
       {hasProductOptions ? (
-        <p className="-mt-1 text-xs text-[#8b6c52]">Base price is calculated automatically from the lowest final option price.</p>
+        <div className="-mt-1 rounded-2xl border border-[#e7ddd0] bg-[#f8f2e8] px-4 py-3 text-xs text-[#8b6c52]">
+          Product-level discount is hidden because option-based pricing is active. The base price will be calculated automatically from the lowest final option price.
+        </div>
       ) : null}
       <div className="rounded-[24px] border border-[#eadbc8] bg-[#fffdf9] p-4">
         <div className="mb-4">
-          <p className="text-sm font-semibold text-[#34180e]">Product Options (Weight/Size, Price, Discount)</p>
-          <p className="mt-1 text-xs text-[#8b6c52]">Add multiple rows if this product has different sizes or weights.</p>
+          <p className="text-sm font-semibold text-[#34180e]">Product Options (Size / Price / Discount Per Option)</p>
+          <p className="mt-1 text-xs text-[#8b6c52]">Use this section when the same product has multiple sizes, prices, or discount offers. Each row gets its own final price and can show a separate discount on the website.</p>
         </div>
         <div className="space-y-3">
-          {productOptions.map((option, index) => (
+          {visibleProductOptions.map((option, index) => (
             <div key={`product-option-${index}`} className="grid gap-3 md:grid-cols-[1.4fr_1fr_1fr_1fr_auto] md:items-center">
               <input
                 value={option.label}
                 onChange={(event) =>
                   onChange({
                     ...value,
-                    productOptions: productOptions.map((item, itemIndex) =>
+                    productOptions: visibleProductOptions.map((item, itemIndex) =>
                       itemIndex === index ? { ...item, label: event.target.value } : item,
                     ),
                   })
@@ -452,7 +457,7 @@ function ProductForm({
                   const nextPrice = event.target.value;
                   onChange({
                     ...value,
-                    productOptions: productOptions.map((item, itemIndex) =>
+                    productOptions: visibleProductOptions.map((item, itemIndex) =>
                       itemIndex === index
                         ? {
                             ...item,
@@ -476,7 +481,7 @@ function ProductForm({
                   const nextDiscount = normalizeDiscountValue(event.target.value);
                   onChange({
                     ...value,
-                    productOptions: productOptions.map((item, itemIndex) =>
+                    productOptions: visibleProductOptions.map((item, itemIndex) =>
                       itemIndex === index
                         ? {
                             ...item,
@@ -501,7 +506,7 @@ function ProductForm({
                 onClick={() =>
                   onChange({
                     ...value,
-                    productOptions: productOptions.filter((_, itemIndex) => itemIndex !== index),
+                    productOptions: visibleProductOptions.filter((_, itemIndex) => itemIndex !== index),
                   })
                 }
                 className="rounded-xl border border-[#ffe1e1] bg-[#fff3f3] px-3 py-3 text-xs font-semibold text-[#9f2b2b]"
@@ -516,7 +521,7 @@ function ProductForm({
           onClick={() =>
             onChange({
               ...value,
-              productOptions: [...productOptions, createEmptyProductOption()],
+              productOptions: [...visibleProductOptions, createEmptyProductOption()],
             })
           }
           className="mt-4 rounded-xl border border-[#7c5cff] px-4 py-2 text-sm font-semibold text-[#7c5cff]"

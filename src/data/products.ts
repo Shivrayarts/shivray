@@ -5,13 +5,13 @@ import productStatue3 from "@/assets/Products/product-4.jpeg";
 import productWeapon1 from "@/assets/Products/product-5.jpeg";
 import productWeapon2 from "@/assets/Products/product-2.jpeg";
 import productWeapon3 from "@/assets/Products/product-3.jpeg";
-import productDhoop1 from "@/assets/Products/product-1.png";
 import productShield1 from "@/assets/Products/product-4.jpeg";
 import productTalwar1 from "@/assets/Products/product-5.jpeg";
 import productWeapon4 from "@/assets/Products/product-2.jpeg";
 import productWeapon5 from "@/assets/Products/product-3.jpeg";
 import productWeapon6 from "@/assets/Products/product-4.jpeg";
 import productWeapon7 from "@/assets/Products/product-5.jpeg";
+const productDhoop1 = "/assets/product-dhoop-1.jpg";
 
 type ProductCategory = string;
 type Translatable = string | LocalizedText;
@@ -50,8 +50,24 @@ export const categoryLabels: Record<string, LocalizedText> = {
   Dhoop: { en: "Dhoop", mr: "धूप" },
 };
 
+function normalizeCategoryKey(category: ProductCategory) {
+  const raw = String(category || "").trim().toLowerCase();
+  if (!raw) return "";
+
+  for (const [key, labels] of Object.entries(categoryLabels)) {
+    const knownValues = [key, labels.en, labels.mr]
+      .map((value) => String(value || "").trim().toLowerCase())
+      .filter(Boolean);
+
+    if (knownValues.includes(raw)) return key;
+  }
+
+  return "";
+}
+
 export function getCategoryLabel(category: ProductCategory, locale: Locale) {
-  const known = categoryLabels[category];
+  const normalizedKey = normalizeCategoryKey(category);
+  const known = categoryLabels[normalizedKey || category];
   if (known) return known[locale];
   return category;
 }

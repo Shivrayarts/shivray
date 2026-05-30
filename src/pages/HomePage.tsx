@@ -18,11 +18,10 @@ import {
 import { useWishlist } from "@/hooks/use-wishlist";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import ProductGalleryCard from "@/components/ProductGalleryCard";
-import productDhoop1 from "@/assets/Products/product-1.png";
 import productStatue1 from "@/assets/Products/product-2.jpeg";
-import productShowcase1 from "@/assets/Products/product-1.png";
 import productWeapon1 from "@/assets/Products/product-5.jpeg";
 const heroBanner3 = "/assets/hero-banner-3.jpg";
+const productDhoop1 = "/assets/product-dhoop-1.jpg";
 
 // const features = [
 //   { icon: ShieldCheck, title: "Trusted Craftsmanship", copy: "Hand-finished products inspired by heritage, made for display, gifting, and devotion." },
@@ -85,6 +84,7 @@ export default function HomePage() {
   const hasHeroSlides = heroSlides.length > 0;
   const hasReviews = reviews.length > 0;
   const featuredVideos = storedHomeContent.videos;
+  const homeProducts = products.slice(0, 8);
   const spotlightIds = storedHomeContent.spotlightProductIds?.length
     ? storedHomeContent.spotlightProductIds
     : [
@@ -167,16 +167,6 @@ export default function HomePage() {
     }, 5000);
     return () => window.clearInterval(timer);
   }, [heroSlides.length]);
-
-  useEffect(() => {
-    heroSlides.forEach((slide) => {
-      const mediaType = slide.mediaType ?? (slide.videoUrl ? "video" : "image");
-      const mediaUrl = mediaType === "video" ? slide.videoUrl || slide.image : slide.image;
-      if (!mediaUrl || mediaType !== "image") return;
-      const image = new Image();
-      image.src = mediaUrl;
-    });
-  }, [heroSlides]);
 
   useEffect(() => {
     if (reviews.length <= 1) return;
@@ -400,12 +390,13 @@ export default function HomePage() {
         <div className="layout-shell">
           <div className="flex items-end justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold text-[#a86c2b]">{resolvedLocale === "mr" ? "संपूर्ण उत्पादने" : "Full product range"}</p>
-              <h2 className="mt-2 font-heading text-3xl text-[#34180e]">{resolvedLocale === "mr" ? "मुख्यपृष्ठावर सर्व उत्पादने पहा" : "Browse All Products on the Home Page"}</h2>
+              <p className="text-sm font-semibold text-[#a86c2b]">{resolvedLocale === "mr" ? "निवडक उत्पादने" : "Selected products"}</p>
+              <h2 className="mt-2 font-heading text-3xl text-[#34180e]">{resolvedLocale === "mr" ? "अधिक उत्पादने पाहण्यासाठी कॅटलॉग उघडा" : "Open the catalogue to browse more"}</h2>
             </div>
+            <Link to="/products" className="hidden text-sm font-semibold text-[#8b4d1d] md:inline-flex">{resolvedLocale === "mr" ? "पूर्ण कॅटलॉग" : "Full catalogue"}</Link>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {products.map((product) => (
+            {homeProducts.map((product) => (
               <ProductGalleryCard key={product.id} product={product} isWishlisted={isWishlisted(product.id)} onToggleWishlist={toggleWishlist} />
             ))}
           </div>

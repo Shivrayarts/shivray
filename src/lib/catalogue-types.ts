@@ -1,9 +1,9 @@
 import type { LocalizedText } from "@/lib/language";
-import productDhoop1 from "@/assets/Products/product-1.png";
 import productStatue1 from "@/assets/Products/product-2.jpeg";
 import productWeapon1 from "@/assets/Products/product-5.jpeg";
 const heroBanner3 = "/assets/hero-banner-3.jpg";
 const productsPoster = "/assets/products-poster.jpg";
+const productDhoop1 = "/assets/product-dhoop-1.jpg";
 
 type Translatable = string | LocalizedText;
 
