@@ -324,9 +324,6 @@ export default function HomePage() {
                     {resolvedLocale === "mr" ? "उत्पादने पहा" : "View Products"}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
-                  <Link to="/required-catalogue" className="inline-flex items-center justify-center rounded-full border border-[#e1a126]/70 bg-[#2b0b08]/30 px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#fbf2e2]">
-                    {resolvedLocale === "mr" ? "कॅटलॉग मागवा" : "Request Catalogue"}
-                  </Link>
                 </div>
               </div>
             ) : (
@@ -343,9 +340,6 @@ export default function HomePage() {
                   <Link to="/products" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#e1a126] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#2b0b08]">
                     {resolvedLocale === "mr" ? "उत्पादने पहा" : "View Products"}
                     <ArrowRight className="h-4 w-4" />
-                  </Link>
-                  <Link to="/required-catalogue" className="inline-flex items-center justify-center rounded-full border border-[#e1a126]/70 bg-[#2b0b08]/30 px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#fbf2e2]">
-                    {resolvedLocale === "mr" ? "कॅटलॉग मागवा" : "Request Catalogue"}
                   </Link>
                 </div>
               </div>
