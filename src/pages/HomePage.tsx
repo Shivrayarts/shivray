@@ -268,6 +268,8 @@ export default function HomePage() {
               alt={resolveLocalizedText(activeHeroSlide.titleTop, resolvedLocale) || "Homepage banner"}
               className="absolute inset-0 h-full w-full object-cover"
               fetchPriority="high"
+              loading="eager"
+              decoding="sync"
             />
           )
         ) : null}
