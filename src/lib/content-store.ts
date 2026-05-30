@@ -44,7 +44,13 @@ export type HomeBlogPost = {
   href?: string;
 };
 
+export type HomeAnnouncementBar = {
+  enabled: boolean;
+  text: Translatable;
+};
+
 export type StoredHomeContent = {
+  announcementBar: HomeAnnouncementBar;
   spotlightProductIds: string[];
   banners: HomeBanner[];
   reviews: HomeReview[];
@@ -84,6 +90,12 @@ const defaultHomeBlogPosts: HomeBlogPost[] = (
   ...post,
   href: typeof post.href === "string" ? post.href : "",
 }));
+const defaultAnnouncementBar: HomeAnnouncementBar = {
+  enabled: Boolean((defaultHomeContent as { announcementBar?: { enabled?: unknown } }).announcementBar?.enabled),
+  text: asLocalizedText(
+    (defaultHomeContent as { announcementBar?: { text?: Translatable } }).announcementBar?.text ?? "",
+  ),
+};
 
 const apiAssetBaseUrl = String(import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
 
@@ -213,6 +225,13 @@ function normalizeHomeBlogPost(post: HomeBlogPost): HomeBlogPost {
     tag: asLocalizedText(post.tag),
     image: normalizeAssetUrl(String(post.image || "").trim()),
     href: String(post.href || "").trim(),
+  };
+}
+
+function normalizeAnnouncementBar(value: Partial<HomeAnnouncementBar> | null | undefined): HomeAnnouncementBar {
+  return {
+    enabled: Boolean(value?.enabled),
+    text: asLocalizedText(value?.text ?? "", defaultAnnouncementBar.text),
   };
 }
 
@@ -399,6 +418,10 @@ function ensureArray<T>(value: unknown, fallback: readonly T[]): T[] {
 }
 
 const emptyHomeContent: StoredHomeContent = {
+  announcementBar: {
+    enabled: false,
+    text: { en: "", mr: "" },
+  },
   spotlightProductIds: [],
   banners: [],
   reviews: [],
@@ -409,6 +432,7 @@ const emptyHomeContent: StoredHomeContent = {
 function normalizeStoredHomeContent(
   value: Partial<StoredHomeContent> | null | undefined,
   fallback: StoredHomeContent = {
+    announcementBar: defaultAnnouncementBar,
     spotlightProductIds: defaultSpotlightProductIds,
     banners: defaultHomeBanners,
     reviews: defaultHomeReviews,
@@ -422,6 +446,7 @@ function normalizeStoredHomeContent(
     .slice(0, 8);
 
   return {
+    announcementBar: normalizeAnnouncementBar(value?.announcementBar ?? fallback.announcementBar),
     spotlightProductIds,
     banners: ensureArray<HomeBanner>(value?.banners, fallback.banners).map((banner) => normalizeHomeBanner(banner)),
     reviews: ensureArray<HomeReview>(value?.reviews, fallback.reviews).map((review) => normalizeHomeReview(review)),
@@ -441,6 +466,7 @@ function normalizeStorefrontPayload(payload: Partial<StorefrontPayload>) {
     homeContent: payload.homeContent
       ? {
           ...payload.homeContent,
+          announcementBar: normalizeAnnouncementBar(payload.homeContent.announcementBar),
           spotlightProductIds: payload.homeContent.spotlightProductIds,
           banners: ensureArray<HomeBanner>(payload.homeContent.banners, []).map((banner) => normalizeHomeBanner(banner)),
           reviews: ensureArray<HomeReview>(payload.homeContent.reviews, []).map((review) => normalizeHomeReview(review)),
@@ -805,6 +831,7 @@ export async function saveStoredHomeContent(content: StoredHomeContent) {
 
 export function resetStoredHomeContent() {
   homeContentCache = normalizeStoredHomeContent({
+    announcementBar: defaultAnnouncementBar,
     spotlightProductIds: defaultSpotlightProductIds,
     banners: defaultHomeBanners,
     reviews: defaultHomeReviews,

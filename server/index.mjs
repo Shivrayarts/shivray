@@ -61,6 +61,7 @@ const memoryOrders = [];
 const PRODUCT_OPTIONS_SETTING_KEY = "product_options_map";
 const PRODUCT_GALLERY_SETTING_KEY = "product_gallery_map";
 const BLOG_POSTS_SETTING_KEY = "blog_posts";
+const ANNOUNCEMENT_BAR_SETTING_KEY = "announcement_bar";
 const STOREFRONT_CACHE_TTL_MS = 60 * 1000;
 
 let storefrontPayloadCache = null;
@@ -710,6 +711,40 @@ async function saveBlogPosts(connection, blogPosts) {
   );
 }
 
+async function loadAnnouncementBar() {
+  const rows = await query(
+    `
+    SELECT setting_value
+    FROM homepage_settings
+    WHERE setting_key = ?
+    LIMIT 1
+    `,
+    [ANNOUNCEMENT_BAR_SETTING_KEY],
+  ).catch(() => []);
+
+  const rawValue = rows?.[0]?.setting_value;
+  if (typeof rawValue !== "string" || !rawValue.trim()) return { enabled: false, text: "" };
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    return parsed && typeof parsed === "object" ? parsed : { enabled: false, text: "" };
+  } catch {
+    return { enabled: false, text: "" };
+  }
+}
+
+async function saveAnnouncementBar(connection, announcementBar) {
+  await ensureHomepageSettingsTable(connection);
+  await connection.query(
+    `
+    INSERT INTO homepage_settings (setting_key, setting_value)
+    VALUES (?, ?)
+    ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+    `,
+    [ANNOUNCEMENT_BAR_SETTING_KEY, JSON.stringify(announcementBar)],
+  );
+}
+
 async function findUserByEmail(email) {
   const rows = await query(
     `
@@ -736,7 +771,7 @@ function requireAdmin(req, res, next) {
 }
 
 async function fetchStorefrontPayload() {
-  const [products, catalogues, banners, reviews, videos, spotlightSettings, productOptionsMap, productGalleryMap, blogPosts] = await Promise.all([
+  const [products, catalogues, banners, reviews, videos, spotlightSettings, productOptionsMap, productGalleryMap, blogPosts, announcementBar] = await Promise.all([
     query(
       `
       SELECT slug, name, price, image_url, category, tag, short_description, details, material, dimensions, history_background
@@ -788,6 +823,7 @@ async function fetchStorefrontPayload() {
     loadProductOptionsMap(),
     loadProductGalleryMap(),
     loadBlogPosts(),
+    loadAnnouncementBar(),
   ]);
 
   let spotlightProductIds = [];
@@ -832,6 +868,10 @@ async function fetchStorefrontPayload() {
       sortOrder: Number(row.sort_order),
     })),
     homeContent: {
+      announcementBar: {
+        enabled: Boolean(announcementBar?.enabled),
+        text: announcementBar?.text || "",
+      },
       spotlightProductIds,
       banners: banners.map((row) => ({
         id: row.slug,
@@ -1381,6 +1421,13 @@ app.put("/api/admin/catalogues", requireAdmin, async (req, res) => {
 
 app.put("/api/admin/home-content", requireAdmin, async (req, res) => {
   const content = req.body?.content ?? {};
+  const announcementBar =
+    content.announcementBar && typeof content.announcementBar === "object"
+      ? {
+          enabled: Boolean(content.announcementBar.enabled),
+          text: content.announcementBar.text || "",
+        }
+      : { enabled: false, text: "" };
   const spotlightProductIds = Array.isArray(content.spotlightProductIds)
     ? content.spotlightProductIds.filter((id) => typeof id === "string" && id.trim()).map((id) => id.trim()).slice(0, 8)
     : [];
@@ -1403,6 +1450,7 @@ app.put("/api/admin/home-content", requireAdmin, async (req, res) => {
         `,
         [JSON.stringify(spotlightProductIds)],
       );
+      await saveAnnouncementBar(connection, announcementBar);
       await saveBlogPosts(connection, blogPosts);
 
       for (let index = 0; index < banners.length; index += 1) {

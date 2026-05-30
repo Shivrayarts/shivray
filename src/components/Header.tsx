@@ -5,7 +5,9 @@ import logoImg from "@/assets/logo-dark.jpg";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
+import { useStoredHomeContent } from "@/lib/content-store";
 import { useLanguage } from "@/lib/language";
+import { resolveLocalizedText } from "@/lib/language";
 import { siteConfig } from "@/lib/site-config";
 
 export default function Header() {
@@ -16,6 +18,7 @@ export default function Header() {
   const navigate = useNavigate();
   const { wishlist } = useWishlist();
   const { getTotalItems } = useCart();
+  const { announcementBar } = useStoredHomeContent();
   const wishlistCount = wishlist.length;
   const cartCount = getTotalItems();
   const brandName = siteConfig.brandName[resolvedLocale];
@@ -32,6 +35,8 @@ export default function Header() {
     { to: "/login", label: resolvedLocale === "mr" ? "लॉगिन" : "Login" },
   ] as const;
   const desktopNavLinks = navLinks.filter((link) => link.to !== "/login");
+  const announcementText = resolveLocalizedText(announcementBar.text, resolvedLocale).trim();
+  const showAnnouncement = announcementBar.enabled && announcementText.length > 0;
 
   const navigateToSearch = (value: string) => {
     const query = value.trim();
@@ -54,6 +59,14 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-[#eadbc8] bg-[#fffaf4]/95 backdrop-blur-md">
+      {showAnnouncement ? (
+        <div className="border-b border-[#c89b59] bg-[linear-gradient(90deg,#2b0b08_0%,#4a1e10_48%,#2b0b08_100%)] px-4 py-2.5 text-center text-[#f7e8d1] shadow-[0_10px_24px_-20px_rgba(32,12,6,0.9)]">
+          <div className="layout-shell flex items-center justify-center gap-2 text-xs font-medium leading-6 md:text-sm">
+            <span className="text-[#efc16e]">Notice</span>
+            <span className="max-w-5xl">{announcementText}</span>
+          </div>
+        </div>
+      ) : null}
       <div className="hidden border-b border-[#f2e4d4] bg-[#2b130c] px-4 py-2 text-[#f8e8cf] md:block lg:hidden md:px-6">
         <div className="layout-shell flex items-center justify-between gap-3 text-[11px]">
           <span className="truncate">

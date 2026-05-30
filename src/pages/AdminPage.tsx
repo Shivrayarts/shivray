@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@/lib/spa-router";
-import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -36,6 +36,7 @@ import { calculateDiscountedPrice, formatCurrencyAmount, normalizeDiscountPercen
 import { isValidEmail, isValidName, isValidPhone } from "@/lib/form-validation";
 import {
   deleteStoredProduct,
+  type HomeAnnouncementBar,
   saveStoredProduct,
   saveStoredCatalogueTypes,
   saveStoredHomeContent,
@@ -124,6 +125,11 @@ const blogTemplate: HomeBlogPost = {
   href: "",
 };
 
+const announcementTemplate: HomeAnnouncementBar = {
+  enabled: false,
+  text: "",
+};
+
 const customerTemplate = {
   name: "",
   email: "",
@@ -135,6 +141,7 @@ type AdminSection =
   | "dashboard"
   | "products"
   | "categories"
+  | "announcement"
   | "banners"
   | "videos"
   | "blogs"
@@ -1141,6 +1148,7 @@ export default function AdminPage() {
   const [reviewDraft, setReviewDraft] = useState<HomeReview>(reviewTemplate);
   const [videoDraft, setVideoDraft] = useState<HomeVideo>(videoTemplate);
   const [blogDraft, setBlogDraft] = useState<HomeBlogPost>(blogTemplate);
+  const [announcementDraft, setAnnouncementDraft] = useState<HomeAnnouncementBar>(storedHomeContent.announcementBar ?? announcementTemplate);
   const [orderStatusFilter, setOrderStatusFilter] = useState<"All" | OrderStatus>("All");
   const [orderSearch, setOrderSearch] = useState("");
   const [customerSearch, setCustomerSearch] = useState("");
@@ -1189,6 +1197,10 @@ export default function AdminPage() {
     newPassword: "",
     confirmPassword: "",
   });
+
+  useEffect(() => {
+    setAnnouncementDraft(storedHomeContent.announcementBar ?? announcementTemplate);
+  }, [storedHomeContent.announcementBar]);
 
   const orderedCatalogues = useMemo(
     () => [...catalogueTypes].sort((a, b) => a.sortOrder - b.sortOrder),
@@ -1278,6 +1290,7 @@ export default function AdminPage() {
     dashboard: "Dashboard",
     products: "Products",
     categories: "Categories",
+    announcement: "Announcement Bar",
     banners: "Home Banners",
     videos: "Featured Videos",
     blogs: "Blogs",
@@ -1856,6 +1869,39 @@ export default function AdminPage() {
     setMediaNotice("Banner saved successfully.");
   }
 
+  async function saveAnnouncementBar() {
+    const nextAnnouncement = {
+      enabled: Boolean(announcementDraft.enabled),
+      text: adminLocalizedText(announcementDraft.text),
+    };
+    const saved = await saveStoredHomeContent({
+      ...storedHomeContent,
+      announcementBar: nextAnnouncement,
+    });
+    if (!saved) {
+      setMediaNotice("Unable to save announcement bar right now. Please try again.");
+      return;
+    }
+    setAnnouncementDraft(nextAnnouncement);
+    setMediaNotice(nextAnnouncement.enabled ? "Announcement bar saved successfully." : "Announcement bar hidden successfully.");
+  }
+
+  async function clearAnnouncementBar() {
+    const saved = await saveStoredHomeContent({
+      ...storedHomeContent,
+      announcementBar: {
+        enabled: false,
+        text: { en: "", mr: "" },
+      },
+    });
+    if (!saved) {
+      setMediaNotice("Unable to delete announcement bar right now. Please try again.");
+      return;
+    }
+    setAnnouncementDraft(announcementTemplate);
+    setMediaNotice("Announcement bar deleted successfully.");
+  }
+
   async function deleteBanner(bannerId: string) {
     const nextBanners = storedHomeContent.banners.filter((banner) => banner.id !== bannerId);
     const saved = await saveStoredHomeContent({ ...storedHomeContent, banners: nextBanners });
@@ -2231,6 +2277,19 @@ export default function AdminPage() {
             >
               <Shapes className="h-4 w-4" />
               Categories
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveSection("announcement")}
+              className={`flex w-full items-center gap-3 rounded-[18px] px-4 py-3 text-left text-sm font-semibold transition ${
+                activeSection === "announcement"
+                  ? "bg-white/16 text-[#ffe08a]"
+                  : "bg-white/8 text-[#f3eeff] hover:bg-white/12"
+              }`}
+            >
+              <Bell className="h-4 w-4" />
+              Announcement Bar
             </button>
 
             <button
@@ -2899,6 +2958,112 @@ export default function AdminPage() {
                     onSave={saveCatalogue}
                     onPickImageFile={handleCatalogueImageFileChange}
                   />
+                </div>
+              </div>
+            </section>
+          ) : null}
+
+          {activeSection === "announcement" ? (
+            <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+              <div className="rounded-[30px] bg-white p-6 shadow-[0_18px_40px_-30px_rgba(70,36,15,0.22)]">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-2xl font-semibold text-[#34180e]">Announcement Bar</h2>
+                    <p className="mt-2 text-sm text-[#6c4b33]">Add a short notice above the header. You can show it, edit it, hide it, or delete it anytime from admin.</p>
+                  </div>
+                  <span
+                    className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${
+                      announcementDraft.enabled
+                        ? "bg-[#f4fbf4] text-[#2f7a34]"
+                        : "bg-[#f8efe3] text-[#8b6c52]"
+                    }`}
+                  >
+                    {announcementDraft.enabled ? "Visible" : "Hidden"}
+                  </span>
+                </div>
+
+                <div className="mt-6 space-y-4">
+                  <label className="flex items-center gap-3 rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm font-semibold text-[#34180e]">
+                    <input
+                      type="checkbox"
+                      checked={announcementDraft.enabled}
+                      onChange={(event) =>
+                        setAnnouncementDraft((current) => ({ ...current, enabled: event.target.checked }))
+                      }
+                      className="h-4 w-4 rounded border-[#cba57f] text-[#34180e]"
+                    />
+                    Show announcement bar on website
+                  </label>
+
+                  <input
+                    value={adminLocalizedText(announcementDraft.text).en}
+                    onChange={(event) =>
+                      setAnnouncementDraft((current) => ({
+                        ...current,
+                        text: { ...adminLocalizedText(current.text), en: event.target.value },
+                      }))
+                    }
+                    placeholder="Announcement text (English)"
+                    className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+                  />
+
+                  <input
+                    value={adminLocalizedText(announcementDraft.text).mr}
+                    onChange={(event) =>
+                      setAnnouncementDraft((current) => ({
+                        ...current,
+                        text: { ...adminLocalizedText(current.text), mr: event.target.value },
+                      }))
+                    }
+                    placeholder="Announcement text (Marathi)"
+                    className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+                  />
+
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() => void saveAnnouncementBar()}
+                      className="inline-flex items-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white"
+                    >
+                      <Save className="h-4 w-4" />
+                      Save Announcement
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAnnouncementDraft(storedHomeContent.announcementBar ?? announcementTemplate)}
+                      className="inline-flex items-center gap-2 rounded-full border border-[#eadbc8] bg-[#fffaf4] px-4 py-3 text-sm font-semibold text-[#8b4d1d]"
+                    >
+                      <RefreshCcw className="h-4 w-4" />
+                      Reset Form
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void clearAnnouncementBar()}
+                      className="inline-flex items-center gap-2 rounded-full border border-[#ffe1e1] bg-[#fff3f3] px-4 py-3 text-sm font-semibold text-[#9f2b2b]"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete Announcement
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-[30px] bg-white p-6 shadow-[0_18px_40px_-30px_rgba(70,36,15,0.22)]">
+                <h2 className="text-2xl font-semibold text-[#34180e]">Live Preview</h2>
+                <p className="mt-2 text-sm text-[#6c4b33]">This preview uses your maroon-gold website theme instead of a plain black strip.</p>
+                <div className="mt-6 overflow-hidden rounded-[28px] border border-[#d8b48b] bg-[linear-gradient(90deg,#2b0b08_0%,#4a1e10_48%,#2b0b08_100%)] shadow-[0_22px_40px_-30px_rgba(36,12,6,0.95)]">
+                  <div className="border-b border-[#c89b59]/60 px-4 py-3 text-center text-[#f7e8d1]">
+                    <div className="flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#efc16e]">
+                      <Bell className="h-3.5 w-3.5" />
+                      Notice
+                    </div>
+                    <p className="mx-auto mt-2 max-w-xl text-sm leading-6 md:text-base">
+                      {adminLocalizedText(announcementDraft.text).en.trim() || "Your announcement text will appear here once you add and save it."}
+                    </p>
+                  </div>
+                  <div className="bg-[#fffaf4] px-5 py-4 text-sm text-[#6c4b33]">
+                    Status: <span className="font-semibold text-[#34180e]">{announcementDraft.enabled ? "Visible on website" : "Hidden until enabled"}</span>
+                  </div>
                 </div>
               </div>
             </section>

@@ -6,6 +6,13 @@ const heroBanner3 = "/assets/hero-banner-3.jpg";
 type Translatable = string | LocalizedText;
 
 export const homeContent = {
+  announcementBar: {
+    enabled: false,
+    text: {
+      en: "",
+      mr: "",
+    } as Translatable,
+  },
   spotlightProductIds: [
     "shastradhari-maharaj-coloured",
     "roudra-shambhu-chatrapati",
