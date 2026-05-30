@@ -2,9 +2,9 @@ export const siteConfig = {
   address: "Sainath Chowk, Dhankawadi, Pune, Maharashtra 411043",
   phoneDisplay: "75 58 58 58 58",
   phoneHref: "+917558585858",
-  alternatePhoneDisplay: "74 10 07 77 77",
-  alternatePhoneHref: "+917410077777",
-  whatsappHref: "https://wa.me/917410077777",
+  alternatePhoneDisplay: "75 58 58 58 58",
+  alternatePhoneHref: "+917558585858",
+  whatsappHref: "https://wa.me/917558585858",
   email: "shivrayart@gmail.com",
   brandName: {
     en: "Shivray Art",

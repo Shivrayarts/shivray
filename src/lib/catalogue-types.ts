@@ -8,6 +8,7 @@ export type CatalogueType = {
   shortLabel: Translatable;
   description: Translatable;
   image: string;
+  downloadUrl?: string;
   itemCountLabel: Translatable;
   isActive: boolean;
   sortOrder: number;

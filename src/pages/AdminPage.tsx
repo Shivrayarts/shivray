@@ -83,6 +83,7 @@ const catalogueTemplate: CatalogueType = {
   shortLabel: "",
   description: "",
   image: "",
+  downloadUrl: "",
   itemCountLabel: "",
   isActive: true,
   sortOrder: 1,
@@ -733,6 +734,12 @@ function CatalogueForm({
         placeholder="170 products"
         className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
       />
+      <input
+        value={value.downloadUrl || ""}
+        onChange={(event) => onChange({ ...value, downloadUrl: event.target.value })}
+        placeholder="Catalogue download link (Google Drive or direct file URL)"
+        className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+      />
       <label className="block rounded-2xl border border-dashed border-[#d8b48b] bg-[#fffaf4] p-4 text-sm text-[#6c4b33]">
         <span className="mb-2 flex items-center gap-2 font-semibold text-[#34180e]">
           <Upload className="h-4 w-4" />
@@ -1227,6 +1234,8 @@ export default function AdminPage() {
           ...customer,
           ordersCount: customerOrders.length,
           totalSpent,
+          sourceLabel:
+            customer.source === "catalogue-request" ? "Catalogue Request" : "Website Customer",
         };
       }),
     [customers, orders],
@@ -1256,7 +1265,15 @@ export default function AdminPage() {
     const search = customerSearch.trim().toLowerCase();
     return enrichedCustomers.filter((customer) => {
       if (!search) return true;
-      return [customer.name, customer.email, customer.phone, customer.address]
+      return [
+        customer.name,
+        customer.email,
+        customer.phone,
+        customer.address,
+        customer.note,
+        customer.requestedCatalogueTitle,
+        customer.sourceLabel,
+      ]
         .join(" ")
         .toLowerCase()
         .includes(search);
@@ -1739,6 +1756,11 @@ export default function AdminPage() {
   }
 
   function editCustomer(customer: CustomerProfile) {
+    if (customer.source === "catalogue-request") {
+      setMediaNotice("Catalogue request leads are auto-saved from the website and cannot be edited here.");
+      return;
+    }
+
     setEditingCustomerId(customer.id);
     setCustomerDraft({
       name: customer.name || "",
@@ -3053,7 +3075,7 @@ export default function AdminPage() {
                 <p className="mt-2 text-sm text-[#6c4b33]">This preview uses your maroon-gold website theme instead of a plain black strip.</p>
                 <div className="mt-6 overflow-hidden rounded-[28px] border border-[#d8b48b] bg-[linear-gradient(90deg,#2b0b08_0%,#4a1e10_48%,#2b0b08_100%)] shadow-[0_22px_40px_-30px_rgba(36,12,6,0.95)]">
                   <div className="border-b border-[#c89b59]/60 px-4 py-3 text-center text-[#f7e8d1]">
-                    <marquee behavior="scroll" direction="left" scrollAmount={5} className="text-sm leading-6 md:text-base">
+                    <marquee behavior="scroll" direction="left" scrollAmount={2} className="text-sm leading-6 md:text-base">
                       {adminLocalizedText(announcementDraft.text).en.trim() || "Your announcement text will appear here once you add and save it."}
                     </marquee>
                   </div>
@@ -3542,10 +3564,21 @@ export default function AdminPage() {
                         filteredCustomers.map((customer) => (
                           <tr key={customer.id} className="border-b border-[#f3e8da]">
                             <td className="px-4 py-4 font-semibold text-[#34180e]">
-                              <p>{customer.name}</p>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p>{customer.name}</p>
+                                <span className="rounded-full bg-[#f7efe4] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8b4d1d]">
+                                  {customer.sourceLabel}
+                                </span>
+                              </div>
                               <p className="mt-1 text-xs text-[#8b6c52]">{customer.address || "No address added yet"}</p>
+                              {customer.requestedCatalogueTitle ? (
+                                <p className="mt-1 text-xs text-[#8b6c52]">Requested catalogue: {customer.requestedCatalogueTitle}</p>
+                              ) : null}
+                              {customer.note ? (
+                                <p className="mt-1 text-xs text-[#8b6c52]">Requirement: {customer.note}</p>
+                              ) : null}
                             </td>
-                            <td className="px-4 py-4 text-[#5e5a80]">{customer.email}</td>
+                            <td className="px-4 py-4 text-[#5e5a80]">{customer.email || "Not provided"}</td>
                             <td className="px-4 py-4 text-[#5e5a80]">{customer.phone || "Not provided"}</td>
                             <td className="px-4 py-4 text-[#34180e]">{customer.ordersCount}</td>
                             <td className="px-4 py-4 text-[#34180e]">{formatCurrency(customer.totalSpent)}</td>
@@ -3554,10 +3587,11 @@ export default function AdminPage() {
                               <button
                                 type="button"
                                 onClick={() => editCustomer(customer)}
+                                disabled={customer.source === "catalogue-request"}
                                 className="inline-flex items-center gap-1 rounded-full border border-[#eadbc8] bg-white px-3 py-1.5 text-xs font-semibold text-[#6c4b33]"
                               >
                                 <SquarePen className="h-3.5 w-3.5" />
-                                Edit
+                                {customer.source === "catalogue-request" ? "Saved Lead" : "Edit"}
                               </button>
                             </td>
                           </tr>

@@ -16,6 +16,9 @@ export default function ContactPage() {
   const { resolvedLocale } = useLanguage();
   const [form, setForm] = useState({ name: "", phone: "", city: "" });
   const [touched, setTouched] = useState({ name: false, phone: false, city: false });
+  const showAlternatePhone =
+    Boolean(siteConfig.alternatePhoneDisplay && siteConfig.alternatePhoneHref) &&
+    siteConfig.alternatePhoneHref !== siteConfig.phoneHref;
 
   const isNameValid = isValidName(form.name);
   const isPhoneValid = isValidPhone(form.phone);
@@ -110,9 +113,11 @@ export default function ContactPage() {
                       <a href={`tel:${siteConfig.phoneHref}`} className="block">
                         {siteConfig.phoneDisplay}
                       </a>
-                      <a href={`tel:${siteConfig.alternatePhoneHref}`} className="block">
-                        {siteConfig.alternatePhoneDisplay}
-                      </a>
+                      {showAlternatePhone ? (
+                        <a href={`tel:${siteConfig.alternatePhoneHref}`} className="block">
+                          {siteConfig.alternatePhoneDisplay}
+                        </a>
+                      ) : null}
                     </div>
                   </div>
                 </div>

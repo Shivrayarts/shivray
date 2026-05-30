@@ -34,6 +34,9 @@ export default function Footer() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterTouched, setNewsletterTouched] = useState(false);
   const [newsletterMessage, setNewsletterMessage] = useState("");
+  const showAlternatePhone =
+    Boolean(siteConfig.alternatePhoneDisplay && siteConfig.alternatePhoneHref) &&
+    siteConfig.alternatePhoneHref !== siteConfig.phoneHref;
 
   const shoppingLinks = [
     { to: "/products", label: resolvedLocale === "mr" ? "शिपिंग आणि डिलिव्हरी" : "Shipping and Delivery" },
@@ -92,19 +95,26 @@ export default function Footer() {
             </div>
 
             <div className="mt-10 space-y-6 text-lg leading-9 text-[#edd8c5]">
-              <div className="flex items-start gap-4">
+              <a
+                href={siteConfig.googleBusinessHref}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-start gap-4 transition hover:text-[#ffd68d]"
+              >
                 <MapPin className="mt-2 h-5 w-5 shrink-0 text-[#ffd68d]" />
                 <p>{siteConfig.address}</p>
-              </div>
+              </a>
               <div className="flex items-start gap-4">
                 <Phone className="mt-2 h-5 w-5 shrink-0 text-[#ffd68d]" />
                 <div className="space-y-0.5">
                   <a href={`tel:${siteConfig.phoneHref}`} className="block transition hover:text-[#ffd68d]">
                     {siteConfig.phoneDisplay}
                   </a>
-                  <a href={`tel:${siteConfig.alternatePhoneHref}`} className="block transition hover:text-[#ffd68d]">
-                    {siteConfig.alternatePhoneDisplay}
-                  </a>
+                  {showAlternatePhone ? (
+                    <a href={`tel:${siteConfig.alternatePhoneHref}`} className="block transition hover:text-[#ffd68d]">
+                      {siteConfig.alternatePhoneDisplay}
+                    </a>
+                  ) : null}
                 </div>
               </div>
               <a href={`mailto:${siteConfig.email}`} className="flex items-start gap-4 transition hover:text-[#ffd68d]">
@@ -216,19 +226,26 @@ export default function Footer() {
           </div>
 
           <div className="mt-7 space-y-5 text-[15px] leading-7 text-[#f2dfcc]">
-            <div className="flex items-start gap-3">
+            <a
+              href={siteConfig.googleBusinessHref}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-start gap-3 transition hover:text-[#ffd68d]"
+            >
               <MapPin className="mt-1 h-4 w-4 shrink-0 text-[#ffd68d]" />
               <p>{siteConfig.address}</p>
-            </div>
+            </a>
             <div className="flex items-start gap-3">
               <Phone className="mt-1 h-4 w-4 shrink-0 text-[#ffd68d]" />
               <div className="space-y-0.5">
                 <a href={`tel:${siteConfig.phoneHref}`} className="block transition hover:text-[#ffd68d]">
                   {siteConfig.phoneDisplay}
                 </a>
-                <a href={`tel:${siteConfig.alternatePhoneHref}`} className="block transition hover:text-[#ffd68d]">
-                  {siteConfig.alternatePhoneDisplay}
-                </a>
+                {showAlternatePhone ? (
+                  <a href={`tel:${siteConfig.alternatePhoneHref}`} className="block transition hover:text-[#ffd68d]">
+                    {siteConfig.alternatePhoneDisplay}
+                  </a>
+                ) : null}
               </div>
             </div>
             <a href={`mailto:${siteConfig.email}`} className="flex items-start gap-3 transition hover:text-[#ffd68d]">

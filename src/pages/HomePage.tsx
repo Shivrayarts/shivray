@@ -77,6 +77,7 @@ export default function HomePage() {
   const [categorySlide, setCategorySlide] = useState(0);
   const [currentReview, setCurrentReview] = useState(0);
   const [videoSlide, setVideoSlide] = useState(0);
+  const [heroVideoReady, setHeroVideoReady] = useState(false);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
   const videosRef = useRef<HTMLDivElement | null>(null);
   const heroSlides = storedHomeContent.banners;
@@ -186,6 +187,17 @@ export default function HomePage() {
     activeHeroMediaType === "video"
       ? activeHeroSlide?.videoUrl || activeHeroSlide?.image || ""
       : activeHeroSlide?.image || "";
+  const activeHeroPosterUrl = activeHeroSlide?.image || productWeapon1;
+  const fallbackHeroTitleTop = resolvedLocale === "mr" ? "शिवराय" : "Shivray";
+  const fallbackHeroTitleBottom = resolvedLocale === "mr" ? "आर्ट" : "Art";
+  const fallbackHeroCopy =
+    resolvedLocale === "mr"
+      ? "इतिहास, परंपरा आणि हस्तकलेने प्रेरित निवडक कलाकृती, भेटवस्तू आणि संग्रह."
+      : "Crafted heritage pieces inspired by history, tradition, and timeless Maratha artistry.";
+
+  useEffect(() => {
+    setHeroVideoReady(false);
+  }, [activeHeroSlide?.id, activeHeroMediaType, activeHeroMediaUrl]);
 
   const handleCategoriesScroll = () => {
     const node = categoriesRef.current;
@@ -246,16 +258,29 @@ export default function HomePage() {
       <section className="relative isolate overflow-hidden bg-[#2b0b08] text-white">
         {activeHeroSlide && activeHeroMediaUrl ? (
           activeHeroMediaType === "video" ? (
-            <video
-              key={activeHeroSlide.id}
-              src={activeHeroMediaUrl}
-              className="absolute inset-0 h-full w-full object-cover"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-            />
+            <>
+              <img
+                key={`${activeHeroSlide.id}-poster`}
+                src={activeHeroPosterUrl}
+                alt={resolveLocalizedText(activeHeroSlide.titleTop, resolvedLocale) || "Homepage banner"}
+                className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${heroVideoReady ? "opacity-0" : "opacity-100"}`}
+                fetchPriority="high"
+                loading="eager"
+                decoding="async"
+              />
+              <video
+                key={activeHeroSlide.id}
+                src={activeHeroMediaUrl}
+                poster={activeHeroPosterUrl || undefined}
+                className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${heroVideoReady ? "opacity-100" : "opacity-0"}`}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                onCanPlay={() => setHeroVideoReady(true)}
+              />
+            </>
           ) : (
             <img
               key={activeHeroSlide.id}
@@ -264,15 +289,24 @@ export default function HomePage() {
               className="absolute inset-0 h-full w-full object-cover"
               fetchPriority="high"
               loading="eager"
-              decoding="sync"
+              decoding="async"
             />
           )
-        ) : null}
-        <div className="absolute inset-0 bg-black/10" />
+        ) : (
+          <img
+            src={productWeapon1}
+            alt="Shivray Art heritage collection"
+            className="absolute inset-0 h-full w-full object-cover"
+            fetchPriority="high"
+            loading="eager"
+            decoding="async"
+          />
+        )}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(20,8,4,0.35)_0%,rgba(20,8,4,0.2)_35%,rgba(20,8,4,0.62)_100%)]" />
         <div className="relative flex w-full min-h-[460px] items-center justify-center px-0 py-0 text-center md:mx-auto md:min-h-[720px] md:max-w-[72rem] md:px-8 md:py-24">
           <div className="mx-auto max-w-5xl">
             {activeHeroSlide ? (
-              <div className="hidden">
+              <div className="px-5">
                 <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#e3a92b]">
                   {resolveLocalizedText(activeHeroSlide.eyebrow, resolvedLocale)}
                 </p>
@@ -296,14 +330,25 @@ export default function HomePage() {
                 </div>
               </div>
             ) : (
-              <>
-                
-                <h1 className="mt-6 font-heading text-5xl font-semibold leading-[0.92] text-[#fbf2e2] sm:text-6xl md:text-8xl">{resolvedLocale === "mr" ? "बॅनर" : "No banner"}</h1>
-                <h2 className="mt-2 font-heading text-5xl font-semibold leading-[0.92] text-[#e1a126] sm:text-6xl md:text-8xl">{resolvedLocale === "mr" ? "अजून सेट नाही" : "configured yet"}</h2>
-                <p className="mx-auto mt-7 max-w-4xl text-lg leading-9 text-[#f6e6d4] md:text-[1.05rem]">
-                  {resolvedLocale === "mr" ? "येथे दाखवण्यासाठी अॅडमिन पॅनेलमधून मुख्यपृष्ठ बॅनर जोडा किंवा संपादित करा." : "Add or edit homepage banners from the admin panel to show them here."}
+              <div className="px-5">
+                <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#e3a92b]">
+                  {resolvedLocale === "mr" ? "शिवराय आर्ट" : "Shivray Art"}
                 </p>
-              </>
+                <h1 className="mt-6 font-heading text-5xl font-semibold leading-[0.92] text-[#fbf2e2] sm:text-6xl md:text-8xl">{fallbackHeroTitleTop}</h1>
+                <h2 className="mt-2 font-heading text-5xl font-semibold leading-[0.92] text-[#e1a126] sm:text-6xl md:text-8xl">{fallbackHeroTitleBottom}</h2>
+                <p className="mx-auto mt-7 max-w-4xl text-lg leading-9 text-[#f6e6d4] md:text-[1.05rem]">
+                  {fallbackHeroCopy}
+                </p>
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                  <Link to="/products" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#e1a126] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#2b0b08]">
+                    {resolvedLocale === "mr" ? "उत्पादने पहा" : "View Products"}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <Link to="/required-catalogue" className="inline-flex items-center justify-center rounded-full border border-[#e1a126]/70 bg-[#2b0b08]/30 px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#fbf2e2]">
+                    {resolvedLocale === "mr" ? "कॅटलॉग मागवा" : "Request Catalogue"}
+                  </Link>
+                </div>
+              </div>
             )}
             
           </div>

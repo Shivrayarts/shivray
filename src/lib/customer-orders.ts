@@ -10,6 +10,10 @@ export type CustomerProfile = {
   address: string;
   createdAt: string;
   lastLoginAt: string;
+  source?: "website-customer" | "catalogue-request";
+  note?: string;
+  requestedCatalogueId?: string;
+  requestedCatalogueTitle?: string;
 };
 
 export type CustomerSession = {
@@ -291,6 +295,23 @@ export async function updateCustomerProfile(customerId: string, updates: Partial
   } catch (error) {
     logSyncError("customer profile", error);
   }
+}
+
+export async function submitCatalogueRequest(input: {
+  name: string;
+  phone: string;
+  address: string;
+  note?: string;
+  catalogueId: string;
+  catalogueTitle: string;
+}) {
+  return apiRequest<{
+    ok: true;
+    customer: CustomerProfile;
+  }>("/api/catalogue-requests", {
+    method: "POST",
+    body: input,
+  });
 }
 
 export async function placeOrder(input: {

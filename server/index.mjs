@@ -451,6 +451,54 @@ async function ensureHomepageSettingsValueColumnSupportsLargePayloads() {
   }
 }
 
+async function ensureCataloguesDownloadUrlColumn() {
+  try {
+    const rows = await query(
+      `
+      SHOW COLUMNS FROM catalogues LIKE 'download_url'
+      `,
+    );
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+      await query(
+        `
+        ALTER TABLE catalogues
+        ADD COLUMN download_url MEDIUMTEXT NULL AFTER image_url
+        `,
+      );
+    }
+  } catch (error) {
+    console.warn(
+      "Unable to verify catalogue download URL schema.",
+      error instanceof Error ? error.message : error,
+    );
+  }
+}
+
+async function ensureCatalogueRequestsTable() {
+  try {
+    await query(
+      `
+      CREATE TABLE IF NOT EXISTS catalogue_requests (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        full_name VARCHAR(255) NOT NULL,
+        phone VARCHAR(30) NOT NULL,
+        address TEXT NOT NULL,
+        note TEXT NULL,
+        catalogue_slug VARCHAR(191) NOT NULL,
+        catalogue_title VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `,
+    );
+  } catch (error) {
+    console.warn(
+      "Unable to verify catalogue requests table.",
+      error instanceof Error ? error.message : error,
+    );
+  }
+}
+
 async function ensureHomepageVideosSchema() {
   try {
     const rows = await query(
@@ -805,7 +853,7 @@ async function fetchStorefrontPayload() {
     ),
     query(
       `
-      SELECT slug, title, short_label, description, image_url, item_count_label, sort_order, is_active
+      SELECT slug, title, short_label, description, image_url, download_url, item_count_label, sort_order, is_active
       FROM catalogues
       ORDER BY sort_order ASC, id ASC
       `,
@@ -885,6 +933,7 @@ async function fetchStorefrontPayload() {
       shortLabel: row.short_label,
       description: row.description,
       image: row.image_url,
+      downloadUrl: row.download_url ?? "",
       itemCountLabel: row.item_count_label ?? "",
       isActive: toBoolean(row.is_active),
       sortOrder: Number(row.sort_order),
@@ -948,16 +997,25 @@ async function fetchCachedStorefrontPayload({ forceFresh = false } = {}) {
 }
 
 async function fetchCustomersPayload() {
-  const rows = await query(
-    `
-    SELECT id, full_name, email, phone, address, created_at, last_login_at, updated_at
-    FROM users
-    WHERE role = 'customer'
-    ORDER BY COALESCE(last_login_at, updated_at, created_at) DESC, id DESC
-    `,
-  );
+  const [customerRows, catalogueRequestRows] = await Promise.all([
+    query(
+      `
+      SELECT id, full_name, email, phone, address, created_at, last_login_at, updated_at
+      FROM users
+      WHERE role = 'customer'
+      ORDER BY COALESCE(last_login_at, updated_at, created_at) DESC, id DESC
+      `,
+    ),
+    query(
+      `
+      SELECT id, full_name, phone, address, note, catalogue_slug, catalogue_title, created_at
+      FROM catalogue_requests
+      ORDER BY created_at DESC, id DESC
+      `,
+    ).catch(() => []),
+  ]);
 
-  return rows.map((row) => ({
+  const customers = customerRows.map((row) => ({
     id: `customer-${row.id}`,
     name: row.full_name,
     email: row.email,
@@ -965,7 +1023,24 @@ async function fetchCustomersPayload() {
     address: row.address ?? "",
     createdAt: new Date(row.created_at).toISOString(),
     lastLoginAt: new Date(row.last_login_at ?? row.updated_at ?? row.created_at).toISOString(),
+    source: "website-customer",
   }));
+
+  const catalogueLeads = catalogueRequestRows.map((row) => ({
+    id: `catalogue-request-${row.id}`,
+    name: row.full_name,
+    email: "",
+    phone: row.phone ?? "",
+    address: row.address ?? "",
+    createdAt: new Date(row.created_at).toISOString(),
+    lastLoginAt: new Date(row.created_at).toISOString(),
+    source: "catalogue-request",
+    note: row.note ?? "",
+    requestedCatalogueId: row.catalogue_slug ?? "",
+    requestedCatalogueTitle: row.catalogue_title ?? "",
+  }));
+
+  return [...catalogueLeads, ...customers];
 }
 
 function mapOrderStatusFromDb(status) {
@@ -1416,9 +1491,9 @@ app.put("/api/admin/catalogues", requireAdmin, async (req, res) => {
         await connection.query(
           `
           INSERT INTO catalogues (
-            slug, title, short_label, description, image_url, item_count_label, sort_order, is_active
+            slug, title, short_label, description, image_url, download_url, item_count_label, sort_order, is_active
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
           `,
           [
             slugify(item.id || item.title, "catalogue"),
@@ -1426,6 +1501,7 @@ app.put("/api/admin/catalogues", requireAdmin, async (req, res) => {
             item.shortLabel,
             item.description || "",
             item.mediaType === "video" ? item.videoUrl || item.image : item.image,
+            item.downloadUrl || "",
             item.itemCountLabel || "",
             item.sortOrder ?? index + 1,
             item.isActive ? 1 : 0,
@@ -1438,6 +1514,68 @@ app.put("/api/admin/catalogues", requireAdmin, async (req, res) => {
     res.json(await fetchCachedStorefrontPayload({ forceFresh: true }));
   } catch (error) {
     res.status(500).json({ message: error instanceof Error ? error.message : "Unable to save catalogues." });
+  }
+});
+
+app.post("/api/catalogue-requests", async (req, res) => {
+  const name = String(req.body?.name ?? "").trim();
+  const phone = normalizeUnicodeDigits(String(req.body?.phone ?? "")).replace(/[^\d]/g, "").slice(0, 10);
+  const address = String(req.body?.address ?? "").trim();
+  const note = String(req.body?.note ?? "").trim();
+  const catalogueId = String(req.body?.catalogueId ?? "").trim();
+  const catalogueTitle = String(req.body?.catalogueTitle ?? "").trim();
+
+  if (!name || name.length < 2) {
+    res.status(400).json({ message: "Customer name is required." });
+    return;
+  }
+
+  if (!/^\d{10}$/.test(phone)) {
+    res.status(400).json({ message: "A valid 10-digit phone number is required." });
+    return;
+  }
+
+  if (!address || address.length < 10) {
+    res.status(400).json({ message: "A complete address is required." });
+    return;
+  }
+
+  if (!catalogueId || !catalogueTitle) {
+    res.status(400).json({ message: "Catalogue selection is required." });
+    return;
+  }
+
+  try {
+    const createdAt = new Date().toISOString();
+    const result = await query(
+      `
+      INSERT INTO catalogue_requests (
+        full_name, phone, address, note, catalogue_slug, catalogue_title
+      )
+      VALUES (?, ?, ?, ?, ?, ?)
+      `,
+      [name, phone, address, note, catalogueId, catalogueTitle],
+    );
+
+    res.json({
+      ok: true,
+      customer: {
+        id: `catalogue-request-${result.insertId}`,
+        name,
+        email: "",
+        phone,
+        address,
+        createdAt,
+        lastLoginAt: createdAt,
+        source: "catalogue-request",
+        note,
+        requestedCatalogueId: catalogueId,
+        requestedCatalogueTitle: catalogueTitle,
+      },
+    });
+  } catch (error) {
+    console.error("Unable to save catalogue request.", error);
+    res.status(500).json({ message: "Unable to save catalogue request right now." });
   }
 });
 
@@ -1951,6 +2089,8 @@ async function startServer() {
     await ensureHomepageSettingsTable(connection);
   });
   await ensureHomepageSettingsValueColumnSupportsLargePayloads();
+  await ensureCataloguesDownloadUrlColumn();
+  await ensureCatalogueRequestsTable();
   await ensureHomepageVideosSchema();
   await ensureProductsCategoryColumnSupportsCustomValues();
   await ensureProductsLocalizedColumnsSupportJson();

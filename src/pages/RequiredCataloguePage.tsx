@@ -2,8 +2,24 @@ import { MessageCircle, Phone } from "lucide-react";
 import { useMemo, useState } from "react";
 import { isValidMessage, isValidName, isValidPhone, normalizeDigits } from "@/lib/form-validation";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
+import { submitCatalogueRequest } from "@/lib/customer-orders";
 import { siteConfig } from "@/lib/site-config";
 import { useStoredCatalogueTypes, useStoredProducts } from "@/lib/content-store";
+
+const DEFAULT_CATALOGUE_DOWNLOAD_URL =
+  "https://drive.google.com/file/d/1bb7BCzLHReNhlxYsIwefT19R-c2CVd6q/view?usp=drive_link";
+
+function toDownloadUrl(rawUrl: string) {
+  const value = String(rawUrl || "").trim();
+  if (!value) return "";
+
+  const driveMatch = value.match(/\/d\/([a-zA-Z0-9_-]+)/) || value.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (driveMatch?.[1]) {
+    return `https://drive.google.com/uc?export=download&id=${driveMatch[1]}`;
+  }
+
+  return value;
+}
 
 export default function RequiredCataloguePage() {
   const { resolvedLocale } = useLanguage();
@@ -27,6 +43,8 @@ export default function RequiredCataloguePage() {
   const [selectedCatalogueId, setSelectedCatalogueId] = useState(defaultCatalogueId);
   const [form, setForm] = useState({ name: "", phone: "", address: "", note: "" });
   const [touched, setTouched] = useState({ name: false, phone: false, address: false, note: false });
+  const [submitState, setSubmitState] = useState<"idle" | "submitting" | "done">("idle");
+  const [submitMessage, setSubmitMessage] = useState("");
 
   const selectedCatalogue =
     activeCatalogues.find((catalogue) => catalogue.id === selectedCatalogueId) ?? activeCatalogues[0];
@@ -58,15 +76,49 @@ export default function RequiredCataloguePage() {
     () => `${siteConfig.whatsappHref}?text=${encodeURIComponent(messageText)}`,
     [messageText],
   );
+  const selectedDownloadUrl = toDownloadUrl(selectedCatalogue?.downloadUrl || DEFAULT_CATALOGUE_DOWNLOAD_URL);
 
   const markAllTouched = () => {
     setTouched({ name: true, phone: true, address: true, note: true });
   };
 
-  const guardSubmit = (event: React.MouseEvent<HTMLAnchorElement>) => {
+  const guardCall = (event: React.MouseEvent<HTMLAnchorElement>) => {
     markAllTouched();
     if (!isFormValid) {
       event.preventDefault();
+    }
+  };
+
+  const triggerDownload = (downloadUrl: string) => {
+    if (typeof window === "undefined" || !downloadUrl) return;
+    window.open(downloadUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const handleDownload = async () => {
+    markAllTouched();
+    if (!isFormValid || !selectedCatalogue) return;
+
+    setSubmitState("submitting");
+    setSubmitMessage("");
+
+    try {
+      await submitCatalogueRequest({
+        name: form.name.trim(),
+        phone: form.phone.trim(),
+        address: form.address.trim(),
+        note: form.note.trim(),
+        catalogueId: selectedCatalogue.id,
+        catalogueTitle: selectedCatalogueTitle,
+      });
+
+      triggerDownload(selectedDownloadUrl);
+
+      setSubmitState("done");
+      setSubmitMessage("Catalogue download started successfully.");
+    } catch (error) {
+      console.error("Unable to save catalogue request.", error);
+      setSubmitState("idle");
+      setSubmitMessage("We could not save your request right now. Please try again.");
     }
   };
 
@@ -202,25 +254,33 @@ export default function RequiredCataloguePage() {
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <a
-                  href={whatsappLink}
-                  onClick={guardSubmit}
-                  target="_blank"
-                  rel="noreferrer"
+                <button
+                  type="button"
+                  onClick={handleDownload}
+                  disabled={submitState === "submitting"}
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white"
                 >
                   <MessageCircle className="h-4 w-4" />
-                  {resolvedLocale === "mr" ? "\u0915\u0945\u091f\u0932\u0949\u0917 \u092e\u093f\u0933\u0935\u093e" : "Download Catalogue"}
-                </a>
+                  {submitState === "submitting"
+                    ? resolvedLocale === "mr"
+                      ? "\u0938\u0947\u0935 \u0939\u094b\u0924 \u0906\u0939\u0947..."
+                      : "Saving..."
+                    : resolvedLocale === "mr"
+                      ? "\u0915\u0945\u091f\u0932\u0949\u0917 \u092e\u093f\u0933\u0935\u093e"
+                      : "Download Catalogue"}
+                </button>
                 <a
-                  href={`tel:${siteConfig.alternatePhoneHref}`}
-                  onClick={guardSubmit}
+                  href={`tel:${siteConfig.phoneHref}`}
+                  onClick={guardCall}
                   className="inline-flex items-center justify-center gap-2 rounded-full border border-[#d8b48b] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#34180e]"
                 >
                   <Phone className="h-4 w-4" />
                   {resolvedLocale === "mr" ? "\u0906\u0924\u093e \u0915\u0949\u0932 \u0915\u0930\u093e" : "Call now"}
                 </a>
               </div>
+              {submitMessage ? (
+                <p className={`text-sm ${submitState === "done" ? "text-[#166534]" : "text-[#b42318]"}`}>{submitMessage}</p>
+              ) : null}
             </form>
           </div>
         </div>
