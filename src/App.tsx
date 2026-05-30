@@ -17,6 +17,7 @@ import WishlistPage from "@/pages/WishlistPage";
 import LoginPage from "@/pages/LoginPage";
 import AboutPage from "@/pages/AboutPage";
 import BlogPage from "@/pages/BlogPage";
+import BlogDetailPage from "@/pages/BlogDetailPage";
 import OurTeamPage from "@/pages/OurTeamPage";
 import WallOfFamePage from "@/pages/WallOfFamePage";
 import AdminLoginPage from "@/pages/AdminLoginPage";
@@ -59,6 +60,10 @@ function AppShell() {
     }
     if (location.pathname === "/blog") {
       return { title: "Blog - Shivrayart", node: <BlogPage /> };
+    }
+    if (location.pathname.startsWith("/blog/")) {
+      const blogId = decodeURIComponent(location.pathname.replace("/blog/", ""));
+      return { title: "Blog - Shivrayart", node: <BlogDetailPage blogId={blogId} /> };
     }
     if (location.pathname === "/our-team") {
       return { title: "Our Team - Shivrayart", node: <OurTeamPage /> };

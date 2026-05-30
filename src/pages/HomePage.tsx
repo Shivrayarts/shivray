@@ -1,15 +1,6 @@
 ﻿import { Link } from "@/lib/spa-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ArrowRight,
-  BookOpenText,
-  ChevronLeft,
-  ChevronRight,
-  Clock3,
-  Play,
-  ShieldCheck,
-  Star,
-} from "lucide-react";
+import { BookOpenText, ChevronLeft, ChevronRight, Clock3, Play, ShieldCheck, Star } from "lucide-react";
 import {
   useStoredHomeContent,
   useStoredCatalogueTypes,
@@ -320,10 +311,6 @@ export default function HomePage() {
                   {resolveLocalizedText(activeHeroSlide.copy, resolvedLocale)}
                 </p>
                 <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                  <Link to="/products" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#e1a126] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#2b0b08]">
-                    {resolvedLocale === "mr" ? "उत्पादने पहा" : "View Products"}
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
                 </div>
               </div>
             ) : (
@@ -337,10 +324,6 @@ export default function HomePage() {
                   {fallbackHeroCopy}
                 </p>
                 <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                  <Link to="/products" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#e1a126] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#2b0b08]">
-                    {resolvedLocale === "mr" ? "उत्पादने पहा" : "View Products"}
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
                 </div>
               </div>
             )}

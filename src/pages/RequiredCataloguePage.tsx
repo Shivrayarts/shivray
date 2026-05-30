@@ -51,7 +51,7 @@ export default function RequiredCataloguePage() {
   const selectedCatalogueTitle = selectedCatalogue
     ? resolveLocalizedText(selectedCatalogue.title, resolvedLocale)
     : resolvedLocale === "mr"
-      ? "\u092a\u0942\u0930\u094d\u0923 \u0915\u0945\u091f\u0932\u0949\u0917"
+      ? "पूर्ण कॅटलॉग"
       : "Full Catalogue";
 
   const isNameValid = isValidName(form.name);
@@ -59,23 +59,6 @@ export default function RequiredCataloguePage() {
   const isAddressValid = form.address.trim().length >= 10;
   const isNoteValid = form.note.trim().length === 0 || isValidMessage(form.note, 5);
   const isFormValid = isNameValid && isPhoneValid && isAddressValid && isNoteValid && Boolean(selectedCatalogueTitle);
-
-  const messageText = useMemo(
-    () =>
-      [
-        `Hi Shivrayart, I want the ${selectedCatalogueTitle}.`,
-        `Name: ${form.name || "-"}`,
-        `Phone: ${form.phone || "-"}`,
-        `Address: ${form.address || "-"}`,
-        form.note ? `Note: ${form.note}` : "Please share details and pricing.",
-      ].join("\n"),
-    [form, selectedCatalogueTitle],
-  );
-
-  const whatsappLink = useMemo(
-    () => `${siteConfig.whatsappHref}?text=${encodeURIComponent(messageText)}`,
-    [messageText],
-  );
   const selectedDownloadUrl = toDownloadUrl(selectedCatalogue?.downloadUrl || DEFAULT_CATALOGUE_DOWNLOAD_URL);
 
   const markAllTouched = () => {
@@ -125,33 +108,7 @@ export default function RequiredCataloguePage() {
   return (
     <div className="bg-[#f7f1e7] pb-8 md:pb-12">
       <section className="px-4 pt-6 md:px-6 md:pt-10">
-        <div className="layout-shell grid gap-6 lg:grid-cols-2">
-          <div className="rounded-[30px] border border-[#eadbc8] bg-white p-6 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.3)] md:p-8">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
-              {resolvedLocale === "mr" ? "का मागवावे" : "Why request it"}
-            </p>
-            <div className="mt-5 space-y-4">
-              <div className="rounded-[24px] bg-[#f7f1e7] p-5">
-                <p className="text-[1.4rem] font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "अनेक कॅटलॉग प्रकार" : "Multiple catalogue types"}</p>
-                <p className="mt-2 text-sm leading-7 text-[#6c4b33]">
-                  {resolvedLocale === "mr" ? "मूर्ती, शस्त्र, ढाल, डेकोर आणि पूर्ण कॅटलॉगमधून निवड करा." : "Customers can directly choose statue, weapon, shield, decor, or full-range catalogue requests."}
-                </p>
-              </div>
-              <div className="rounded-[24px] bg-[#f7f1e7] p-5">
-                <p className="text-[1.4rem] font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "योग्य शिफारसी" : "Filtered recommendations"}</p>
-                <p className="mt-2 text-sm leading-7 text-[#6c4b33]">
-                  {resolvedLocale === "mr" ? "तुमच्या निवडीप्रमाणे अधिक संबंधित पर्याय मिळतात." : "Each request can point to the exact catalogue type and help us send more relevant options."}
-                </p>
-              </div>
-              <div className="rounded-[24px] bg-[#f7f1e7] p-5">
-                <p className="text-[1.4rem] font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "झटपट फॉलो-अप" : "Fast follow-up"}</p>
-                <p className="mt-2 text-sm leading-7 text-[#6c4b33]">
-                  {resolvedLocale === "mr" ? "फोन किंवा WhatsApp वरून थेट संपर्क." : "Phone-first users can move directly from request to call or WhatsApp support."}
-                </p>
-              </div>
-            </div>
-          </div>
-
+        <div className="layout-shell">
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-6 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.3)] md:p-8">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
               {resolvedLocale === "mr" ? "विनंती फॉर्म" : "Request Form"}
@@ -162,7 +119,7 @@ export default function RequiredCataloguePage() {
             <form className="mt-6 space-y-4" onSubmit={(event) => event.preventDefault()}>
               <div>
                 <label htmlFor="catalogue-name" className="text-sm font-semibold text-[#34180e]">
-                  {resolvedLocale === "mr" ? "\u0928\u093e\u0935" : "Name"}
+                  {resolvedLocale === "mr" ? "नाव" : "Name"}
                 </label>
                 <input
                   id="catalogue-name"
@@ -170,7 +127,7 @@ export default function RequiredCataloguePage() {
                   value={form.name}
                   onBlur={() => setTouched((value) => ({ ...value, name: true }))}
                   onChange={(event) => setForm((value) => ({ ...value, name: event.target.value }))}
-                  placeholder={resolvedLocale === "mr" ? "\u0924\u0941\u092e\u091a\u0947 \u0928\u093e\u0935" : "Your name"}
+                  placeholder={resolvedLocale === "mr" ? "तुमचे नाव" : "Your name"}
                   className={`mt-2 w-full rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${touched.name && !isNameValid ? "border-[#b42318]" : "border-[#eadbc8]"}`}
                 />
                 {touched.name && !isNameValid ? <p className="mt-2 text-sm text-[#b42318]">Please enter your full name.</p> : null}
@@ -178,7 +135,7 @@ export default function RequiredCataloguePage() {
 
               <div>
                 <label htmlFor="catalogue-phone" className="text-sm font-semibold text-[#34180e]">
-                  {resolvedLocale === "mr" ? "\u0928\u0902\u092c\u0930" : "Phone Number"}
+                  {resolvedLocale === "mr" ? "नंबर" : "Phone Number"}
                 </label>
                 <input
                   id="catalogue-phone"
@@ -210,7 +167,7 @@ export default function RequiredCataloguePage() {
                     const dynamicCount = catalogueCounts[catalogue.id];
                     const itemCount =
                       typeof dynamicCount === "number"
-                        ? `${dynamicCount} ${resolvedLocale === "mr" ? "\u0909\u0924\u094d\u092a\u093e\u0926\u0928\u0947" : "products"}`
+                        ? `${dynamicCount} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`
                         : resolveLocalizedText(catalogue.itemCountLabel, resolvedLocale);
                     return (
                       <option key={catalogue.id} value={catalogue.id}>
@@ -239,7 +196,7 @@ export default function RequiredCataloguePage() {
 
               <div>
                 <label htmlFor="catalogue-note" className="text-sm font-semibold text-[#34180e]">
-                  {resolvedLocale === "mr" ? "\u0905\u0924\u093f\u0930\u093f\u0915\u094d\u0924 \u092e\u093e\u0939\u093f\u0924\u0940" : "Requirement (optional)"}
+                  {resolvedLocale === "mr" ? "अतिरिक्त माहिती" : "Requirement (optional)"}
                 </label>
                 <textarea
                   id="catalogue-note"
@@ -247,7 +204,7 @@ export default function RequiredCataloguePage() {
                   value={form.note}
                   onBlur={() => setTouched((value) => ({ ...value, note: true }))}
                   onChange={(event) => setForm((value) => ({ ...value, note: event.target.value }))}
-                  placeholder={resolvedLocale === "mr" ? "\u092c\u091c\u0947\u091f, \u0938\u093e\u0907\u091c \u0915\u093f\u0902\u0935\u093e \u0921\u093f\u0932\u093f\u0935\u094d\u0939\u0930\u0940 \u0936\u0939\u0930" : "Budget, size, quantity, or delivery city"}
+                  placeholder={resolvedLocale === "mr" ? "बजेट, साइज किंवा डिलिव्हरी शहर" : "Budget, size, quantity, or delivery city"}
                   className={`mt-2 w-full resize-none rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${touched.note && !isNoteValid ? "border-[#b42318]" : "border-[#eadbc8]"}`}
                 />
                 {touched.note && !isNoteValid ? <p className="mt-2 text-sm text-[#b42318]">Please add at least 5 characters or leave it blank.</p> : null}
@@ -263,10 +220,10 @@ export default function RequiredCataloguePage() {
                   <MessageCircle className="h-4 w-4" />
                   {submitState === "submitting"
                     ? resolvedLocale === "mr"
-                      ? "\u0938\u0947\u0935 \u0939\u094b\u0924 \u0906\u0939\u0947..."
+                      ? "सेव होत आहे..."
                       : "Saving..."
                     : resolvedLocale === "mr"
-                      ? "\u0915\u0945\u091f\u0932\u0949\u0917 \u092e\u093f\u0933\u0935\u093e"
+                      ? "कॅटलॉग मिळवा"
                       : "Download Catalogue"}
                 </button>
                 <a
@@ -275,7 +232,7 @@ export default function RequiredCataloguePage() {
                   className="inline-flex items-center justify-center gap-2 rounded-full border border-[#d8b48b] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#34180e]"
                 >
                   <Phone className="h-4 w-4" />
-                  {resolvedLocale === "mr" ? "\u0906\u0924\u093e \u0915\u0949\u0932 \u0915\u0930\u093e" : "Call now"}
+                  {resolvedLocale === "mr" ? "आता कॉल करा" : "Call now"}
                 </a>
               </div>
               {submitMessage ? (

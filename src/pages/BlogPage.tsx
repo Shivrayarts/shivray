@@ -1,3 +1,4 @@
+import { Link } from "@/lib/spa-router";
 import { ExternalLink, PlayCircle } from "lucide-react";
 import { useStoredHomeContent } from "@/lib/content-store";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
@@ -24,10 +25,7 @@ export default function BlogPage() {
 
             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
               {blogPosts.map((post) => (
-                <article
-                  key={post.id}
-                  className="overflow-hidden rounded-lg border border-border bg-card shadow-heritage"
-                >
+                <article key={post.id} className="overflow-hidden rounded-lg border border-border bg-card shadow-heritage">
                   <div className="aspect-video overflow-hidden bg-muted">
                     {post.image ? (
                       <img
@@ -47,17 +45,22 @@ export default function BlogPage() {
                     <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
                       {resolveLocalizedText(post.excerpt, resolvedLocale)}
                     </p>
-                    {post.href ? (
-                      <a
-                        href={post.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-gold"
-                      >
+                    <div className="mt-4 flex flex-wrap items-center gap-4">
+                      <Link to={`/blog/${encodeURIComponent(post.id)}`} className="inline-flex items-center gap-1 text-sm font-medium text-gold">
                         {resolvedLocale === "mr" ? "अधिक वाचा" : "Read More"}
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
-                    ) : null}
+                      </Link>
+                      {post.href ? (
+                        <a
+                          href={post.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-sm font-medium text-gold/80"
+                        >
+                          {resolvedLocale === "mr" ? "मूळ लिंक" : "Source Link"}
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      ) : null}
+                    </div>
                   </div>
                 </article>
               ))}
@@ -75,10 +78,7 @@ export default function BlogPage() {
           {videos.length > 0 ? (
             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
               {videos.map((video) => (
-                <div
-                  key={video.id}
-                  className="rounded-lg border border-border bg-background p-6 shadow-heritage"
-                >
+                <div key={video.id} className="rounded-lg border border-border bg-background p-6 shadow-heritage">
                   <div className="mb-3 flex items-start gap-3">
                     <PlayCircle className="mt-0.5 h-6 w-6 shrink-0 text-gold" />
                     <h3 className="font-heading text-base font-semibold leading-snug">
