@@ -10,6 +10,7 @@ export default function BlogPage() {
   const { resolvedLocale } = useLanguage();
   const { blogPosts, videos } = useStoredHomeContent();
   const [form, setForm] = useState({ name: "", phone: "", title: "", story: "" });
+  const [imageDataUrl, setImageDataUrl] = useState("");
   const [touched, setTouched] = useState({ name: false, phone: false, title: false, story: false });
   const [submitState, setSubmitState] = useState<"idle" | "submitting" | "done" | "error">("idle");
   const [submitMessage, setSubmitMessage] = useState("");
@@ -39,16 +40,40 @@ export default function BlogPage() {
           phone: form.phone.trim(),
           title: form.title.trim(),
           story: form.story.trim(),
+          image: imageDataUrl,
         },
       });
       setSubmitState("done");
       setSubmitMessage("Blog submitted for admin review.");
       setForm({ name: "", phone: "", title: "", story: "" });
+      setImageDataUrl("");
       setTouched({ name: false, phone: false, title: false, story: false });
     } catch (error) {
       setSubmitState("error");
       setSubmitMessage(error instanceof Error ? error.message : "Unable to submit blog right now.");
     }
+  };
+
+  const handleImageFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setSubmitState("error");
+      setSubmitMessage("Please select an image file.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageDataUrl(String(reader.result ?? ""));
+      setSubmitMessage("");
+      setSubmitState("idle");
+    };
+    reader.onerror = () => {
+      setSubmitState("error");
+      setSubmitMessage("Unable to read selected image.");
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -180,6 +205,24 @@ export default function BlogPage() {
                   className={`mt-2 w-full rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${touched.title && !isTitleValid ? "border-[#b42318]" : "border-[#eadbc8]"}`}
                 />
                 {touched.title && !isTitleValid ? <p className="mt-2 text-sm text-[#b42318]">Please enter at least 5 characters for the title.</p> : null}
+              </div>
+
+              <div>
+                <label htmlFor="blog-image" className="text-sm font-semibold text-[#34180e]">
+                  {resolvedLocale === "mr" ? "ब्लॉग प्रतिमा (पर्यायी)" : "Blog Image (optional)"}
+                </label>
+                <input
+                  id="blog-image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageFileChange}
+                  className="mt-2 block w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e]"
+                />
+                {imageDataUrl ? (
+                  <div className="mt-3 rounded-xl border border-[#eadbc8] bg-white p-2">
+                    <img src={imageDataUrl} alt="Blog upload preview" className="h-36 w-full rounded-lg object-cover" />
+                  </div>
+                ) : null}
               </div>
 
               <div>

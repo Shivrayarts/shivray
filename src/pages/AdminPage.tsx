@@ -161,6 +161,7 @@ type BlogSubmission = {
   phone: string;
   title: string;
   story: string;
+  image?: string;
   status: "pending" | "approved" | "rejected";
   publishedBlogId?: string;
   createdAt: string;
@@ -1219,6 +1220,7 @@ export default function AdminPage() {
   });
   const [blogSubmissions, setBlogSubmissions] = useState<BlogSubmission[]>([]);
   const [blogSubmissionsLoading, setBlogSubmissionsLoading] = useState(false);
+  const [loadedSubmissionForEditId, setLoadedSubmissionForEditId] = useState("");
 
   useEffect(() => {
     setAnnouncementDraft(storedHomeContent.announcementBar ?? announcementTemplate);
@@ -2127,12 +2129,35 @@ export default function AdminPage() {
     );
   }
 
+  function loadSubmissionIntoBlogDraft(submission: BlogSubmission) {
+    setBlogDraft({
+      id: "",
+      title: submission.title.trim(),
+      excerpt: submission.story.trim().slice(0, 220),
+      image: String(submission.image || "").trim(),
+      tag: "User Story",
+      href: "",
+    });
+    setMediaNotice("Submission loaded into editor. You can edit and upload/replace image before publishing.");
+    setMediaNoticeTone("info");
+    setLoadedSubmissionForEditId(submission.id);
+  }
+
   async function approveBlogSubmission(submission: BlogSubmission) {
+    const submissionImage = String(submission.image || "").trim();
+    const draftImage = loadedSubmissionForEditId === submission.id ? String(blogDraft.image || "").trim() : "";
+    const finalImage = draftImage || submissionImage;
+    if (!finalImage) {
+      setMediaNotice("No image found. Use 'Load to Edit' and upload image before approving.");
+      setMediaNoticeTone("error");
+      return;
+    }
+
     const nextBlog: HomeBlogPost = {
       id: uniqueId("blog"),
       title: submission.title.trim(),
       excerpt: submission.story.trim().slice(0, 220),
-      image: "/assets/products-poster.jpg",
+      image: finalImage,
       tag: "User Story",
       href: "",
     };
@@ -3439,6 +3464,13 @@ export default function AdminPage() {
                             </p>
                             <p className="mt-2 line-clamp-3 text-sm text-[#6c4b33]">{item.story}</p>
                             <div className="mt-3 flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={() => loadSubmissionIntoBlogDraft(item)}
+                                className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-xs font-semibold text-[#6c4b33]"
+                              >
+                                Load to Edit
+                              </button>
                               <button
                                 type="button"
                                 onClick={() => approveBlogSubmission(item)}

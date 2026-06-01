@@ -509,6 +509,7 @@ async function ensureBlogSubmissionsTable() {
         phone VARCHAR(30) NOT NULL,
         title VARCHAR(255) NOT NULL,
         story TEXT NOT NULL,
+        image_url MEDIUMTEXT NULL,
         status ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
         published_blog_id VARCHAR(191) NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -516,6 +517,20 @@ async function ensureBlogSubmissionsTable() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
       `,
     );
+
+    const imageColumnRows = await query(
+      `
+      SHOW COLUMNS FROM blog_submissions LIKE 'image_url'
+      `,
+    );
+    if (!Array.isArray(imageColumnRows) || imageColumnRows.length === 0) {
+      await query(
+        `
+        ALTER TABLE blog_submissions
+        ADD COLUMN image_url MEDIUMTEXT NULL AFTER story
+        `,
+      );
+    }
   } catch (error) {
     console.warn(
       "Unable to verify blog submissions table.",
@@ -1609,6 +1624,7 @@ app.post("/api/blog-submissions", async (req, res) => {
   const phone = normalizeUnicodeDigits(String(req.body?.phone ?? "")).replace(/[^\d]/g, "").slice(0, 10);
   const title = String(req.body?.title ?? "").trim();
   const story = String(req.body?.story ?? "").trim();
+  const image = String(req.body?.image ?? "").trim();
 
   if (!name || name.length < 2) {
     res.status(400).json({ message: "Name is required." });
@@ -1630,10 +1646,10 @@ app.post("/api/blog-submissions", async (req, res) => {
   try {
     const [result] = await query(
       `
-      INSERT INTO blog_submissions (full_name, phone, title, story, status)
-      VALUES (?, ?, ?, ?, 'pending')
+      INSERT INTO blog_submissions (full_name, phone, title, story, image_url, status)
+      VALUES (?, ?, ?, ?, ?, 'pending')
       `,
-      [name, phone, title, story],
+      [name, phone, title, story, image || null],
     );
 
     res.json({
@@ -1644,6 +1660,7 @@ app.post("/api/blog-submissions", async (req, res) => {
         phone,
         title,
         story,
+        image,
         status: "pending",
         createdAt: new Date().toISOString(),
       },
@@ -1658,7 +1675,7 @@ app.get("/api/admin/blog-submissions", requireAdmin, async (_req, res) => {
   try {
     const rows = await query(
       `
-      SELECT id, full_name, phone, title, story, status, published_blog_id, created_at, reviewed_at
+      SELECT id, full_name, phone, title, story, image_url, status, published_blog_id, created_at, reviewed_at
       FROM blog_submissions
       ORDER BY
         CASE status WHEN 'pending' THEN 0 WHEN 'approved' THEN 1 ELSE 2 END,
@@ -1674,6 +1691,7 @@ app.get("/api/admin/blog-submissions", requireAdmin, async (_req, res) => {
         phone: row.phone,
         title: row.title,
         story: row.story,
+        image: row.image_url ?? "",
         status: row.status,
         publishedBlogId: row.published_blog_id ?? "",
         createdAt: new Date(row.created_at).toISOString(),
