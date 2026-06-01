@@ -53,6 +53,8 @@ export default function ProductGalleryCard({
             width={600}
             height={700}
             loading="lazy"
+            decoding="async"
+            fetchPriority="low"
             className={`w-full object-cover ${imageClassName}`.trim()}
           />
         </Link>

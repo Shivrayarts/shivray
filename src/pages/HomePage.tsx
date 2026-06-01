@@ -1,6 +1,6 @@
 ﻿import { Link } from "@/lib/spa-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BookOpenText, ChevronLeft, ChevronRight, Clock3, Play, ShieldCheck, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Star } from "lucide-react";
 import {
   useStoredHomeContent,
   useStoredCatalogueTypes,
@@ -190,6 +190,27 @@ export default function HomePage() {
     setHeroVideoReady(false);
   }, [activeHeroSlide?.id, activeHeroMediaType, activeHeroMediaUrl]);
 
+  useEffect(() => {
+    if (!activeHeroSlide) return;
+    const href = activeHeroMediaType === "video" ? activeHeroPosterUrl : activeHeroMediaUrl;
+    if (!href) return;
+
+    const existingPreload = document.querySelector(`link[rel="preload"][as="image"][href="${href}"]`);
+    if (existingPreload) return;
+
+    const preload = document.createElement("link");
+    preload.rel = "preload";
+    preload.as = "image";
+    preload.href = href;
+    document.head.appendChild(preload);
+
+    return () => {
+      if (preload.parentNode) {
+        preload.parentNode.removeChild(preload);
+      }
+    };
+  }, [activeHeroSlide, activeHeroMediaType, activeHeroMediaUrl, activeHeroPosterUrl]);
+
   const handleCategoriesScroll = () => {
     const node = categoriesRef.current;
     if (!node || window.innerWidth >= 768) return;
@@ -350,7 +371,14 @@ export default function HomePage() {
                     className="group w-[78vw] max-w-[22rem] shrink-0 snap-center text-center sm:w-[19rem] md:w-[16.5rem]"
                   >
                     <div className="relative overflow-hidden rounded-[30px] bg-[#b65a73] shadow-[0_18px_45px_-30px_rgba(89,34,49,0.65)]">
-                      <img src={card.image} alt={card.title} className="aspect-square w-full object-cover opacity-90 saturate-[0.7] transition duration-500 group-hover:scale-105" />
+                      <img
+                        src={card.image}
+                        alt={card.title}
+                        className="aspect-square w-full object-cover opacity-90 saturate-[0.7] transition duration-500 group-hover:scale-105"
+                        loading="lazy"
+                        decoding="async"
+                        fetchPriority="low"
+                      />
                     </div>
                     <h3 className="mt-4 font-body text-xl font-semibold text-[#1c140f] md:text-2xl">{card.title}</h3>
                     <p className="mt-1 text-base text-[#7d766f]">{card.count}</p>
@@ -481,6 +509,8 @@ export default function HomePage() {
                           src={embedUrl}
                           title={resolveLocalizedText(video.title, resolvedLocale)}
                           className="h-full w-full"
+                          loading="lazy"
+                          referrerPolicy="strict-origin-when-cross-origin"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                           allowFullScreen
                         />
