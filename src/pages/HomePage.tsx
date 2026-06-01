@@ -70,7 +70,6 @@ export default function HomePage() {
   const [videoSlide, setVideoSlide] = useState(0);
   const [heroVideoReady, setHeroVideoReady] = useState(false);
   const [showDeferredSections, setShowDeferredSections] = useState(false);
-  const [showExtendedCards, setShowExtendedCards] = useState(false);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
   const videosRef = useRef<HTMLDivElement | null>(null);
   const deferredSectionsRef = useRef<HTMLDivElement | null>(null);
@@ -149,11 +148,6 @@ export default function HomePage() {
           dimensions: product.dimensions ?? "",
           productOptions: product.productOptions ?? [],
         }));
-  const initialCardLimit = 4;
-  const visibleSpotlightCards = showExtendedCards
-    ? resolvedSpotlightProductCards
-    : resolvedSpotlightProductCards.slice(0, initialCardLimit);
-  const visibleHomeProducts = showExtendedCards ? homeProducts : homeProducts.slice(0, initialCardLimit);
 
   useEffect(() => {
     if (heroSlides.length <= 1) return;
@@ -287,20 +281,6 @@ export default function HomePage() {
     return () => observer.disconnect();
   }, [showDeferredSections]);
 
-  useEffect(() => {
-    const idleCallback = (window as Window & {
-      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
-      cancelIdleCallback?: (id: number) => void;
-    }).requestIdleCallback;
-
-    if (typeof idleCallback === "function") {
-      const id = idleCallback(() => setShowExtendedCards(true), { timeout: 1800 });
-      return () => (window as Window & { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(id);
-    }
-
-    const timer = window.setTimeout(() => setShowExtendedCards(true), 1200);
-    return () => window.clearTimeout(timer);
-  }, []);
 
   return (
     <div className="bg-[#f7f1e7]">
@@ -426,7 +406,7 @@ export default function HomePage() {
             <Link to="/products" className="hidden text-sm font-semibold text-[#8b4d1d] md:inline-flex">{resolvedLocale === "mr" ? "सर्व पहा" : "View all"}</Link>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {visibleSpotlightCards.map((product) => (
+            {resolvedSpotlightProductCards.map((product) => (
               <ProductGalleryCard key={product.id} product={product} isWishlisted={isWishlisted(product.id)} onToggleWishlist={toggleWishlist} />
             ))}
           </div>
@@ -443,7 +423,7 @@ export default function HomePage() {
             <Link to="/products" className="hidden text-sm font-semibold text-[#8b4d1d] md:inline-flex">{resolvedLocale === "mr" ? "पूर्ण कॅटलॉग" : "Full catalogue"}</Link>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {visibleHomeProducts.map((product) => (
+            {homeProducts.map((product) => (
               <ProductGalleryCard key={product.id} product={product} isWishlisted={isWishlisted(product.id)} onToggleWishlist={toggleWishlist} />
             ))}
           </div>
