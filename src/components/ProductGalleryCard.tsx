@@ -1,5 +1,6 @@
 import { Heart } from "lucide-react";
 import { Link } from "@/lib/spa-router";
+import { useStoredCatalogueTypes } from "@/lib/content-store";
 import { getCategoryLabel, type Product } from "@/data/products";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { getProductPricing, normalizeDisplayCase, normalizeDiscountPercentage } from "@/lib/utils";
@@ -22,7 +23,22 @@ export default function ProductGalleryCard({
   className = "",
 }: ProductGalleryCardProps) {
   const { resolvedLocale } = useLanguage();
+  const catalogueTypes = useStoredCatalogueTypes();
   const localizedName = normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale), "sentence");
+  const categoryValue = String(product.category || "").trim();
+  const matchedCatalogue = catalogueTypes.find((catalogue) => {
+    const localizedShortLabel =
+      typeof catalogue.shortLabel === "string"
+        ? { en: catalogue.shortLabel, mr: catalogue.shortLabel }
+        : catalogue.shortLabel;
+    return (
+      localizedShortLabel.en?.trim() === categoryValue ||
+      localizedShortLabel.mr?.trim() === categoryValue
+    );
+  });
+  const localizedCategoryLabel = matchedCatalogue
+    ? resolveLocalizedText(matchedCatalogue.shortLabel, resolvedLocale)
+    : getCategoryLabel(product.category, resolvedLocale);
   const productOptions = product.productOptions ?? [];
   const pricing = getProductPricing(product);
   const optionChips = productOptions.slice(0, 2);
@@ -64,7 +80,7 @@ export default function ProductGalleryCard({
           className={`text-[0.78rem] font-semibold text-[#c77628] ${isMarathi ? "leading-5 tracking-normal" : "uppercase tracking-[0.22em]"}`}
           style={marathiTextStyle}
         >
-          {getCategoryLabel(product.category, resolvedLocale)}
+          {localizedCategoryLabel}
         </p>
         <Link
           to="/products/$productId"

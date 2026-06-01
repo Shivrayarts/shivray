@@ -726,19 +726,44 @@ function CatalogueForm({
   onSave: () => void;
   onPickImageFile: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
+  const localizedTitle = adminLocalizedText(value.title);
+  const localizedShortLabel = adminLocalizedText(value.shortLabel);
+
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
         <input
-          value={adminText(value.title)}
-          onChange={(event) => onChange({ ...value, title: event.target.value })}
-          placeholder="Category title"
+          value={localizedTitle.en}
+          onChange={(event) =>
+            onChange({ ...value, title: { ...localizedTitle, en: event.target.value } })
+          }
+          placeholder="Category title (English)"
           className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
         />
         <input
-          value={adminText(value.shortLabel)}
-          onChange={(event) => onChange({ ...value, shortLabel: event.target.value })}
-          placeholder="Short label"
+          value={localizedTitle.mr}
+          onChange={(event) =>
+            onChange({ ...value, title: { ...localizedTitle, mr: event.target.value } })
+          }
+          placeholder="Category title (Marathi)"
+          className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+        />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <input
+          value={localizedShortLabel.en}
+          onChange={(event) =>
+            onChange({ ...value, shortLabel: { ...localizedShortLabel, en: event.target.value } })
+          }
+          placeholder="Category short label (English)"
+          className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+        />
+        <input
+          value={localizedShortLabel.mr}
+          onChange={(event) =>
+            onChange({ ...value, shortLabel: { ...localizedShortLabel, mr: event.target.value } })
+          }
+          placeholder="Category short label (Marathi)"
           className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
         />
       </div>
@@ -1885,21 +1910,26 @@ export default function AdminPage() {
   }
 
   async function saveCatalogue() {
-    const title = adminText(catalogueDraft.title).trim();
-    const shortLabel = normalizeCategoryLabel(adminText(catalogueDraft.shortLabel).trim());
-    if (!title) {
-      setMediaNotice("Category title is required.");
+    const localizedTitle = adminLocalizedText(catalogueDraft.title);
+    const localizedShortLabel = adminLocalizedText(catalogueDraft.shortLabel);
+    const titleEn = localizedTitle.en.trim();
+    const titleMr = localizedTitle.mr.trim();
+    const shortLabelEn = normalizeCategoryLabel(localizedShortLabel.en.trim());
+    const shortLabelMr = normalizeCategoryLabel(localizedShortLabel.mr.trim());
+
+    if (!titleEn) {
+      setMediaNotice("Category title (English) is required.");
       return;
     }
-    if (!shortLabel) {
-      setMediaNotice("Category short label is required.");
+    if (!shortLabelEn) {
+      setMediaNotice("Category short label (English) is required.");
       return;
     }
 
     const duplicateLabel = orderedCatalogues.find(
       (item) =>
         item.id !== catalogueDraft.id &&
-        adminText(item.shortLabel).trim().toLowerCase() === shortLabel.toLowerCase(),
+        adminLocalizedText(item.shortLabel).en.trim().toLowerCase() === shortLabelEn.toLowerCase(),
     );
     if (duplicateLabel) {
       setMediaNotice("Another category already uses the same short label.");
@@ -1908,11 +1938,11 @@ export default function AdminPage() {
 
     const nextCatalogue: CatalogueType = {
       ...catalogueDraft,
-      title,
-      shortLabel,
+      title: { en: titleEn, mr: titleMr || titleEn },
+      shortLabel: { en: shortLabelEn, mr: shortLabelMr || shortLabelEn },
       id:
         catalogueDraft.id ||
-        `${slugify(title || shortLabel)}-catalogue` ||
+        `${slugify(titleEn || shortLabelEn)}-catalogue` ||
         uniqueId("catalogue"),
       sortOrder: catalogueDraft.sortOrder || orderedCatalogues.length + 1,
     };
@@ -1920,7 +1950,9 @@ export default function AdminPage() {
     const next = [...orderedCatalogues];
     const existingIndex = next.findIndex((item) => item.id === nextCatalogue.id);
     const previousLabel =
-      existingIndex >= 0 ? normalizeCategoryLabel(adminText(next[existingIndex].shortLabel)) : "";
+      existingIndex >= 0
+        ? normalizeCategoryLabel(adminLocalizedText(next[existingIndex].shortLabel).en || adminText(next[existingIndex].shortLabel))
+        : "";
 
     if (existingIndex >= 0) next[existingIndex] = nextCatalogue;
     else next.push(nextCatalogue);
@@ -1931,10 +1963,10 @@ export default function AdminPage() {
       toast.error("Unable to save category right now. Please try again.");
       return;
     }
-    if (previousLabel && previousLabel !== shortLabel) {
+    if (previousLabel && previousLabel !== shortLabelEn) {
       const migratedProducts = products.map((product) =>
         normalizeCategoryLabel(String(product.category || "")) === previousLabel
-          ? { ...product, category: shortLabel }
+          ? { ...product, category: shortLabelEn }
           : product,
       );
       const productsSaved = await saveStoredProducts(migratedProducts);

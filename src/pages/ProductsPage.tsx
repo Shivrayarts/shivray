@@ -36,6 +36,30 @@ export default function ProductsPage() {
   const catalogueTypes = useStoredCatalogueTypes();
   const { isWishlisted, toggleWishlist } = useWishlist();
 
+  const getDisplayCategoryLabel = (rawCategory: string) => {
+    const normalized = String(rawCategory || "").trim();
+    if (!normalized || normalized === "All") {
+      return resolvedLocale === "mr" ? "सर्व" : "All";
+    }
+
+    const matchedCatalogue = catalogueTypes.find((catalogue) => {
+      const localizedShortLabel =
+        typeof catalogue.shortLabel === "string"
+          ? { en: catalogue.shortLabel, mr: catalogue.shortLabel }
+          : catalogue.shortLabel;
+      return (
+        localizedShortLabel.en?.trim() === normalized ||
+        localizedShortLabel.mr?.trim() === normalized
+      );
+    });
+
+    if (matchedCatalogue) {
+      return resolveLocalizedText(matchedCatalogue.shortLabel, resolvedLocale);
+    }
+
+    return getCategoryLabel(normalized, resolvedLocale);
+  };
+
   const categories = useMemo(() => {
     const fromProducts = products.map((product) => String(product.category || "").trim()).filter(Boolean);
     return ["All", ...Array.from(new Set(fromProducts))];
@@ -271,7 +295,7 @@ export default function ProductsPage() {
               <div className="flex items-center gap-2 overflow-x-auto pb-1">
                 {categories.map((cat) => (
                   <button key={cat} type="button" onClick={() => setCategory(cat)} className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold tracking-[0.18em] ${category === cat ? "bg-[#34180e] text-white" : "border border-[#eadbc8] bg-white text-[#6c4b33]"}`}>
-                    {cat === "All" ? (resolvedLocale === "mr" ? "\u0938\u0930\u094d\u0935" : "All") : getCategoryLabel(cat, resolvedLocale)}
+                    {getDisplayCategoryLabel(cat)}
                   </button>
                 ))}
               </div>
@@ -285,7 +309,7 @@ export default function ProductsPage() {
             <div className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#f7efe5] px-3 py-2 text-xs font-semibold tracking-[0.2em] text-[#8b4d1d]"><SlidersHorizontal className="h-3.5 w-3.5" />{resolvedLocale === "mr" ? "\u092b\u093f\u0932\u094d\u091f\u0930\u094d\u0938" : "Filters"}</div>
             {categories.map((cat) => (
               <button key={cat} type="button" onClick={() => setCategory(cat)} className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold tracking-[0.18em] ${category === cat ? "bg-[#34180e] text-white" : "border border-[#eadbc8] bg-white text-[#6c4b33]"}`}>
-                {cat === "All" ? (resolvedLocale === "mr" ? "\u0938\u0930\u094d\u0935" : "All") : getCategoryLabel(cat, resolvedLocale)}
+                {getDisplayCategoryLabel(cat)}
               </button>
             ))}
           </div>
@@ -296,7 +320,7 @@ export default function ProductsPage() {
           <div className="mb-4 hidden items-center justify-between gap-3 md:flex">
             <div>
               <p className="text-[11px] font-semibold tracking-[0.28em] text-[#a86c2b]">{resolvedLocale === "mr" ? "\u0928\u093f\u0915\u093e\u0932" : "Results"}</p>
-              <h2 className="mt-1 font-heading text-2xl text-[#34180e]">{filtered.length} {resolvedLocale === "mr" ? "\u0909\u0924\u094d\u092a\u093e\u0926\u0928\u0947" : "products for mobile users"}</h2>
+              <h2 className="mt-1 font-heading text-2xl text-[#34180e]">{resolvedLocale === "mr" ? "तुमच्यासाठी शिफारस केलेली उत्पादने" : "Recommended Products for You"}</h2>
             </div>
             <Link to="/required-catalogue" className="hidden rounded-full border border-[#d8b48b] px-4 py-2 text-xs font-semibold tracking-[0.18em] text-[#34180e] md:inline-flex">{resolvedLocale === "mr" ? "\u092a\u0942\u0930\u094d\u0923 \u0915\u0945\u091f\u0932\u0949\u0917 \u092e\u093f\u0933\u0935\u093e" : "Get full catalogue"}</Link>
           </div>
