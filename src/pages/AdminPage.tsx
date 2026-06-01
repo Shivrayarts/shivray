@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "@/lib/spa-router";
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { apiRequest } from "@/lib/api";
 import {
   ArrowDown,
   ArrowUp,
@@ -153,6 +154,18 @@ type AdminSection =
 type ProductViewMode = "list" | "add";
 type ProductSortBy = "newest" | "name-asc" | "name-desc" | "price-low" | "price-high";
 type ProductPriceRange = "all" | "under-5000" | "5000-10000" | "10000-15000" | "15000-plus";
+
+type BlogSubmission = {
+  id: string;
+  name: string;
+  phone: string;
+  title: string;
+  story: string;
+  status: "pending" | "approved" | "rejected";
+  publishedBlogId?: string;
+  createdAt: string;
+  reviewedAt?: string;
+};
 
 function slugify(value: string) {
   return value
@@ -1204,10 +1217,43 @@ export default function AdminPage() {
     newPassword: "",
     confirmPassword: "",
   });
+  const [blogSubmissions, setBlogSubmissions] = useState<BlogSubmission[]>([]);
+  const [blogSubmissionsLoading, setBlogSubmissionsLoading] = useState(false);
 
   useEffect(() => {
     setAnnouncementDraft(storedHomeContent.announcementBar ?? announcementTemplate);
   }, [storedHomeContent.announcementBar]);
+
+  useEffect(() => {
+    if (activeSection !== "blogs") return;
+    let cancelled = false;
+
+    async function loadBlogSubmissions() {
+      setBlogSubmissionsLoading(true);
+      try {
+        const response = await apiRequest<{ submissions: BlogSubmission[] }>("/api/admin/blog-submissions", {
+          cache: "no-store",
+        });
+        if (!cancelled) {
+          setBlogSubmissions(Array.isArray(response.submissions) ? response.submissions : []);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setMediaNotice(error instanceof Error ? error.message : "Unable to load blog submissions.");
+          setMediaNoticeTone("error");
+        }
+      } finally {
+        if (!cancelled) {
+          setBlogSubmissionsLoading(false);
+        }
+      }
+    }
+
+    void loadBlogSubmissions();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeSection]);
 
   const orderedCatalogues = useMemo(
     () => [...catalogueTypes].sort((a, b) => a.sortOrder - b.sortOrder),
@@ -2056,6 +2102,60 @@ export default function AdminPage() {
     }
     setBlogDraft(nextBlog);
     setMediaNotice("Blog saved successfully.");
+  }
+
+  async function setBlogSubmissionStatus(
+    submissionId: string,
+    status: "pending" | "approved" | "rejected",
+    publishedBlogId = "",
+  ) {
+    await apiRequest("/api/admin/blog-submissions/" + encodeURIComponent(submissionId) + "/status", {
+      method: "PATCH",
+      body: { status, publishedBlogId },
+    });
+    setBlogSubmissions((current) =>
+      current.map((item) =>
+        item.id === submissionId
+          ? {
+              ...item,
+              status,
+              publishedBlogId,
+              reviewedAt: status === "pending" ? "" : new Date().toISOString(),
+            }
+          : item,
+      ),
+    );
+  }
+
+  async function approveBlogSubmission(submission: BlogSubmission) {
+    const nextBlog: HomeBlogPost = {
+      id: uniqueId("blog"),
+      title: submission.title.trim(),
+      excerpt: submission.story.trim().slice(0, 220),
+      image: "/assets/products-poster.jpg",
+      tag: "User Story",
+      href: "",
+    };
+
+    const saved = await saveStoredHomeContent({
+      ...storedHomeContent,
+      blogPosts: [nextBlog, ...storedHomeContent.blogPosts],
+    });
+    if (!saved) {
+      setMediaNotice("Unable to publish blog submission right now.");
+      setMediaNoticeTone("error");
+      return;
+    }
+
+    await setBlogSubmissionStatus(submission.id, "approved", nextBlog.id);
+    setMediaNotice("Blog submission approved and published.");
+    setMediaNoticeTone("success");
+  }
+
+  async function rejectBlogSubmission(submission: BlogSubmission) {
+    await setBlogSubmissionStatus(submission.id, "rejected");
+    setMediaNotice("Blog submission rejected.");
+    setMediaNoticeTone("info");
   }
 
   async function handleBannerFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -3321,6 +3421,45 @@ export default function AdminPage() {
                     <Plus className="mr-1 inline h-4 w-4" />
                     New Blog
                   </button>
+                </div>
+                <div className="mt-6 rounded-[24px] border border-[#efe1cf] bg-[#fffaf4] p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-lg font-semibold text-[#34180e]">User Blog Submissions</h3>
+                    {blogSubmissionsLoading ? <span className="text-xs text-[#8b6c52]">Loading...</span> : null}
+                  </div>
+                  <div className="mt-4 space-y-3">
+                    {blogSubmissions.filter((item) => item.status === "pending").length > 0 ? (
+                      blogSubmissions
+                        .filter((item) => item.status === "pending")
+                        .map((item) => (
+                          <div key={item.id} className="rounded-2xl border border-[#eadbc8] bg-white p-3">
+                            <p className="font-semibold text-[#34180e]">{item.title}</p>
+                            <p className="mt-1 text-xs text-[#8b6c52]">
+                              {item.name} • {item.phone} • {formatDate(item.createdAt)}
+                            </p>
+                            <p className="mt-2 line-clamp-3 text-sm text-[#6c4b33]">{item.story}</p>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={() => approveBlogSubmission(item)}
+                                className="rounded-full bg-[#34180e] px-4 py-2 text-xs font-semibold text-white"
+                              >
+                                Approve & Publish
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => rejectBlogSubmission(item)}
+                                className="rounded-full border border-[#eadbc8] bg-white px-4 py-2 text-xs font-semibold text-[#6c4b33]"
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                    ) : (
+                      <p className="text-sm text-[#8b6c52]">No pending blog submissions.</p>
+                    )}
+                  </div>
                 </div>
                 <div className="mt-6 space-y-4">
                   {storedHomeContent.blogPosts.map((item, index) => (

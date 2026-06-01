@@ -1,16 +1,18 @@
 import { ExternalLink, MessageCircle, PlayCircle } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link } from "@/lib/spa-router";
+import { apiRequest } from "@/lib/api";
 import { useStoredHomeContent } from "@/lib/content-store";
 import { isValidMessage, isValidName, isValidPhone, normalizeDigits } from "@/lib/form-validation";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
-import { siteConfig } from "@/lib/site-config";
 
 export default function BlogPage() {
   const { resolvedLocale } = useLanguage();
   const { blogPosts, videos } = useStoredHomeContent();
   const [form, setForm] = useState({ name: "", phone: "", title: "", story: "" });
   const [touched, setTouched] = useState({ name: false, phone: false, title: false, story: false });
+  const [submitState, setSubmitState] = useState<"idle" | "submitting" | "done" | "error">("idle");
+  const [submitMessage, setSubmitMessage] = useState("");
 
   const isNameValid = isValidName(form.name);
   const isPhoneValid = isValidPhone(form.phone);
@@ -18,31 +20,34 @@ export default function BlogPage() {
   const isStoryValid = isValidMessage(form.story, 20);
   const isFormValid = isNameValid && isPhoneValid && isTitleValid && isStoryValid;
 
-  const whatsappMessage = useMemo(
-    () =>
-      [
-        "Hi Shivrayart, I want to submit a blog/story for review.",
-        `Name: ${form.name || "-"}`,
-        `Phone: ${form.phone || "-"}`,
-        `Title: ${form.title || "-"}`,
-        `Story: ${form.story || "-"}`,
-      ].join("\n"),
-    [form],
-  );
-
-  const whatsappHref = useMemo(
-    () => `${siteConfig.whatsappHref}?text=${encodeURIComponent(whatsappMessage)}`,
-    [whatsappMessage],
-  );
-
   const markAllTouched = () => {
     setTouched({ name: true, phone: true, title: true, story: true });
   };
 
-  const guardSubmit = (event: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleSubmitForReview = async () => {
     markAllTouched();
-    if (!isFormValid) {
-      event.preventDefault();
+    if (!isFormValid) return;
+
+    setSubmitState("submitting");
+    setSubmitMessage("");
+
+    try {
+      await apiRequest("/api/blog-submissions", {
+        method: "POST",
+        body: {
+          name: form.name.trim(),
+          phone: form.phone.trim(),
+          title: form.title.trim(),
+          story: form.story.trim(),
+        },
+      });
+      setSubmitState("done");
+      setSubmitMessage("Blog submitted for admin review.");
+      setForm({ name: "", phone: "", title: "", story: "" });
+      setTouched({ name: false, phone: false, title: false, story: false });
+    } catch (error) {
+      setSubmitState("error");
+      setSubmitMessage(error instanceof Error ? error.message : "Unable to submit blog right now.");
     }
   };
 
@@ -193,16 +198,18 @@ export default function BlogPage() {
                 {touched.story && !isStoryValid ? <p className="mt-2 text-sm text-[#b42318]">Please write at least 20 characters.</p> : null}
               </div>
 
-              <a
-                href={whatsappHref}
-                onClick={guardSubmit}
-                target="_blank"
-                rel="noreferrer"
+              <button
+                type="button"
+                onClick={handleSubmitForReview}
+                disabled={submitState === "submitting"}
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white"
               >
                 <MessageCircle className="h-4 w-4" />
-                {resolvedLocale === "mr" ? "रिव्ह्यूसाठी पाठवा" : "Send for Review"}
-              </a>
+                {submitState === "submitting" ? "Submitting..." : "Send for Review"}
+              </button>
+              {submitMessage ? (
+                <p className={`text-sm ${submitState === "done" ? "text-[#166534]" : "text-[#b42318]"}`}>{submitMessage}</p>
+              ) : null}
             </form>
           </div>
         </div>

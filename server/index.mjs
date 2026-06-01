@@ -499,6 +499,31 @@ async function ensureCatalogueRequestsTable() {
   }
 }
 
+async function ensureBlogSubmissionsTable() {
+  try {
+    await query(
+      `
+      CREATE TABLE IF NOT EXISTS blog_submissions (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        full_name VARCHAR(255) NOT NULL,
+        phone VARCHAR(30) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        story TEXT NOT NULL,
+        status ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
+        published_blog_id VARCHAR(191) NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        reviewed_at TIMESTAMP NULL DEFAULT NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `,
+    );
+  } catch (error) {
+    console.warn(
+      "Unable to verify blog submissions table.",
+      error instanceof Error ? error.message : error,
+    );
+  }
+}
+
 async function ensureHomepageVideosSchema() {
   try {
     const rows = await query(
@@ -1579,6 +1604,119 @@ app.post("/api/catalogue-requests", async (req, res) => {
   }
 });
 
+app.post("/api/blog-submissions", async (req, res) => {
+  const name = String(req.body?.name ?? "").trim();
+  const phone = normalizeUnicodeDigits(String(req.body?.phone ?? "")).replace(/[^\d]/g, "").slice(0, 10);
+  const title = String(req.body?.title ?? "").trim();
+  const story = String(req.body?.story ?? "").trim();
+
+  if (!name || name.length < 2) {
+    res.status(400).json({ message: "Name is required." });
+    return;
+  }
+  if (!/^\d{10}$/.test(phone)) {
+    res.status(400).json({ message: "A valid 10-digit phone number is required." });
+    return;
+  }
+  if (!title || title.length < 5) {
+    res.status(400).json({ message: "Blog title must be at least 5 characters." });
+    return;
+  }
+  if (!story || story.length < 20) {
+    res.status(400).json({ message: "Story must be at least 20 characters." });
+    return;
+  }
+
+  try {
+    const [result] = await query(
+      `
+      INSERT INTO blog_submissions (full_name, phone, title, story, status)
+      VALUES (?, ?, ?, ?, 'pending')
+      `,
+      [name, phone, title, story],
+    );
+
+    res.json({
+      ok: true,
+      submission: {
+        id: `blog-submission-${result.insertId}`,
+        name,
+        phone,
+        title,
+        story,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error("Unable to save blog submission.", error);
+    res.status(500).json({ message: "Unable to submit blog right now." });
+  }
+});
+
+app.get("/api/admin/blog-submissions", requireAdmin, async (_req, res) => {
+  try {
+    const rows = await query(
+      `
+      SELECT id, full_name, phone, title, story, status, published_blog_id, created_at, reviewed_at
+      FROM blog_submissions
+      ORDER BY
+        CASE status WHEN 'pending' THEN 0 WHEN 'approved' THEN 1 ELSE 2 END,
+        created_at DESC,
+        id DESC
+      `,
+    );
+
+    res.json({
+      submissions: rows.map((row) => ({
+        id: `blog-submission-${row.id}`,
+        name: row.full_name,
+        phone: row.phone,
+        title: row.title,
+        story: row.story,
+        status: row.status,
+        publishedBlogId: row.published_blog_id ?? "",
+        createdAt: new Date(row.created_at).toISOString(),
+        reviewedAt: row.reviewed_at ? new Date(row.reviewed_at).toISOString() : "",
+      })),
+    });
+  } catch (error) {
+    console.error("Unable to load blog submissions.", error);
+    res.status(500).json({ message: "Unable to load blog submissions right now." });
+  }
+});
+
+app.patch("/api/admin/blog-submissions/:submissionId/status", requireAdmin, async (req, res) => {
+  const rawSubmissionId = String(req.params.submissionId ?? "").trim();
+  const submissionId = Number(rawSubmissionId.replace(/^blog-submission-/, ""));
+  const status = String(req.body?.status ?? "").trim().toLowerCase();
+  const publishedBlogId = String(req.body?.publishedBlogId ?? "").trim();
+
+  if (!Number.isFinite(submissionId) || submissionId <= 0) {
+    res.status(400).json({ message: "Invalid blog submission id." });
+    return;
+  }
+  if (!["pending", "approved", "rejected"].includes(status)) {
+    res.status(400).json({ message: "Invalid blog submission status." });
+    return;
+  }
+
+  try {
+    await query(
+      `
+      UPDATE blog_submissions
+      SET status = ?, published_blog_id = ?, reviewed_at = CASE WHEN ? = 'pending' THEN NULL ELSE CURRENT_TIMESTAMP END
+      WHERE id = ?
+      `,
+      [status, publishedBlogId || null, status, submissionId],
+    );
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("Unable to update blog submission status.", error);
+    res.status(500).json({ message: "Unable to update blog submission right now." });
+  }
+});
+
 app.post("/api/contact", async (req, res) => {
   const name = String(req.body?.name ?? "").trim();
   const phone = normalizeUnicodeDigits(String(req.body?.phone ?? "")).replace(/[^\d]/g, "").slice(0, 10);
@@ -2145,6 +2283,7 @@ async function startServer() {
   await ensureHomepageSettingsValueColumnSupportsLargePayloads();
   await ensureCataloguesDownloadUrlColumn();
   await ensureCatalogueRequestsTable();
+  await ensureBlogSubmissionsTable();
   await ensureHomepageVideosSchema();
   await ensureProductsCategoryColumnSupportsCustomValues();
   await ensureProductsLocalizedColumnsSupportJson();
