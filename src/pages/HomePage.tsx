@@ -70,6 +70,7 @@ export default function HomePage() {
   const [videoSlide, setVideoSlide] = useState(0);
   const [heroVideoReady, setHeroVideoReady] = useState(false);
   const [showDeferredSections, setShowDeferredSections] = useState(false);
+  const [showExtendedCards, setShowExtendedCards] = useState(false);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
   const videosRef = useRef<HTMLDivElement | null>(null);
   const deferredSectionsRef = useRef<HTMLDivElement | null>(null);
@@ -148,6 +149,11 @@ export default function HomePage() {
           dimensions: product.dimensions ?? "",
           productOptions: product.productOptions ?? [],
         }));
+  const initialCardLimit = 4;
+  const visibleSpotlightCards = showExtendedCards
+    ? resolvedSpotlightProductCards
+    : resolvedSpotlightProductCards.slice(0, initialCardLimit);
+  const visibleHomeProducts = showExtendedCards ? homeProducts : homeProducts.slice(0, initialCardLimit);
 
   useEffect(() => {
     if (heroSlides.length <= 1) return;
@@ -183,10 +189,6 @@ export default function HomePage() {
   const activeHeroPosterUrl = activeHeroSlide?.image || productWeapon1;
   const fallbackHeroTitleTop = resolvedLocale === "mr" ? "शिवराय" : "Shivray";
   const fallbackHeroTitleBottom = resolvedLocale === "mr" ? "आर्ट" : "Art";
-  const fallbackHeroCopy =
-    resolvedLocale === "mr"
-      ? "इतिहास, परंपरा आणि हस्तकलेने प्रेरित निवडक कलाकृती, भेटवस्तू आणि संग्रह."
-      : "Crafted heritage pieces inspired by history, tradition, and timeless Maratha artistry.";
 
   useEffect(() => {
     setHeroVideoReady(false);
@@ -285,6 +287,21 @@ export default function HomePage() {
     return () => observer.disconnect();
   }, [showDeferredSections]);
 
+  useEffect(() => {
+    const idleCallback = (window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    }).requestIdleCallback;
+
+    if (typeof idleCallback === "function") {
+      const id = idleCallback(() => setShowExtendedCards(true), { timeout: 1800 });
+      return () => (window as Window & { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(id);
+    }
+
+    const timer = window.setTimeout(() => setShowExtendedCards(true), 1200);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   return (
     <div className="bg-[#f7f1e7]">
       <section className="relative isolate overflow-hidden bg-[#2b0b08] text-white">
@@ -327,39 +344,10 @@ export default function HomePage() {
         ) : null}
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(20,8,4,0.35)_0%,rgba(20,8,4,0.2)_35%,rgba(20,8,4,0.62)_100%)]" />
         <div className="relative flex w-full min-h-[460px] items-center justify-center px-0 py-0 text-center md:mx-auto md:min-h-[720px] md:max-w-[72rem] md:px-8 md:py-24">
-          <div className="mx-auto max-w-5xl">
-            {activeHeroSlide ? (
-              <div className="px-5">
-                <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#e3a92b]">
-                  {resolveLocalizedText(activeHeroSlide.eyebrow, resolvedLocale)}
-                </p>
-                <h1 className="mt-6 font-heading text-5xl font-semibold leading-[0.92] text-[#fbf2e2] sm:text-6xl md:text-8xl">
-                  {resolveLocalizedText(activeHeroSlide.titleTop, resolvedLocale)}
-                </h1>
-                <h2 className="mt-2 font-heading text-5xl font-semibold leading-[0.92] text-[#e1a126] sm:text-6xl md:text-8xl">
-                  {resolveLocalizedText(activeHeroSlide.titleBottom, resolvedLocale)}
-                </h2>
-                <p className="mx-auto mt-7 max-w-4xl text-lg leading-9 text-[#f6e6d4] md:text-[1.05rem]">
-                  {resolveLocalizedText(activeHeroSlide.copy, resolvedLocale)}
-                </p>
-                <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                </div>
-              </div>
-            ) : (
-              <div className="px-5">
-                <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#e3a92b]">
-                  {resolvedLocale === "mr" ? "शिवराय आर्ट" : "Shivray Art"}
-                </p>
-                <h1 className="mt-6 font-heading text-5xl font-semibold leading-[0.92] text-[#fbf2e2] sm:text-6xl md:text-8xl">{fallbackHeroTitleTop}</h1>
-                <h2 className="mt-2 font-heading text-5xl font-semibold leading-[0.92] text-[#e1a126] sm:text-6xl md:text-8xl">{fallbackHeroTitleBottom}</h2>
-                <p className="mx-auto mt-7 max-w-4xl text-lg leading-9 text-[#f6e6d4] md:text-[1.05rem]">
-                  {fallbackHeroCopy}
-                </p>
-                <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                </div>
-              </div>
-            )}
-            
+          <div className="sr-only">
+            {activeHeroSlide
+              ? `${resolveLocalizedText(activeHeroSlide.titleTop, resolvedLocale)} ${resolveLocalizedText(activeHeroSlide.titleBottom, resolvedLocale)}`
+              : `${fallbackHeroTitleTop} ${fallbackHeroTitleBottom}`}
           </div>
         </div>
         {heroSlides.length > 1 ? (
@@ -438,7 +426,7 @@ export default function HomePage() {
             <Link to="/products" className="hidden text-sm font-semibold text-[#8b4d1d] md:inline-flex">{resolvedLocale === "mr" ? "सर्व पहा" : "View all"}</Link>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {resolvedSpotlightProductCards.map((product) => (
+            {visibleSpotlightCards.map((product) => (
               <ProductGalleryCard key={product.id} product={product} isWishlisted={isWishlisted(product.id)} onToggleWishlist={toggleWishlist} />
             ))}
           </div>
@@ -455,7 +443,7 @@ export default function HomePage() {
             <Link to="/products" className="hidden text-sm font-semibold text-[#8b4d1d] md:inline-flex">{resolvedLocale === "mr" ? "पूर्ण कॅटलॉग" : "Full catalogue"}</Link>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {homeProducts.map((product) => (
+            {visibleHomeProducts.map((product) => (
               <ProductGalleryCard key={product.id} product={product} isWishlisted={isWishlisted(product.id)} onToggleWishlist={toggleWishlist} />
             ))}
           </div>
