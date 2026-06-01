@@ -1328,6 +1328,16 @@ export default function AdminPage() {
     });
   }, [customerSearch, enrichedCustomers]);
 
+  const filteredWebsiteCustomers = useMemo(
+    () => filteredCustomers.filter((customer) => customer.source !== "catalogue-request"),
+    [filteredCustomers],
+  );
+
+  const filteredCatalogueLeads = useMemo(
+    () => filteredCustomers.filter((customer) => customer.source === "catalogue-request"),
+    [filteredCustomers],
+  );
+
   const notifications = useMemo(() => {
     const pendingOrders = orders.filter((order) => order.status === "Pending").length;
     const processingOrders = orders.filter((order) => order.status === "Processing").length;
@@ -1698,8 +1708,8 @@ export default function AdminPage() {
   }
 
   function downloadCustomersExcel() {
-    if (filteredCustomers.length === 0) {
-      setMediaNotice("No customers available to export.");
+    if (filteredWebsiteCustomers.length === 0) {
+      setMediaNotice("No website customers available to export.");
       return;
     }
 
@@ -1713,7 +1723,7 @@ export default function AdminPage() {
       "Last Login",
     ];
 
-    const rows = filteredCustomers.map((customer) => [
+    const rows = filteredWebsiteCustomers.map((customer) => [
       escapeCsvValue(customer.name || ""),
       escapeCsvValue(customer.email || ""),
       escapeCsvValue(customer.phone || ""),
@@ -1731,12 +1741,52 @@ export default function AdminPage() {
     const anchor = document.createElement("a");
     const dateStamp = new Date().toISOString().slice(0, 10);
     anchor.href = url;
-    anchor.download = `customers-${dateStamp}.csv`;
+    anchor.download = `website-customers-${dateStamp}.csv`;
     document.body.appendChild(anchor);
     anchor.click();
     document.body.removeChild(anchor);
     URL.revokeObjectURL(url);
-    setMediaNotice(`Exported ${filteredCustomers.length} customer(s) to Excel.`);
+    setMediaNotice(`Exported ${filteredWebsiteCustomers.length} website customer(s) to Excel.`);
+  }
+
+  function downloadCatalogueLeadsExcel() {
+    if (filteredCatalogueLeads.length === 0) {
+      setMediaNotice("No catalogue downloads available to export.");
+      return;
+    }
+
+    const headers = [
+      "Name",
+      "Phone",
+      "Address",
+      "Requested Catalogue",
+      "Requirement",
+      "Created At",
+    ];
+
+    const rows = filteredCatalogueLeads.map((lead) => [
+      escapeCsvValue(lead.name || ""),
+      escapeCsvValue(lead.phone || ""),
+      escapeCsvValue(lead.address || ""),
+      escapeCsvValue(lead.requestedCatalogueTitle || ""),
+      escapeCsvValue(lead.note || ""),
+      escapeCsvValue(formatDate(lead.createdAt || lead.lastLoginAt || "")),
+    ]);
+
+    const csv = [headers.map(escapeCsvValue), ...rows].map((line) => line.join(",")).join("\n");
+    const blob = new Blob(["\ufeff", csv], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    const dateStamp = new Date().toISOString().slice(0, 10);
+    anchor.href = url;
+    anchor.download = `catalogue-downloads-${dateStamp}.csv`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+    setMediaNotice(`Exported ${filteredCatalogueLeads.length} catalogue download record(s) to Excel.`);
   }
 
   function saveCustomer() {
@@ -3644,7 +3694,7 @@ export default function AdminPage() {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h2 className="text-2xl font-semibold text-[#34180e]">Customers</h2>
-                    <p className="mt-2 text-sm text-[#6c4b33]">Customers are added here when they log in on the storefront.</p>
+                    <p className="mt-2 text-sm text-[#6c4b33]">Website customers and catalogue downloads are shown separately below.</p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <button
@@ -3665,7 +3715,15 @@ export default function AdminPage() {
                       className="inline-flex items-center gap-2 rounded-full border border-[#eadbc8] bg-[#fffaf4] px-4 py-2 text-sm font-semibold text-[#8b4d1d]"
                     >
                       <Download className="h-4 w-4" />
-                      Download Excel
+                      Download Customers
+                    </button>
+                    <button
+                      type="button"
+                      onClick={downloadCatalogueLeadsExcel}
+                      className="inline-flex items-center gap-2 rounded-full border border-[#eadbc8] bg-[#fffaf4] px-4 py-2 text-sm font-semibold text-[#8b4d1d]"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download Catalogue Leads
                     </button>
                   </div>
                 </div>
@@ -3717,7 +3775,9 @@ export default function AdminPage() {
                     </div>
                   </div>
                 ) : null}
-                <div className="mt-6 overflow-x-auto">
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold text-[#34180e]">Website Customers</h3>
+                  <div className="mt-3 overflow-x-auto">
                   <table className="w-full min-w-[920px] text-left text-sm">
                     <thead className="border-b border-[#efe1cf] text-[#8b6c52]">
                       <tr>
@@ -3731,8 +3791,8 @@ export default function AdminPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredCustomers.length > 0 ? (
-                        filteredCustomers.map((customer) => (
+                      {filteredWebsiteCustomers.length > 0 ? (
+                        filteredWebsiteCustomers.map((customer) => (
                           <tr key={customer.id} className="border-b border-[#f3e8da]">
                             <td className="px-4 py-4 font-semibold text-[#34180e]">
                               <div className="flex flex-wrap items-center gap-2">
@@ -3742,12 +3802,6 @@ export default function AdminPage() {
                                 </span>
                               </div>
                               <p className="mt-1 text-xs text-[#8b6c52]">{customer.address || "No address added yet"}</p>
-                              {customer.requestedCatalogueTitle ? (
-                                <p className="mt-1 text-xs text-[#8b6c52]">Requested catalogue: {customer.requestedCatalogueTitle}</p>
-                              ) : null}
-                              {customer.note ? (
-                                <p className="mt-1 text-xs text-[#8b6c52]">Requirement: {customer.note}</p>
-                              ) : null}
                             </td>
                             <td className="px-4 py-4 text-[#5e5a80]">{customer.email || "Not provided"}</td>
                             <td className="px-4 py-4 text-[#5e5a80]">{customer.phone || "Not provided"}</td>
@@ -3758,11 +3812,10 @@ export default function AdminPage() {
                               <button
                                 type="button"
                                 onClick={() => editCustomer(customer)}
-                                disabled={customer.source === "catalogue-request"}
                                 className="inline-flex items-center gap-1 rounded-full border border-[#eadbc8] bg-white px-3 py-1.5 text-xs font-semibold text-[#6c4b33]"
                               >
                                 <SquarePen className="h-3.5 w-3.5" />
-                                {customer.source === "catalogue-request" ? "Saved Lead" : "Edit"}
+                                Edit
                               </button>
                             </td>
                           </tr>
@@ -3770,12 +3823,51 @@ export default function AdminPage() {
                       ) : (
                         <tr>
                           <td colSpan={7} className="px-4 py-10 text-center text-[#8b6c52]">
-                            No customers found yet.
+                            No website customers found.
                           </td>
                         </tr>
                       )}
                     </tbody>
                   </table>
+                </div>
+                </div>
+
+                <div className="mt-8">
+                  <h3 className="text-lg font-semibold text-[#34180e]">Catalogue Downloads</h3>
+                  <div className="mt-3 overflow-x-auto">
+                    <table className="w-full min-w-[920px] text-left text-sm">
+                      <thead className="border-b border-[#efe1cf] text-[#8b6c52]">
+                        <tr>
+                          <th className="px-4 py-3 font-semibold">Name</th>
+                          <th className="px-4 py-3 font-semibold">Phone</th>
+                          <th className="px-4 py-3 font-semibold">Address</th>
+                          <th className="px-4 py-3 font-semibold">Requested Catalogue</th>
+                          <th className="px-4 py-3 font-semibold">Requirement</th>
+                          <th className="px-4 py-3 font-semibold">Created At</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredCatalogueLeads.length > 0 ? (
+                          filteredCatalogueLeads.map((lead) => (
+                            <tr key={lead.id} className="border-b border-[#f3e8da]">
+                              <td className="px-4 py-4 font-semibold text-[#34180e]">{lead.name}</td>
+                              <td className="px-4 py-4 text-[#5e5a80]">{lead.phone || "Not provided"}</td>
+                              <td className="px-4 py-4 text-[#5e5a80]">{lead.address || "Not provided"}</td>
+                              <td className="px-4 py-4 text-[#34180e]">{lead.requestedCatalogueTitle || "Full Catalogue"}</td>
+                              <td className="px-4 py-4 text-[#5e5a80]">{lead.note || "-"}</td>
+                              <td className="px-4 py-4 text-[#5e5a80]">{formatDate(lead.createdAt || lead.lastLoginAt)}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={6} className="px-4 py-10 text-center text-[#8b6c52]">
+                              No catalogue download records found.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </section>
