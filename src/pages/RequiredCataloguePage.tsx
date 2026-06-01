@@ -48,6 +48,7 @@ export default function RequiredCataloguePage() {
   const selectedCatalogue =
     activeCatalogues.find((catalogue) => catalogue.id === "full-catalogue") ??
     catalogueTypes.find((catalogue) => catalogue.id === "full-catalogue");
+  const effectiveCatalogueId = selectedCatalogue?.id || "full-catalogue";
   const selectedCatalogueTitle = selectedCatalogue
     ? resolveLocalizedText(selectedCatalogue.title, resolvedLocale)
     : resolvedLocale === "mr"
@@ -74,7 +75,7 @@ export default function RequiredCataloguePage() {
 
   const handleDownload = async () => {
     markAllTouched();
-    if (!isFormValid || !selectedCatalogue) return;
+    if (!isFormValid) return;
 
     setSubmitState("submitting");
     setSubmitMessage("");
@@ -89,7 +90,7 @@ export default function RequiredCataloguePage() {
         phone: form.phone.trim(),
         address: form.address.trim(),
         note: form.note.trim(),
-        catalogueId: selectedCatalogue.id,
+        catalogueId: effectiveCatalogueId,
         catalogueTitle: selectedCatalogueTitle,
       });
 
@@ -162,16 +163,13 @@ export default function RequiredCataloguePage() {
                 <label htmlFor="catalogue-category" className="text-sm font-semibold text-[#34180e]">
                   {resolvedLocale === "mr" ? "कॅटलॉग प्रकार" : "Catalogue Category"}
                 </label>
-                <select
+                <input
                   id="catalogue-category"
-                  value={selectedCatalogueId}
-                  onChange={() => undefined}
+                  type="text"
+                  value="Full Catalogue"
+                  readOnly
                   className="mt-2 w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e]"
-                >
-                  <option value="full-catalogue">
-                    Full Catalogue ({catalogueCounts["full-catalogue"] ?? products.length} products)
-                  </option>
-                </select>
+                />
               </div>
 
               <div>
@@ -241,4 +239,6 @@ export default function RequiredCataloguePage() {
     </div>
   );
 }
+
+
 
