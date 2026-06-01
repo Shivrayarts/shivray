@@ -69,8 +69,10 @@ export default function HomePage() {
   const [currentReview, setCurrentReview] = useState(0);
   const [videoSlide, setVideoSlide] = useState(0);
   const [heroVideoReady, setHeroVideoReady] = useState(false);
+  const [showDeferredSections, setShowDeferredSections] = useState(false);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
   const videosRef = useRef<HTMLDivElement | null>(null);
+  const deferredSectionsRef = useRef<HTMLDivElement | null>(null);
   const heroSlides = storedHomeContent.banners;
   const reviews = storedHomeContent.reviews;
   const hasHeroSlides = heroSlides.length > 0;
@@ -265,6 +267,24 @@ export default function HomePage() {
     return () => window.clearInterval(timer);
   }, [homeCategoryCards.length]);
 
+  useEffect(() => {
+    const node = deferredSectionsRef.current;
+    if (!node || showDeferredSections) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShowDeferredSections(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "300px 0px" },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [showDeferredSections]);
+
   return (
     <div className="bg-[#f7f1e7]">
       <section className="relative isolate overflow-hidden bg-[#2b0b08] text-white">
@@ -407,6 +427,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      <div ref={deferredSectionsRef}>
       <section className="px-4 pb-8 md:px-6 md:pb-14">
         <div className="layout-shell">
           <div className="flex items-end justify-between gap-3">
@@ -440,6 +461,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      </div>
 
       <section className="px-4 pb-8 md:px-6 md:pb-14">
         <div className="layout-shell bg-[#fffdf8] px-0 py-8">
@@ -449,7 +471,11 @@ export default function HomePage() {
           </div>
           <div className="mx-auto mt-8 max-w-3xl">
             <div className="rounded-[26px] bg-white p-6 text-left shadow-[0_20px_45px_-38px_rgba(79,40,16,0.45)] md:p-8">
-              {activeReview ? (
+              {!showDeferredSections ? (
+                <p className="text-[1.05rem] leading-8 text-[#4c433d] md:text-[1.12rem]">
+                  {resolvedLocale === "mr" ? "अभिप्राय लोड होत आहे..." : "Loading customer reviews..."}
+                </p>
+              ) : activeReview ? (
                 <>
                   <p className="text-[1.6rem] font-semibold leading-none text-[#1f1711] md:text-[1.8rem]">{resolveLocalizedText(activeReview.authorName, resolvedLocale)}</p>
                   <p className="mt-2 text-sm text-[#8c8177]">{resolveLocalizedText(activeReview.location, resolvedLocale)}</p>
@@ -467,7 +493,7 @@ export default function HomePage() {
               )}
             </div>
           </div>
-          {reviews.length > 0 ? (
+          {showDeferredSections && reviews.length > 0 ? (
             <div className="mt-6 flex items-center justify-center gap-3">
               {reviews.map((review, index) => (
                 <button key={review.id} type="button" onClick={() => setCurrentReview(index)} aria-label={`Go to review ${index + 1}`} className={`rounded-full transition-all ${index === currentReview ? "h-3 w-10 bg-[#8b4d1d]" : "h-3 w-3 bg-[#d9c0a1]"}`} />
@@ -488,7 +514,11 @@ export default function HomePage() {
               {resolvedLocale === "mr" ? "जलद स्क्रोलसाठी व्हर्टिकल रील्स आणि लांब कथनासाठी YouTube व्हिडिओ अॅडमिन पॅनेलमधून जोडा." : "Add vertical reels for quick scroll content and YouTube videos for longer storytelling directly from the admin panel."}
             </p>
           </div>
-          {featuredVideos.length > 0 ? (
+          {!showDeferredSections ? (
+            <div className="mt-8 rounded-[28px] border border-white/10 bg-white/10 p-6 text-[#f6dbc2]">
+              {resolvedLocale === "mr" ? "व्हिडिओ सेक्शन लोड होत आहे..." : "Loading videos section..."}
+            </div>
+          ) : featuredVideos.length > 0 ? (
             <div ref={videosRef} onScroll={handleVideosScroll} className="category-carousel-scroll mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2">
               {featuredVideos.map((video) => {
                 const isYoutube = video.videoType === "youtube";
@@ -565,7 +595,7 @@ export default function HomePage() {
               {resolvedLocale === "mr" ? "अजून व्हिडिओ जोडलेले नाहीत. तुम्ही रील्स आणि YouTube व्हिडिओ अॅडमिन पॅनेलमधून प्रकाशित करू शकता." : "No videos added yet. You can publish reels and YouTube videos from the admin panel."}
             </div>
           )}
-          {featuredVideos.length > 1 ? (
+          {showDeferredSections && featuredVideos.length > 1 ? (
             <div className="mt-5 flex items-center justify-center gap-2">
               {featuredVideos.map((video, index) => (
                 <button
