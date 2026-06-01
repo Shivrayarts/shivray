@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { lazy, Suspense, useEffect, useMemo } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MobileTabBar from "@/components/MobileTabBar";
@@ -8,20 +8,21 @@ import { LanguageProvider } from "@/lib/language";
 import { RouterProvider, useLocation } from "@/lib/spa-router";
 import { useAdminAuthState } from "@/lib/admin-auth";
 import HomePage from "@/pages/HomePage";
-import ProductsPage from "@/pages/ProductsPage";
-import ProductDetailPage from "@/pages/ProductDetailPage";
-import RequiredCataloguePage from "@/pages/RequiredCataloguePage";
-import ContactPage from "@/pages/ContactPage";
-import CartPage from "@/pages/CartPage";
-import WishlistPage from "@/pages/WishlistPage";
-import LoginPage from "@/pages/LoginPage";
-import AboutPage from "@/pages/AboutPage";
-import BlogPage from "@/pages/BlogPage";
-import BlogDetailPage from "@/pages/BlogDetailPage";
-import OurTeamPage from "@/pages/OurTeamPage";
-import WallOfFamePage from "@/pages/WallOfFamePage";
-import AdminLoginPage from "@/pages/AdminLoginPage";
-import AdminPage from "@/pages/AdminPage";
+
+const ProductsPage = lazy(() => import("@/pages/ProductsPage"));
+const ProductDetailPage = lazy(() => import("@/pages/ProductDetailPage"));
+const RequiredCataloguePage = lazy(() => import("@/pages/RequiredCataloguePage"));
+const ContactPage = lazy(() => import("@/pages/ContactPage"));
+const CartPage = lazy(() => import("@/pages/CartPage"));
+const WishlistPage = lazy(() => import("@/pages/WishlistPage"));
+const LoginPage = lazy(() => import("@/pages/LoginPage"));
+const AboutPage = lazy(() => import("@/pages/AboutPage"));
+const BlogPage = lazy(() => import("@/pages/BlogPage"));
+const BlogDetailPage = lazy(() => import("@/pages/BlogDetailPage"));
+const OurTeamPage = lazy(() => import("@/pages/OurTeamPage"));
+const WallOfFamePage = lazy(() => import("@/pages/WallOfFamePage"));
+const AdminLoginPage = lazy(() => import("@/pages/AdminLoginPage"));
+const AdminPage = lazy(() => import("@/pages/AdminPage"));
 
 function AppShell() {
   const location = useLocation();
@@ -121,7 +122,17 @@ function AppShell() {
   return (
     <div className="min-h-screen flex flex-col">
       {isAdminRoute ? null : <Header />}
-      <main className="mobile-webapp-main flex-1">{page.node}</main>
+      <main className="mobile-webapp-main flex-1">
+        <Suspense
+          fallback={
+            <div className="flex min-h-[40vh] items-center justify-center px-4 py-10">
+              <p className="text-sm text-[#6c4b33]">Loading page...</p>
+            </div>
+          }
+        >
+          {page.node}
+        </Suspense>
+      </main>
       {hideFooter ? null : <Footer />}
       {isAdminRoute ? null : <MobileTabBar />}
       {isAdminRoute ? null : <FloatingActions />}

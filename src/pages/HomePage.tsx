@@ -283,16 +283,7 @@ export default function HomePage() {
               decoding="async"
             />
           )
-        ) : (
-          <img
-            src={productWeapon1}
-            alt="Shivray Art heritage collection"
-            className="absolute inset-0 h-full w-full object-cover"
-            fetchPriority="high"
-            loading="eager"
-            decoding="async"
-          />
-        )}
+        ) : null}
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(20,8,4,0.35)_0%,rgba(20,8,4,0.2)_35%,rgba(20,8,4,0.62)_100%)]" />
         <div className="relative flex w-full min-h-[460px] items-center justify-center px-0 py-0 text-center md:mx-auto md:min-h-[720px] md:max-w-[72rem] md:px-8 md:py-24">
           <div className="mx-auto max-w-5xl">

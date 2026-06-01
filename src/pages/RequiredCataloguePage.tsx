@@ -39,15 +39,15 @@ export default function RequiredCataloguePage() {
     };
     return countByCatalogueId;
   }, [products]);
-  const defaultCatalogueId = activeCatalogues[activeCatalogues.length - 1]?.id ?? catalogueTypes[0]?.id ?? "";
-  const [selectedCatalogueId, setSelectedCatalogueId] = useState(defaultCatalogueId);
+  const [selectedCatalogueId] = useState("full-catalogue");
   const [form, setForm] = useState({ name: "", phone: "", address: "", note: "" });
   const [touched, setTouched] = useState({ name: false, phone: false, address: false, note: false });
   const [submitState, setSubmitState] = useState<"idle" | "submitting" | "done">("idle");
   const [submitMessage, setSubmitMessage] = useState("");
 
   const selectedCatalogue =
-    activeCatalogues.find((catalogue) => catalogue.id === selectedCatalogueId) ?? activeCatalogues[0];
+    activeCatalogues.find((catalogue) => catalogue.id === "full-catalogue") ??
+    catalogueTypes.find((catalogue) => catalogue.id === "full-catalogue");
   const selectedCatalogueTitle = selectedCatalogue
     ? resolveLocalizedText(selectedCatalogue.title, resolvedLocale)
     : resolvedLocale === "mr"
@@ -159,22 +159,12 @@ export default function RequiredCataloguePage() {
                 <select
                   id="catalogue-category"
                   value={selectedCatalogueId}
-                  onChange={(event) => setSelectedCatalogueId(event.target.value)}
+                  onChange={() => undefined}
                   className="mt-2 w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e]"
                 >
-                  {activeCatalogues.map((catalogue) => {
-                    const title = resolveLocalizedText(catalogue.title, resolvedLocale);
-                    const dynamicCount = catalogueCounts[catalogue.id];
-                    const itemCount =
-                      typeof dynamicCount === "number"
-                        ? `${dynamicCount} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`
-                        : resolveLocalizedText(catalogue.itemCountLabel, resolvedLocale);
-                    return (
-                      <option key={catalogue.id} value={catalogue.id}>
-                        {title} {itemCount ? `(${itemCount})` : ""}
-                      </option>
-                    );
-                  })}
+                  <option value="full-catalogue">
+                    Full Catalogue ({catalogueCounts["full-catalogue"] ?? products.length} products)
+                  </option>
                 </select>
               </div>
 
@@ -245,3 +235,4 @@ export default function RequiredCataloguePage() {
     </div>
   );
 }
+

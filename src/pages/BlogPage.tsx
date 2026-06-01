@@ -1,11 +1,50 @@
+import { ExternalLink, MessageCircle, PlayCircle } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Link } from "@/lib/spa-router";
-import { ExternalLink, PlayCircle } from "lucide-react";
 import { useStoredHomeContent } from "@/lib/content-store";
+import { isValidMessage, isValidName, isValidPhone, normalizeDigits } from "@/lib/form-validation";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
+import { siteConfig } from "@/lib/site-config";
 
 export default function BlogPage() {
   const { resolvedLocale } = useLanguage();
   const { blogPosts, videos } = useStoredHomeContent();
+  const [form, setForm] = useState({ name: "", phone: "", title: "", story: "" });
+  const [touched, setTouched] = useState({ name: false, phone: false, title: false, story: false });
+
+  const isNameValid = isValidName(form.name);
+  const isPhoneValid = isValidPhone(form.phone);
+  const isTitleValid = form.title.trim().length >= 5;
+  const isStoryValid = isValidMessage(form.story, 20);
+  const isFormValid = isNameValid && isPhoneValid && isTitleValid && isStoryValid;
+
+  const whatsappMessage = useMemo(
+    () =>
+      [
+        "Hi Shivrayart, I want to submit a blog/story for review.",
+        `Name: ${form.name || "-"}`,
+        `Phone: ${form.phone || "-"}`,
+        `Title: ${form.title || "-"}`,
+        `Story: ${form.story || "-"}`,
+      ].join("\n"),
+    [form],
+  );
+
+  const whatsappHref = useMemo(
+    () => `${siteConfig.whatsappHref}?text=${encodeURIComponent(whatsappMessage)}`,
+    [whatsappMessage],
+  );
+
+  const markAllTouched = () => {
+    setTouched({ name: true, phone: true, title: true, story: true });
+  };
+
+  const guardSubmit = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    markAllTouched();
+    if (!isFormValid) {
+      event.preventDefault();
+    }
+  };
 
   return (
     <div>
@@ -68,6 +107,106 @@ export default function BlogPage() {
           </div>
         </section>
       ) : null}
+
+      <section className="bg-[#f7f1e7] px-4 py-16 md:px-6 md:py-24">
+        <div className="layout-shell">
+          <div className="rounded-[30px] border border-[#eadbc8] bg-white p-6 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.3)] md:p-8">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
+              {resolvedLocale === "mr" ? "तुमची कथा" : "Write Your Blog"}
+            </p>
+            <h2 className="mt-3 font-heading text-[1.8rem] leading-tight text-[#34180e] md:text-[2.2rem]">
+              {resolvedLocale === "mr" ? "तुमची ब्लॉग कथा आमच्यासोबत शेअर करा" : "Share your blog story with us"}
+            </h2>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-[#6c4b33]">
+              {resolvedLocale === "mr"
+                ? "तुमचा अनुभव, प्रेरणा किंवा कथा लिहा. आम्ही ती पाहून प्रकाशित करण्यासाठी तुमच्याशी संपर्क करू."
+                : "Write your experience, idea, or story. We will review it and contact you before publishing."}
+            </p>
+
+            <form className="mt-6 space-y-4" onSubmit={(event) => event.preventDefault()}>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label htmlFor="blog-name" className="text-sm font-semibold text-[#34180e]">
+                    {resolvedLocale === "mr" ? "नाव" : "Name"}
+                  </label>
+                  <input
+                    id="blog-name"
+                    type="text"
+                    value={form.name}
+                    onBlur={() => setTouched((value) => ({ ...value, name: true }))}
+                    onChange={(event) => setForm((value) => ({ ...value, name: event.target.value }))}
+                    placeholder={resolvedLocale === "mr" ? "तुमचे नाव" : "Your name"}
+                    className={`mt-2 w-full rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${touched.name && !isNameValid ? "border-[#b42318]" : "border-[#eadbc8]"}`}
+                  />
+                  {touched.name && !isNameValid ? <p className="mt-2 text-sm text-[#b42318]">Please enter your full name.</p> : null}
+                </div>
+
+                <div>
+                  <label htmlFor="blog-phone" className="text-sm font-semibold text-[#34180e]">
+                    {resolvedLocale === "mr" ? "फोन नंबर" : "Phone Number"}
+                  </label>
+                  <input
+                    id="blog-phone"
+                    type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]{10}"
+                    maxLength={10}
+                    value={form.phone}
+                    onBlur={() => setTouched((value) => ({ ...value, phone: true }))}
+                    onChange={(event) => setForm((value) => ({ ...value, phone: normalizeDigits(event.target.value, 10) }))}
+                    placeholder={resolvedLocale === "mr" ? "10 अंकी नंबर" : "Enter 10-digit phone number"}
+                    className={`mt-2 w-full rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${touched.phone && !isPhoneValid ? "border-[#b42318]" : "border-[#eadbc8]"}`}
+                  />
+                  {touched.phone && !isPhoneValid ? <p className="mt-2 text-sm text-[#b42318]">Please enter a valid 10-digit phone number.</p> : null}
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="blog-title" className="text-sm font-semibold text-[#34180e]">
+                  {resolvedLocale === "mr" ? "ब्लॉग शीर्षक" : "Blog Title"}
+                </label>
+                <input
+                  id="blog-title"
+                  type="text"
+                  value={form.title}
+                  onBlur={() => setTouched((value) => ({ ...value, title: true }))}
+                  onChange={(event) => setForm((value) => ({ ...value, title: event.target.value }))}
+                  placeholder={resolvedLocale === "mr" ? "तुमच्या कथेचे शीर्षक" : "Title of your story"}
+                  className={`mt-2 w-full rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${touched.title && !isTitleValid ? "border-[#b42318]" : "border-[#eadbc8]"}`}
+                />
+                {touched.title && !isTitleValid ? <p className="mt-2 text-sm text-[#b42318]">Please enter at least 5 characters for the title.</p> : null}
+              </div>
+
+              <div>
+                <label htmlFor="blog-story" className="text-sm font-semibold text-[#34180e]">
+                  {resolvedLocale === "mr" ? "तुमची कथा" : "Your Story"}
+                </label>
+                <textarea
+                  id="blog-story"
+                  rows={7}
+                  value={form.story}
+                  onBlur={() => setTouched((value) => ({ ...value, story: true }))}
+                  onChange={(event) => setForm((value) => ({ ...value, story: event.target.value }))}
+                  placeholder={resolvedLocale === "mr" ? "येथे तुमचा ब्लॉग लिहा" : "Write your blog here"}
+                  className={`mt-2 w-full resize-none rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${touched.story && !isStoryValid ? "border-[#b42318]" : "border-[#eadbc8]"}`}
+                />
+                {touched.story && !isStoryValid ? <p className="mt-2 text-sm text-[#b42318]">Please write at least 20 characters.</p> : null}
+              </div>
+
+              <a
+                href={whatsappHref}
+                onClick={guardSubmit}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white"
+              >
+                <MessageCircle className="h-4 w-4" />
+                {resolvedLocale === "mr" ? "रिव्ह्यूसाठी पाठवा" : "Send for Review"}
+              </a>
+            </form>
+          </div>
+        </div>
+      </section>
 
       <section className="bg-card bg-heritage-pattern py-16 md:py-24">
         <div className="w-full px-4">

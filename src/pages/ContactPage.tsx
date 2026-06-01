@@ -1,6 +1,7 @@
 import { Facebook, Globe, Instagram, Mail, MapPin, Phone, Send, Youtube } from "lucide-react";
 import { useMemo, useState } from "react";
 import { isValidName, isValidPhone, normalizeDigits } from "@/lib/form-validation";
+import { apiRequest } from "@/lib/api";
 import { useLanguage } from "@/lib/language";
 import { siteConfig } from "@/lib/site-config";
 
@@ -16,6 +17,8 @@ export default function ContactPage() {
   const { resolvedLocale } = useLanguage();
   const [form, setForm] = useState({ name: "", phone: "", city: "" });
   const [touched, setTouched] = useState({ name: false, phone: false, city: false });
+  const [submitState, setSubmitState] = useState<"idle" | "submitting" | "done" | "error">("idle");
+  const [submitMessage, setSubmitMessage] = useState("");
   const showAlternatePhone =
     Boolean(siteConfig.alternatePhoneDisplay && siteConfig.alternatePhoneHref) &&
     siteConfig.alternatePhoneHref !== siteConfig.phoneHref;
@@ -34,23 +37,6 @@ export default function ContactPage() {
     return `${siteConfig.whatsappHref}?text=${query}`;
   }, [form]);
 
-  const emailLink = useMemo(() => {
-    const subject = encodeURIComponent(`New enquiry from ${form.name || "website visitor"}`);
-    const body = encodeURIComponent(
-      [
-        "Hello Shivrayart,",
-        "",
-        `Name: ${form.name || "-"}`,
-        `Number: ${form.phone || "-"}`,
-        `City: ${form.city || "-"}`,
-        "",
-        "Please contact me back.",
-      ].join("\n"),
-    );
-
-    return `mailto:${siteConfig.email}?subject=${subject}&body=${body}`;
-  }, [form]);
-
   const markAllTouched = () => {
     setTouched({ name: true, phone: true, city: true });
   };
@@ -62,10 +48,27 @@ export default function ContactPage() {
     }
   };
 
-  const handleEmailClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleContactSubmit = async () => {
     markAllTouched();
-    if (!isFormValid) {
-      event.preventDefault();
+    if (!isFormValid) return;
+
+    setSubmitState("submitting");
+    setSubmitMessage("");
+
+    try {
+      await apiRequest<{ ok: boolean; message?: string }>("/api/contact", {
+        method: "POST",
+        body: {
+          name: form.name.trim(),
+          phone: form.phone.trim(),
+          city: form.city.trim(),
+        },
+      });
+      setSubmitState("done");
+      setSubmitMessage("Your enquiry has been submitted successfully.");
+    } catch (error) {
+      setSubmitState("error");
+      setSubmitMessage(error instanceof Error ? error.message : "Unable to submit enquiry right now.");
     }
   };
 
@@ -248,14 +251,18 @@ export default function ContactPage() {
                   <Send className="h-4 w-4" />
                   {resolvedLocale === "mr" ? "व्हॉट्सअॅपवर पाठवा" : "Send on WhatsApp"}
                 </a>
-                <a
-                  href={emailLink}
-                  onClick={handleEmailClick}
-                  className="inline-flex items-center justify-center rounded-full border border-[#d8b48b] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#34180e]"
+                <button
+                  type="button"
+                  onClick={handleContactSubmit}
+                  disabled={submitState === "submitting"}
+                  className="inline-flex items-center justify-center rounded-full border border-[#d8b48b] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#34180e] disabled:opacity-60"
                 >
-                  {resolvedLocale === "mr" ? "ईमेल पाठवा" : "Send Email"}
-                </a>
+                  {submitState === "submitting" ? "Submitting..." : "Send Email"}
+                </button>
               </div>
+              {submitMessage ? (
+                <p className={`text-sm ${submitState === "done" ? "text-[#166534]" : "text-[#b42318]"}`}>{submitMessage}</p>
+              ) : null}
             </form>
           </div>
         </div>
@@ -263,3 +270,4 @@ export default function ContactPage() {
     </div>
   );
 }
+

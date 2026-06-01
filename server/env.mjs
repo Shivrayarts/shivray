@@ -51,6 +51,7 @@ export const env = {
     envFile.CORS_ORIGIN ??
     "https://shivrayart.in,https://www.shivrayart.in",
   PRIVYR_WEBHOOK_URL: process.env.PRIVYR_WEBHOOK_URL ?? envFile.PRIVYR_WEBHOOK_URL ?? "",
+  CONTACT_FORM_API_KEY: process.env.CONTACT_FORM_API_KEY ?? envFile.CONTACT_FORM_API_KEY ?? "",
   NODE_ENV: process.env.NODE_ENV ?? envFile.NODE_ENV ?? "development",
 };
 

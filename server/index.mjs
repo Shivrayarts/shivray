@@ -1579,6 +1579,60 @@ app.post("/api/catalogue-requests", async (req, res) => {
   }
 });
 
+app.post("/api/contact", async (req, res) => {
+  const name = String(req.body?.name ?? "").trim();
+  const phone = normalizeUnicodeDigits(String(req.body?.phone ?? "")).replace(/[^\d]/g, "").slice(0, 10);
+  const city = String(req.body?.city ?? "").trim();
+
+  if (!name || name.length < 2) {
+    res.status(400).json({ message: "Customer name is required." });
+    return;
+  }
+
+  if (!/^\d{10}$/.test(phone)) {
+    res.status(400).json({ message: "A valid 10-digit phone number is required." });
+    return;
+  }
+
+  if (!city || city.length < 2) {
+    res.status(400).json({ message: "City is required." });
+    return;
+  }
+
+  const contactApiKey = String(env.CONTACT_FORM_API_KEY || "").trim();
+  if (!contactApiKey) {
+    res.status(500).json({ message: "Contact form API key is not configured on server." });
+    return;
+  }
+
+  try {
+    const response = await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        access_key: contactApiKey,
+        subject: "New contact enquiry from Shivray website",
+        from_name: "Shivray Contact Form",
+        name,
+        phone,
+        city,
+      }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data?.success === false) {
+      const message = String(data?.message || "Unable to submit contact form right now.");
+      res.status(502).json({ message });
+      return;
+    }
+
+    res.json({ ok: true, message: "Contact form submitted successfully." });
+  } catch (error) {
+    console.error("Unable to submit contact form.", error);
+    res.status(500).json({ message: "Unable to submit contact form right now." });
+  }
+});
+
 app.put("/api/admin/home-content", requireAdmin, async (req, res) => {
   const content = req.body?.content ?? {};
   const announcementBar =
