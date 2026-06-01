@@ -72,17 +72,16 @@ export default function RequiredCataloguePage() {
     }
   };
 
-  const triggerDownload = (downloadUrl: string) => {
-    if (typeof window === "undefined" || !downloadUrl) return;
-    window.open(downloadUrl, "_blank", "noopener,noreferrer");
-  };
-
   const handleDownload = async () => {
     markAllTouched();
     if (!isFormValid || !selectedCatalogue) return;
 
     setSubmitState("submitting");
     setSubmitMessage("");
+    const pendingWindow =
+      typeof window !== "undefined" && selectedDownloadUrl
+        ? window.open("", "_blank", "noopener,noreferrer")
+        : null;
 
     try {
       await submitCatalogueRequest({
@@ -94,12 +93,19 @@ export default function RequiredCataloguePage() {
         catalogueTitle: selectedCatalogueTitle,
       });
 
-      triggerDownload(selectedDownloadUrl);
+      if (pendingWindow && selectedDownloadUrl) {
+        pendingWindow.location.href = selectedDownloadUrl;
+      } else if (typeof window !== "undefined" && selectedDownloadUrl) {
+        window.location.href = selectedDownloadUrl;
+      }
 
       setSubmitState("done");
       setSubmitMessage("Catalogue download started successfully.");
     } catch (error) {
       console.error("Unable to save catalogue request.", error);
+      if (pendingWindow && !pendingWindow.closed) {
+        pendingWindow.close();
+      }
       setSubmitState("idle");
       setSubmitMessage("We could not save your request right now. Please try again.");
     }
