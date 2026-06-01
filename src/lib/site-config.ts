@@ -20,5 +20,5 @@ export const siteConfig = {
     youtube: "https://youtube.com/@shivrayart?si=MkDdK6biQDpxfrkB",
     pinterest: "https://pin.it/4T2tDXNBV",
   },
-  googleBusinessHref: "https://share.google/EI67m0O5pQSHEujca",
+  googleBusinessHref: "https://www.google.com/maps/search/?api=1&query=Sainath+Chowk%2C+Dhankawadi%2C+Pune%2C+Maharashtra+411043",
 } as const;
