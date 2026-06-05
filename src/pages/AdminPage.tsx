@@ -122,6 +122,7 @@ const blogTemplate: HomeBlogPost = {
   id: "",
   title: "",
   excerpt: "",
+  content: "",
   image: "",
   tag: "",
   href: "",
@@ -342,6 +343,7 @@ async function imageFileToOptimizedDataUrl(
 function ProductForm({
   value,
   categoryOptions,
+  tagOptions,
   onChange,
   onSave,
   onPickFile,
@@ -349,6 +351,7 @@ function ProductForm({
 }: {
   value: Product;
   categoryOptions: string[];
+  tagOptions: string[];
   onChange: (value: Product) => void;
   onSave: () => void;
   onPickFile: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -568,16 +571,18 @@ function ProductForm({
             </option>
           ))}
         </select>
-        <select
+        <input
+          list="product-tag-options"
           value={selectedTag}
           onChange={(event) => onChange({ ...value, tag: event.target.value })}
+          placeholder="Tag (Featured, New, Popular, Bestseller)"
           className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
-        >
-          <option value="">Select tag</option>
-          <option value="Featured">Featured</option>
-          <option value="New">New</option>
-          <option value="Popular">Popular</option>
-        </select>
+        />
+        <datalist id="product-tag-options">
+          {tagOptions.map((tag) => (
+            <option key={tag} value={tag} />
+          ))}
+        </datalist>
       </div>
       <input
         type="hidden"
@@ -1131,6 +1136,13 @@ function BlogForm({
         placeholder="Short excerpt"
         className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
       />
+      <textarea
+        value={adminText(value.content ?? "")}
+        onChange={(event) => onChange({ ...value, content: event.target.value })}
+        rows={8}
+        placeholder="Full blog story"
+        className="w-full rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+      />
       <label className="block rounded-2xl border border-dashed border-[#d8b48b] bg-[#fffaf4] p-4 text-sm text-[#6c4b33]">
         <span className="mb-2 flex items-center gap-2 font-semibold text-[#34180e]">
           <ImagePlus className="h-4 w-4" />
@@ -1238,7 +1250,6 @@ export default function AdminPage() {
   const [passwordError, setPasswordError] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [passwordForm, setPasswordForm] = useState({
-    email: "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
@@ -1410,6 +1421,17 @@ export default function AdminPage() {
     return brands.sort((a, b) => a.localeCompare(b));
   }, [products]);
 
+  const availableProductTags = useMemo(() => {
+    const defaultTags = ["Featured", "New", "Popular", "Bestseller"];
+    return Array.from(
+      new Set(
+        [...defaultTags, ...products.map((product) => adminText(product.tag).trim())]
+          .map((tag) => tag.trim())
+          .filter(Boolean),
+      ),
+    ).sort((a, b) => a.localeCompare(b));
+  }, [products]);
+
   const availableProductCategories = useMemo(() => {
     const fromCatalogues = orderedCatalogues
       .filter((catalogue) => catalogue.isActive)
@@ -1488,11 +1510,6 @@ export default function AdminPage() {
     setPasswordError("");
     setPasswordSuccess("");
 
-    const email = passwordForm.email.trim().toLowerCase();
-    if (!isValidEmail(email)) {
-      setPasswordError("Enter a valid admin email.");
-      return;
-    }
     if (!passwordForm.currentPassword.trim()) {
       setPasswordError("Enter your current password.");
       return;
@@ -1512,10 +1529,9 @@ export default function AdminPage() {
 
     setChangingPassword(true);
     try {
-      await changeAdminPassword(email, passwordForm.currentPassword, passwordForm.newPassword);
+      await changeAdminPassword("", passwordForm.currentPassword, passwordForm.newPassword);
       setPasswordSuccess("Password changed successfully.");
       setPasswordForm({
-        email,
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
@@ -1532,9 +1548,9 @@ export default function AdminPage() {
     setUsernameError("");
     setUsernameSuccess("");
 
-    const newUsername = usernameForm.newUsername.trim();
-    if (newUsername.length < 2) {
-      setUsernameError("New username must be at least 2 characters.");
+    const newUsername = usernameForm.newUsername.trim().toLowerCase();
+    if (!isValidEmail(newUsername)) {
+      setUsernameError("Enter a valid login ID email.");
       return;
     }
     if (!usernameForm.currentPassword.trim()) {
@@ -1545,7 +1561,7 @@ export default function AdminPage() {
     setChangingUsername(true);
     try {
       await changeAdminUsername(usernameForm.currentPassword, newUsername);
-      setUsernameSuccess("Username changed successfully.");
+      setUsernameSuccess("Login ID changed successfully. Use the new email next time you sign in.");
       setUsernameForm({
         newUsername: "",
         currentPassword: "",
@@ -2152,11 +2168,12 @@ export default function AdminPage() {
   async function saveBlog() {
     const title = adminText(blogDraft.title).trim();
     const excerpt = adminText(blogDraft.excerpt).trim();
+    const content = adminText(blogDraft.content ?? "").trim();
     const image = String(blogDraft.image || "").trim();
     const tag = adminText(blogDraft.tag).trim();
 
-    if (!title || !excerpt) {
-      setMediaNotice("Blog title and excerpt are required.");
+    if (!title || !excerpt || !content) {
+      setMediaNotice("Blog title, excerpt, and full story are required.");
       return;
     }
     if (!image) {
@@ -2169,6 +2186,7 @@ export default function AdminPage() {
       id: blogDraft.id || uniqueId("blog"),
       title,
       excerpt,
+      content,
       image,
       tag: tag || "Latest",
       href: String(blogDraft.href || "").trim(),
@@ -2216,6 +2234,7 @@ export default function AdminPage() {
       id: "",
       title: submission.title.trim(),
       excerpt: submission.story.trim().slice(0, 220),
+      content: submission.story.trim(),
       image: String(submission.image || "").trim(),
       tag: "User Story",
       href: "",
@@ -2239,6 +2258,7 @@ export default function AdminPage() {
       id: uniqueId("blog"),
       title: submission.title.trim(),
       excerpt: submission.story.trim().slice(0, 220),
+      content: submission.story.trim(),
       image: finalImage,
       tag: "User Story",
       href: "",
@@ -2704,15 +2724,15 @@ export default function AdminPage() {
             {showPasswordPanel ? (
               <div className="mt-4 space-y-4 rounded-[10px] border border-[#dfe3ea] bg-white p-4">
                 <div>
-                  <h3 className="mb-2 text-lg font-semibold text-[#111827]">Change Username</h3>
+                  <h3 className="mb-2 text-lg font-semibold text-[#111827]">Change Login ID</h3>
                   <form onSubmit={handleAdminUsernameChange} className="grid gap-3 md:grid-cols-2">
                     <input
-                      type="text"
+                      type="email"
                       value={usernameForm.newUsername}
                       onChange={(event) =>
                         setUsernameForm((current) => ({ ...current, newUsername: event.target.value }))
                       }
-                      placeholder="New username"
+                      placeholder="New admin email"
                       className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
                       required
                     />
@@ -2732,7 +2752,7 @@ export default function AdminPage() {
                         disabled={changingUsername}
                         className="rounded-lg bg-[#6f55dc] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        {changingUsername ? "Updating..." : "Update Username"}
+                        {changingUsername ? "Updating..." : "Update Login ID"}
                       </button>
                       {usernameError ? <p className="text-sm text-[#b42318]">{usernameError}</p> : null}
                       {usernameSuccess ? <p className="text-sm text-[#2d7a31]">{usernameSuccess}</p> : null}
@@ -2743,14 +2763,6 @@ export default function AdminPage() {
                 <div className="border-t border-[#eceff3] pt-4">
                   <h3 className="mb-2 text-lg font-semibold text-[#111827]">Change Password</h3>
                   <form onSubmit={handleAdminPasswordChange} className="grid gap-3 md:grid-cols-2">
-                    <input
-                      type="email"
-                      value={passwordForm.email}
-                      onChange={(event) => setPasswordForm((current) => ({ ...current, email: event.target.value }))}
-                      placeholder="Admin email"
-                      className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
-                      required
-                    />
                     <input
                       type="password"
                       value={passwordForm.currentPassword}
@@ -3118,6 +3130,7 @@ export default function AdminPage() {
                   <ProductForm
                     value={productDraft}
                     categoryOptions={availableProductCategories}
+                    tagOptions={availableProductTags}
                     onChange={setProductDraft}
                     onSave={saveProduct}
                     onPickFile={handleProductFileChange}
@@ -3618,7 +3631,7 @@ export default function AdminPage() {
               </div>
               <div className="rounded-[30px] bg-white p-6 shadow-[0_18px_40px_-30px_rgba(70,36,15,0.22)]">
                 <h2 className="text-2xl font-semibold text-[#34180e]">Edit Blog</h2>
-                <p className="mt-2 text-sm text-[#6c4b33]">Create card-style stories with title, image, excerpt, and optional external link.</p>
+                <p className="mt-2 text-sm text-[#6c4b33]">Create blog cards with a short excerpt plus a full story for the public detail page.</p>
                 <div className="mt-6">
                   <BlogForm
                     value={blogDraft}

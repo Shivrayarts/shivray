@@ -7,6 +7,7 @@ export default function BlogDetailPage({ blogId }: { blogId: string }) {
   const { resolvedLocale } = useLanguage();
   const { blogPosts } = useStoredHomeContent();
   const post = blogPosts.find((item) => item.id === blogId);
+  const storyContent = post ? resolveLocalizedText(post.content ?? post.excerpt, resolvedLocale) : "";
 
   if (!post) {
     return (
@@ -54,7 +55,7 @@ export default function BlogDetailPage({ blogId }: { blogId: string }) {
                 {resolveLocalizedText(post.title, resolvedLocale)}
               </h1>
               <div className="mt-6 space-y-4 text-base leading-8 text-[#6c4b33] md:text-lg">
-                {resolveLocalizedText(post.excerpt, resolvedLocale)
+                {storyContent
                   .split(/\n+/)
                   .filter(Boolean)
                   .map((paragraph, index) => (

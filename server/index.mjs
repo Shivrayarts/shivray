@@ -261,6 +261,10 @@ function getEnglishText(value) {
   return value || "";
 }
 
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+}
+
 function encodeLocalizedValue(value) {
   if (!value || typeof value !== "object") return String(value || "");
   const en = String(value.en || "").trim();
@@ -1011,6 +1015,7 @@ async function fetchStorefrontPayload() {
         id: String(post?.id || `blog-${index + 1}`),
         title: post?.title || "",
         excerpt: post?.excerpt || "",
+        content: post?.content || "",
         image: post?.image || "",
         tag: post?.tag || "",
         href: post?.href || "",
@@ -1139,6 +1144,42 @@ async function sendOrderLeadToPrivyr(order) {
     }
   } catch (error) {
     console.error("Privyr webhook error:", error);
+  }
+}
+
+async function sendCatalogueLeadToPrivyr(lead) {
+  const webhookUrl = String(env.PRIVYR_WEBHOOK_URL || "").trim();
+  if (!webhookUrl) return;
+
+  const payload = {
+    source: "Shivray Arts Website",
+    campaign: "Catalogue Request",
+    name: lead.name || "Catalogue Lead",
+    phone: lead.phone || "",
+    email: "",
+    city: "",
+    country: "India",
+    notes: [
+      `Catalogue: ${lead.catalogueTitle || "Full Catalogue"}`,
+      `Address: ${lead.address || ""}`,
+      `Requirement: ${lead.note || "N/A"}`,
+      `Lead ID: ${lead.id || ""}`,
+    ].join("\n"),
+  };
+
+  try {
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      console.error("Privyr catalogue webhook failed:", response.status, body);
+    }
+  } catch (error) {
+    console.error("Privyr catalogue webhook error:", error);
   }
 }
 
@@ -1281,13 +1322,13 @@ app.post("/api/admin/login", async (req, res) => {
   }
 });
 
-app.post("/api/admin/change-password", async (req, res) => {
-  const email = String(req.body?.email ?? "").trim().toLowerCase();
+app.post("/api/admin/change-password", requireAdmin, async (req, res) => {
+  const session = req.adminSession;
   const currentPassword = String(req.body?.currentPassword ?? "");
   const newPassword = String(req.body?.newPassword ?? "");
 
-  if (!email || !currentPassword || !newPassword) {
-    res.status(400).json({ message: "Email, current password, and new password are required." });
+  if (!currentPassword || !newPassword) {
+    res.status(400).json({ message: "Current password and new password are required." });
     return;
   }
 
@@ -1306,15 +1347,15 @@ app.post("/api/admin/change-password", async (req, res) => {
       `
       SELECT id, email, password_hash
       FROM users
-      WHERE email = ? AND role = 'admin' AND is_active = 1
+      WHERE id = ? AND role = 'admin' AND is_active = 1
       LIMIT 1
       `,
-      [email],
+      [session.userId],
     );
 
     const admin = rows[0];
     if (!admin || String(admin.password_hash).toLowerCase() !== toSha256(currentPassword)) {
-      res.status(401).json({ message: "Current admin email or password is incorrect." });
+      res.status(401).json({ message: "Current password is incorrect." });
       return;
     }
 
@@ -1337,15 +1378,15 @@ app.post("/api/admin/change-password", async (req, res) => {
 app.post("/api/admin/change-username", requireAdmin, async (req, res) => {
   const session = req.adminSession;
   const currentPassword = String(req.body?.currentPassword ?? "");
-  const newUsername = String(req.body?.newUsername ?? "").trim();
+  const newUsername = String(req.body?.newUsername ?? "").trim().toLowerCase();
 
   if (!currentPassword || !newUsername) {
-    res.status(400).json({ message: "Current password and new username are required." });
+    res.status(400).json({ message: "Current password and new login ID are required." });
     return;
   }
 
-  if (newUsername.length < 2) {
-    res.status(400).json({ message: "Username must be at least 2 characters long." });
+  if (!isValidEmail(newUsername)) {
+    res.status(400).json({ message: "Enter a valid login ID email address." });
     return;
   }
 
@@ -1366,19 +1407,31 @@ app.post("/api/admin/change-username", requireAdmin, async (req, res) => {
       return;
     }
 
+    const existingUser = await findUserByEmail(newUsername);
+    if (existingUser && existingUser.id !== admin.id) {
+      res.status(409).json({ message: "That login ID is already in use. Try another email address." });
+      return;
+    }
+
     await query(
       `
       UPDATE users
-      SET full_name = ?, updated_at = CURRENT_TIMESTAMP
+      SET email = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
       `,
       [newUsername, admin.id],
     );
 
-    res.json({ ok: true, message: "Admin username updated successfully.", fullName: newUsername });
+    setAdminSessionCookie(res, {
+      userId: admin.id,
+      email: newUsername,
+      role: "admin",
+    });
+
+    res.json({ ok: true, message: "Admin login ID updated successfully.", email: newUsername });
   } catch (error) {
-    console.error("Admin username change failed.", error);
-    res.status(500).json({ message: "Unable to change username right now." });
+    console.error("Admin login ID change failed.", error);
+    res.status(500).json({ message: "Unable to change login ID right now." });
   }
 });
 
@@ -1597,21 +1650,31 @@ app.post("/api/catalogue-requests", async (req, res) => {
       [name, phone, address, note, catalogueId, catalogueTitle],
     );
 
+    const customer = {
+      id: `catalogue-request-${result.insertId}`,
+      name,
+      email: "",
+      phone,
+      address,
+      createdAt,
+      lastLoginAt: createdAt,
+      source: "catalogue-request",
+      note,
+      requestedCatalogueId: catalogueId,
+      requestedCatalogueTitle: catalogueTitle,
+    };
+
     res.json({
       ok: true,
-      customer: {
-        id: `catalogue-request-${result.insertId}`,
-        name,
-        email: "",
-        phone,
-        address,
-        createdAt,
-        lastLoginAt: createdAt,
-        source: "catalogue-request",
-        note,
-        requestedCatalogueId: catalogueId,
-        requestedCatalogueTitle: catalogueTitle,
-      },
+      customer,
+    });
+    void sendCatalogueLeadToPrivyr({
+      id: customer.id,
+      name: customer.name,
+      phone: customer.phone,
+      address: customer.address,
+      note: customer.note,
+      catalogueTitle: customer.requestedCatalogueTitle,
     });
   } catch (error) {
     console.error("Unable to save catalogue request.", error);

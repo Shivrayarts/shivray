@@ -39,6 +39,7 @@ export type HomeBlogPost = {
   id: string;
   title: Translatable;
   excerpt: Translatable;
+  content?: Translatable;
   image: string;
   tag: Translatable;
   href?: string;
@@ -86,6 +87,7 @@ const defaultHomeBlogPosts: HomeBlogPost[] = (
   (defaultHomeContent as { blogPosts?: readonly HomeBlogPost[] }).blogPosts ?? []
 ).map((post) => ({
   ...post,
+  content: typeof post.content === "string" || (post.content && typeof post.content === "object") ? post.content : "",
   href: typeof post.href === "string" ? post.href : "",
 }));
 const defaultAnnouncementBar: HomeAnnouncementBar = {
@@ -220,6 +222,7 @@ function normalizeHomeBlogPost(post: HomeBlogPost): HomeBlogPost {
     ...post,
     title: asLocalizedText(post.title),
     excerpt: asLocalizedText(post.excerpt),
+    content: asLocalizedText(post.content ?? post.excerpt ?? ""),
     tag: asLocalizedText(post.tag),
     image: normalizeAssetUrl(String(post.image || "").trim()),
     href: String(post.href || "").trim(),
