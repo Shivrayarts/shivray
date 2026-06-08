@@ -19,9 +19,44 @@ const distDir = path.join(projectRoot, "dist");
 
 const app = express();
 const hasBuiltClient = existsSync(path.join(distDir, "index.html"));
+const isVercelRuntime = Boolean(process.env.VERCEL);
+let serverBootstrapPromise = null;
+
+function ensureServerBootstrap() {
+  if (!serverBootstrapPromise) {
+    serverBootstrapPromise = (async () => {
+      await withTransaction(async (connection) => {
+        await ensureHomepageSettingsTable(connection);
+      });
+      await ensureHomepageSettingsValueColumnSupportsLargePayloads();
+      await ensureCataloguesDownloadUrlColumn();
+      await ensureCatalogueRequestsTable();
+      await ensureBlogSubmissionsTable();
+      await ensureHomepageVideosSchema();
+      await ensureProductsCategoryColumnSupportsCustomValues();
+      await ensureProductsLocalizedColumnsSupportJson();
+      await ensureProductsDiscountColumns();
+      await ensureOrderItemsProductSlugSnapshotColumn();
+      await normalizeLegacySeedAssetPaths();
+    })().catch((error) => {
+      serverBootstrapPromise = null;
+      throw error;
+    });
+  }
+
+  return serverBootstrapPromise;
+}
 
 app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true, limit: "25mb" }));
+app.use(async (_req, _res, next) => {
+  try {
+    await ensureServerBootstrap();
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 app.use("/api", (_req, res, next) => {
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
@@ -2241,26 +2276,17 @@ app.use((error, _req, res, _next) => {
 });
 
 async function startServer() {
-  await withTransaction(async (connection) => {
-    await ensureHomepageSettingsTable(connection);
-  });
-  await ensureHomepageSettingsValueColumnSupportsLargePayloads();
-  await ensureCataloguesDownloadUrlColumn();
-  await ensureCatalogueRequestsTable();
-  await ensureBlogSubmissionsTable();
-  await ensureHomepageVideosSchema();
-  await ensureProductsCategoryColumnSupportsCustomValues();
-  await ensureProductsLocalizedColumnsSupportJson();
-  await ensureProductsDiscountColumns();
-  await ensureOrderItemsProductSlugSnapshotColumn();
-  await normalizeLegacySeedAssetPaths();
-
+  await ensureServerBootstrap();
   app.listen(env.PORT, () => {
     console.log(`Shivray backend listening on http://localhost:${env.PORT}`);
   });
 }
 
-startServer().catch((error) => {
-  console.error("Unable to start Shivray backend.", error);
-  process.exit(1);
-});
+if (!isVercelRuntime) {
+  startServer().catch((error) => {
+    console.error("Unable to start Shivray backend.", error);
+    process.exit(1);
+  });
+}
+
+export default app;
