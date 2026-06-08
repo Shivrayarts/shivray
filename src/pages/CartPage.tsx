@@ -26,7 +26,8 @@ export default function CartPage() {
     email: "",
     phone: "",
     address: "",
-    paymentMethod: "Online Payment" as const,
+    pincode: "",
+    paymentMethod: "Cash On Delivery" as const,
   });
   const [orderMessage, setOrderMessage] = useState("");
   const [touched, setTouched] = useState({
@@ -34,6 +35,7 @@ export default function CartPage() {
     email: false,
     phone: false,
     address: false,
+    pincode: false,
   });
   const items = cart.map((entry) => {
     const product = catalog.find((p) => p.id === entry.id);
@@ -56,16 +58,20 @@ export default function CartPage() {
   const resolvedEmail = checkoutForm.email.trim();
   const resolvedPhone = checkoutForm.phone.trim();
   const resolvedAddress = checkoutForm.address.trim();
+  const resolvedPincode = checkoutForm.pincode.trim();
+  const isPincodeValid = /^\d{6}$/.test(resolvedPincode);
+  const shippingAddress = `${resolvedAddress}${resolvedPincode ? `\nPIN Code: ${resolvedPincode}` : ""}`;
 
   async function handlePlaceOrder() {
     if (
       !isValidName(resolvedName) ||
       !isValidEmail(resolvedEmail) ||
       !isValidPhone(resolvedPhone) ||
-      resolvedAddress.length < 10
+      resolvedAddress.length < 10 ||
+      !isPincodeValid
     ) {
-      setTouched({ name: true, email: true, phone: true, address: true });
-      setOrderMessage("Please enter a valid name, email, 10-digit phone number, and full address.");
+      setTouched({ name: true, email: true, phone: true, address: true, pincode: true });
+      setOrderMessage("Please enter a valid name, email, 10-digit phone number, complete address, and 6-digit PIN code.");
       return;
     }
 
@@ -76,14 +82,14 @@ export default function CartPage() {
           name: resolvedName,
           email: resolvedEmail,
           phone: resolvedPhone,
-          address: resolvedAddress,
+          address: shippingAddress,
         }));
 
       await updateCustomerProfile(customer.id, {
         name: resolvedName,
         email: resolvedEmail,
         phone: resolvedPhone,
-        address: resolvedAddress,
+        address: shippingAddress,
         lastLoginAt: new Date().toISOString(),
       });
 
@@ -93,7 +99,7 @@ export default function CartPage() {
           name: resolvedName,
           email: resolvedEmail,
           phone: resolvedPhone,
-          address: resolvedAddress,
+          address: shippingAddress,
         },
         items: items.map(({ product, quantity }) => ({
           productId: product.id,
@@ -106,7 +112,7 @@ export default function CartPage() {
       });
 
       clearCart();
-      setOrderMessage(`Order ${order.id} placed successfully. We will contact you shortly.`);
+      setOrderMessage(`Order ${order.id} placed successfully. Shipping confirmation and delivery timeline will be shared with you shortly.`);
     } catch (error) {
       setOrderMessage(error instanceof Error ? error.message : "Unable to place the order right now.");
     }
@@ -191,12 +197,31 @@ export default function CartPage() {
                       touched.address && resolvedAddress.length < 10 ? "border-[#b42318]" : "border-border"
                     }`}
                   />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    value={checkoutForm.pincode}
+                    onBlur={() => setTouched((value) => ({ ...value, pincode: true }))}
+                    onChange={(event) => setCheckoutForm((value) => ({ ...value, pincode: normalizeDigits(event.target.value, 6) }))}
+                    placeholder="PIN code"
+                    className={`rounded-md border bg-background px-4 py-3 text-sm md:col-span-2 ${
+                      touched.pincode && !isPincodeValid ? "border-[#b42318]" : "border-border"
+                    }`}
+                  />
+                </div>
+                <div className="mt-4 rounded-lg border border-[#eadbc8] bg-[#fcf8f2] p-4 text-sm text-[#6c4b33]">
+                  <p className="font-semibold text-[#34180e]">Shipping & Payment</p>
+                  <p className="mt-2">Payment method: Cash On Delivery</p>
+                  <p className="mt-1">Shipping charges and delivery timeline will be confirmed on call or WhatsApp after order review.</p>
                 </div>
                 <div className="mt-3 space-y-1 text-sm text-[#b42318]">
                   {touched.name && !isValidName(resolvedName) ? <p>Please enter your full name.</p> : null}
                   {touched.email && !isValidEmail(resolvedEmail) ? <p>Please enter a valid email address.</p> : null}
                   {touched.phone && !isValidPhone(resolvedPhone) ? <p>Please enter a valid 10-digit phone number.</p> : null}
                   {touched.address && resolvedAddress.length < 10 ? <p>Please enter a complete delivery address.</p> : null}
+                  {touched.pincode && !isPincodeValid ? <p>Please enter a valid 6-digit PIN code.</p> : null}
                 </div>
                 <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                   <p className="text-sm font-semibold text-foreground">

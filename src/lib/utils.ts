@@ -88,11 +88,29 @@ export function getProductOptionPricing(option: ProductOption, fallbackPrice = "
   }
 }
 
+export function getHighlightedProductOptionIndex(productOptions: ProductOption[] = [], fallbackPrice = "") {
+  let highlightedIndex = -1
+  let lowestFinalPrice = Number.POSITIVE_INFINITY
+
+  productOptions.forEach((option, index) => {
+    const { finalPrice } = getProductOptionPricing(option, fallbackPrice)
+    const parsedFinalPrice = parseCurrencyAmount(finalPrice)
+
+    if (!parsedFinalPrice || parsedFinalPrice >= lowestFinalPrice) return
+
+    highlightedIndex = index
+    lowestFinalPrice = parsedFinalPrice
+  })
+
+  return highlightedIndex
+}
+
 export function getProductPricing(product: Pick<Product, "price" | "discount" | "finalPrice" | "productOptions">) {
-  const discountedOption =
-    (product.productOptions ?? []).find((option) => normalizeDiscountPercentage(option.discount) > 0) ??
-    null
-  const highlightedOption = discountedOption ?? (product.productOptions ?? [])[0] ?? null
+  const highlightedOptionIndex = getHighlightedProductOptionIndex(product.productOptions ?? [], product.price)
+  const highlightedOption =
+    highlightedOptionIndex >= 0
+      ? (product.productOptions ?? [])[highlightedOptionIndex] ?? null
+      : (product.productOptions ?? [])[0] ?? null
 
   if (highlightedOption) {
     return getProductOptionPricing(highlightedOption, product.price)

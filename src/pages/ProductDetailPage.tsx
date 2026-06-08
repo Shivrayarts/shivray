@@ -5,7 +5,7 @@ import { getCategoryLabel, type Product } from "@/data/products";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { useStoredProducts } from "@/lib/content-store";
 import { siteConfig } from "@/lib/site-config";
-import { getProductOptionPricing, getProductPricing, normalizeDisplayCase } from "@/lib/utils";
+import { getHighlightedProductOptionIndex, getProductOptionPricing, getProductPricing, normalizeDisplayCase } from "@/lib/utils";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
 import ProductGalleryCard from "@/components/ProductGalleryCard";
@@ -108,8 +108,8 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   useEffect(() => {
     if (!product) return;
     const options = product.productOptions ?? [];
-    const discountedIndex = options.findIndex((option) => Number(option.discount || 0) > 0);
-    setSelectedOptionIndex(discountedIndex >= 0 ? discountedIndex : 0);
+    const highlightedOptionIndex = getHighlightedProductOptionIndex(options, product.price);
+    setSelectedOptionIndex(highlightedOptionIndex >= 0 ? highlightedOptionIndex : 0);
   }, [product]);
 
   if (!product) {

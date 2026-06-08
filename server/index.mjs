@@ -261,10 +261,6 @@ function getEnglishText(value) {
   return value || "";
 }
 
-function isValidEmail(value) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
-}
-
 function encodeLocalizedValue(value) {
   if (!value || typeof value !== "object") return String(value || "");
   const en = String(value.en || "").trim();
@@ -1319,119 +1315,6 @@ app.post("/api/admin/login", async (req, res) => {
 
     console.error("Admin login failed.", error);
     res.status(500).json({ message: "Unable to reach the admin database. Check server database access." });
-  }
-});
-
-app.post("/api/admin/change-password", requireAdmin, async (req, res) => {
-  const session = req.adminSession;
-  const currentPassword = String(req.body?.currentPassword ?? "");
-  const newPassword = String(req.body?.newPassword ?? "");
-
-  if (!currentPassword || !newPassword) {
-    res.status(400).json({ message: "Current password and new password are required." });
-    return;
-  }
-
-  if (newPassword.length < 8) {
-    res.status(400).json({ message: "New password must be at least 8 characters long." });
-    return;
-  }
-
-  if (currentPassword === newPassword) {
-    res.status(400).json({ message: "New password must be different from the current password." });
-    return;
-  }
-
-  try {
-    const rows = await query(
-      `
-      SELECT id, email, password_hash
-      FROM users
-      WHERE id = ? AND role = 'admin' AND is_active = 1
-      LIMIT 1
-      `,
-      [session.userId],
-    );
-
-    const admin = rows[0];
-    if (!admin || String(admin.password_hash).toLowerCase() !== toSha256(currentPassword)) {
-      res.status(401).json({ message: "Current password is incorrect." });
-      return;
-    }
-
-    await query(
-      `
-      UPDATE users
-      SET password_hash = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-      `,
-      [toSha256(newPassword), admin.id],
-    );
-
-    res.json({ ok: true, message: "Admin password updated successfully." });
-  } catch (error) {
-    console.error("Admin password change failed.", error);
-    res.status(500).json({ message: "Unable to change admin password right now." });
-  }
-});
-
-app.post("/api/admin/change-username", requireAdmin, async (req, res) => {
-  const session = req.adminSession;
-  const currentPassword = String(req.body?.currentPassword ?? "");
-  const newUsername = String(req.body?.newUsername ?? "").trim().toLowerCase();
-
-  if (!currentPassword || !newUsername) {
-    res.status(400).json({ message: "Current password and new login ID are required." });
-    return;
-  }
-
-  if (!isValidEmail(newUsername)) {
-    res.status(400).json({ message: "Enter a valid login ID email address." });
-    return;
-  }
-
-  try {
-    const rows = await query(
-      `
-      SELECT id, full_name, password_hash
-      FROM users
-      WHERE id = ? AND role = 'admin' AND is_active = 1
-      LIMIT 1
-      `,
-      [session.userId],
-    );
-
-    const admin = rows[0];
-    if (!admin || String(admin.password_hash).toLowerCase() !== toSha256(currentPassword)) {
-      res.status(401).json({ message: "Current password is incorrect." });
-      return;
-    }
-
-    const existingUser = await findUserByEmail(newUsername);
-    if (existingUser && existingUser.id !== admin.id) {
-      res.status(409).json({ message: "That login ID is already in use. Try another email address." });
-      return;
-    }
-
-    await query(
-      `
-      UPDATE users
-      SET email = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-      `,
-      [newUsername, admin.id],
-    );
-
-    setAdminSessionCookie(res, {
-      userId: admin.id,
-      email: newUsername,
-      role: "admin",
-    });
-
-    res.json({ ok: true, message: "Admin login ID updated successfully.", email: newUsername });
-  } catch (error) {
-    console.error("Admin login ID change failed.", error);
-    res.status(500).json({ message: "Unable to change login ID right now." });
   }
 });
 

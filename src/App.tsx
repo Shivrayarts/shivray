@@ -1,14 +1,14 @@
 import { lazy, Suspense, useEffect, useMemo } from "react";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import MobileTabBar from "@/components/MobileTabBar";
-import FloatingActions from "@/components/FloatingActions";
 import { Toaster } from "@/components/ui/sonner";
 import { LanguageProvider } from "@/lib/language";
 import { RouterProvider, useLocation } from "@/lib/spa-router";
 import { useAdminAuthState } from "@/lib/admin-auth";
 import HomePage from "@/pages/HomePage";
 
+const Footer = lazy(() => import("@/components/Footer"));
+const MobileTabBar = lazy(() => import("@/components/MobileTabBar"));
+const FloatingActions = lazy(() => import("@/components/FloatingActions"));
 const ProductsPage = lazy(() => import("@/pages/ProductsPage"));
 const ProductDetailPage = lazy(() => import("@/pages/ProductDetailPage"));
 const RequiredCataloguePage = lazy(() => import("@/pages/RequiredCataloguePage"));
@@ -133,9 +133,11 @@ function AppShell() {
           {page.node}
         </Suspense>
       </main>
-      {hideFooter ? null : <Footer />}
-      {isAdminRoute ? null : <MobileTabBar />}
-      {isAdminRoute ? null : <FloatingActions />}
+      <Suspense fallback={null}>
+        {hideFooter ? null : <Footer />}
+        {isAdminRoute ? null : <MobileTabBar />}
+        {isAdminRoute ? null : <FloatingActions />}
+      </Suspense>
       <Toaster position="top-center" richColors />
     </div>
   );

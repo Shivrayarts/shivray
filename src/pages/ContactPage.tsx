@@ -28,6 +28,31 @@ export default function ContactPage() {
   const isCityValid = isValidName(form.city);
   const isFormValid = isNameValid && isPhoneValid && isCityValid;
 
+  const copy = {
+    directSupport: resolvedLocale === "mr" ? "थेट सहाय्य" : "Direct Support",
+    callUs: resolvedLocale === "mr" ? "आम्हाला कॉल करा" : "Call us",
+    emailUs: resolvedLocale === "mr" ? "आम्हाला ईमेल करा" : "Email us",
+    visitStudio: resolvedLocale === "mr" ? "आमच्या स्टुडिओला भेट द्या" : "Visit our studio",
+    openBusiness: resolvedLocale === "mr" ? "Google Business प्रोफाइल उघडा" : "Open Google Business Profile",
+    directions: resolvedLocale === "mr" ? "दिशा मिळवा" : "Get Directions",
+    quickEnquiry: resolvedLocale === "mr" ? "जलद चौकशी" : "Quick Enquiry",
+    contactUs: resolvedLocale === "mr" ? "संपर्क साधा" : "Contact Us",
+    name: resolvedLocale === "mr" ? "नाव" : "Name",
+    number: resolvedLocale === "mr" ? "नंबर" : "Number",
+    city: resolvedLocale === "mr" ? "शहर" : "City",
+    yourName: resolvedLocale === "mr" ? "तुमचे नाव" : "Your name",
+    yourCity: resolvedLocale === "mr" ? "तुमचे शहर" : "Your city",
+    enterNumber: resolvedLocale === "mr" ? "१० अंकी नंबर टाका" : "Enter 10-digit number",
+    whatsapp: resolvedLocale === "mr" ? "व्हॉट्सअॅपवर पाठवा" : "Send on WhatsApp",
+    email: resolvedLocale === "mr" ? "ईमेल पाठवा" : "Send Email",
+    fullNameError: resolvedLocale === "mr" ? "कृपया तुमचे पूर्ण नाव टाका." : "Please enter your full name.",
+    phoneError: resolvedLocale === "mr" ? "कृपया वैध १० अंकी फोन नंबर टाका." : "Please enter a valid 10-digit phone number.",
+    cityError: resolvedLocale === "mr" ? "कृपया तुमचे शहर टाका." : "Please enter your city.",
+    enquiryDone: resolvedLocale === "mr" ? "तुमची चौकशी यशस्वीरीत्या पाठवली गेली आहे." : "Your enquiry has been submitted successfully.",
+    enquiryFailed: resolvedLocale === "mr" ? "सध्या चौकशी पाठवता आली नाही." : "Unable to submit enquiry right now.",
+    submitting: resolvedLocale === "mr" ? "पाठवत आहे..." : "Submitting...",
+  };
+
   const whatsappLink = useMemo(() => {
     const query = encodeURIComponent(
       `Hi Shivrayart, I am ${form.name || "interested in your products"}. ${
@@ -35,7 +60,7 @@ export default function ContactPage() {
       }${form.city ? `I am from ${form.city}. ` : ""}Please contact me back.`,
     );
     return `${siteConfig.whatsappHref}?text=${query}`;
-  }, [form]);
+  }, [form.city, form.name, form.phone]);
 
   const markAllTouched = () => {
     setTouched({ name: true, phone: true, city: true });
@@ -65,10 +90,10 @@ export default function ContactPage() {
         },
       });
       setSubmitState("done");
-      setSubmitMessage("Your enquiry has been submitted successfully.");
+      setSubmitMessage(copy.enquiryDone);
     } catch (error) {
       setSubmitState("error");
-      setSubmitMessage(error instanceof Error ? error.message : "Unable to submit enquiry right now.");
+      setSubmitMessage(error instanceof Error ? error.message : copy.enquiryFailed);
     }
   };
 
@@ -79,7 +104,7 @@ export default function ContactPage() {
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
-                {resolvedLocale === "mr" ? "थेट सहाय्य" : "Direct Support"}
+                {copy.directSupport}
               </p>
               <div className="flex items-center gap-3">
                 <a href={siteConfig.socialLinks.facebook} aria-label="Facebook" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#eadbc8] bg-white text-[#34180e]">
@@ -111,7 +136,7 @@ export default function ContactPage() {
                 <div className="flex gap-3">
                   <Phone className="mt-0.5 h-5 w-5 shrink-0 text-[#b17024]" />
                   <div>
-                    <p className="font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "आम्हाला कॉल करा" : "Call us"}</p>
+                    <p className="font-semibold text-[#34180e]">{copy.callUs}</p>
                     <div className="mt-1 space-y-0.5 text-sm text-[#7e624b]">
                       <a href={`tel:${siteConfig.phoneHref}`} className="block">
                         {siteConfig.phoneDisplay}
@@ -130,7 +155,7 @@ export default function ContactPage() {
                 <div className="flex gap-3">
                   <Mail className="mt-0.5 h-5 w-5 shrink-0 text-[#b17024]" />
                   <div>
-                    <p className="font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "आम्हाला ईमेल करा" : "Email us"}</p>
+                    <p className="font-semibold text-[#34180e]">{copy.emailUs}</p>
                     <a href={`mailto:${siteConfig.email}`} className="mt-1 inline-block text-sm text-[#7e624b]">
                       {siteConfig.email}
                     </a>
@@ -142,16 +167,26 @@ export default function ContactPage() {
                 <div className="flex gap-3">
                   <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[#b17024]" />
                   <div>
-                    <p className="font-semibold text-[#34180e]">{resolvedLocale === "mr" ? "आमच्या स्टुडिओला भेट द्या" : "Visit our studio"}</p>
+                    <p className="font-semibold text-[#34180e]">{copy.visitStudio}</p>
                     <p className="mt-1 text-sm leading-6 text-[#7e624b]">{siteConfig.address}</p>
-                    <a
-                      href={siteConfig.googleBusinessHref}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-2 inline-flex text-sm font-semibold text-[#8b4d1d] underline underline-offset-4"
-                    >
-                      {resolvedLocale === "mr" ? "Google Business प्रोफाइल उघडा" : "Open Google Business Profile"}
-                    </a>
+                    <div className="mt-2 flex flex-wrap gap-4">
+                      <a
+                        href={siteConfig.googleDirectionsHref}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex text-sm font-semibold text-[#8b4d1d] underline underline-offset-4"
+                      >
+                        {copy.directions}
+                      </a>
+                      <a
+                        href={siteConfig.googleBusinessHref}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex text-sm font-medium text-[#6c4b33] underline underline-offset-4"
+                      >
+                        {copy.openBusiness}
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -174,16 +209,16 @@ export default function ContactPage() {
 
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
-              {resolvedLocale === "mr" ? "जलद चौकशी" : "Quick Enquiry"}
+              {copy.quickEnquiry}
             </p>
             <h2 className="mt-2 font-heading text-3xl text-[#34180e]">
-              {resolvedLocale === "mr" ? "संपर्क साधा" : "Contact Us"}
+              {copy.contactUs}
             </h2>
 
             <form className="mt-6 space-y-4" onSubmit={(event) => event.preventDefault()}>
               <div>
                 <label htmlFor="contact-name" className="text-sm font-medium text-[#34180e]">
-                  {resolvedLocale === "mr" ? "नाव" : "Name"}
+                  {copy.name}
                 </label>
                 <input
                   id="contact-name"
@@ -191,17 +226,15 @@ export default function ContactPage() {
                   value={form.name}
                   onBlur={() => setTouched((value) => ({ ...value, name: true }))}
                   onChange={(event) => setForm((value) => ({ ...value, name: event.target.value }))}
-                  placeholder={resolvedLocale === "mr" ? "तुमचे नाव" : "Your name"}
+                  placeholder={copy.yourName}
                   className={`mt-2 w-full rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${touched.name && !isNameValid ? "border-[#b42318]" : "border-[#eadbc8]"}`}
                 />
-                {touched.name && !isNameValid ? (
-                  <p className="mt-2 text-sm text-[#b42318]">{resolvedLocale === "mr" ? "कृपया तुमचे पूर्ण नाव टाका." : "Please enter your full name."}</p>
-                ) : null}
+                {touched.name && !isNameValid ? <p className="mt-2 text-sm text-[#b42318]">{copy.fullNameError}</p> : null}
               </div>
 
               <div>
                 <label htmlFor="contact-phone" className="text-sm font-medium text-[#34180e]">
-                  {resolvedLocale === "mr" ? "नंबर" : "Number"}
+                  {copy.number}
                 </label>
                 <input
                   id="contact-phone"
@@ -212,19 +245,15 @@ export default function ContactPage() {
                   value={form.phone}
                   onBlur={() => setTouched((value) => ({ ...value, phone: true }))}
                   onChange={(event) => setForm((value) => ({ ...value, phone: normalizeDigits(event.target.value, 10) }))}
-                  placeholder={resolvedLocale === "mr" ? "१० अंकी नंबर टाका" : "Enter 10-digit number"}
+                  placeholder={copy.enterNumber}
                   className={`mt-2 w-full rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${touched.phone && !isPhoneValid ? "border-[#b42318]" : "border-[#eadbc8]"}`}
                 />
-                {touched.phone && !isPhoneValid ? (
-                  <p className="mt-2 text-sm text-[#b42318]">
-                    {resolvedLocale === "mr" ? "कृपया वैध १० अंकी फोन नंबर टाका." : "Please enter a valid 10-digit phone number."}
-                  </p>
-                ) : null}
+                {touched.phone && !isPhoneValid ? <p className="mt-2 text-sm text-[#b42318]">{copy.phoneError}</p> : null}
               </div>
 
               <div>
                 <label htmlFor="contact-city" className="text-sm font-medium text-[#34180e]">
-                  {resolvedLocale === "mr" ? "शहर" : "City"}
+                  {copy.city}
                 </label>
                 <input
                   id="contact-city"
@@ -232,12 +261,10 @@ export default function ContactPage() {
                   value={form.city}
                   onBlur={() => setTouched((value) => ({ ...value, city: true }))}
                   onChange={(event) => setForm((value) => ({ ...value, city: event.target.value }))}
-                  placeholder={resolvedLocale === "mr" ? "तुमचे शहर" : "Your city"}
+                  placeholder={copy.yourCity}
                   className={`mt-2 w-full rounded-2xl border bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] ${touched.city && !isCityValid ? "border-[#b42318]" : "border-[#eadbc8]"}`}
                 />
-                {touched.city && !isCityValid ? (
-                  <p className="mt-2 text-sm text-[#b42318]">{resolvedLocale === "mr" ? "कृपया तुमचे शहर टाका." : "Please enter your city."}</p>
-                ) : null}
+                {touched.city && !isCityValid ? <p className="mt-2 text-sm text-[#b42318]">{copy.cityError}</p> : null}
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
@@ -249,7 +276,7 @@ export default function ContactPage() {
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white"
                 >
                   <Send className="h-4 w-4" />
-                  {resolvedLocale === "mr" ? "व्हॉट्सअॅपवर पाठवा" : "Send on WhatsApp"}
+                  {copy.whatsapp}
                 </a>
                 <button
                   type="button"
@@ -257,7 +284,7 @@ export default function ContactPage() {
                   disabled={submitState === "submitting"}
                   className="inline-flex items-center justify-center rounded-full border border-[#d8b48b] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#34180e] disabled:opacity-60"
                 >
-                  {submitState === "submitting" ? "Submitting..." : "Send Email"}
+                  {submitState === "submitting" ? copy.submitting : copy.email}
                 </button>
               </div>
               {submitMessage ? (
@@ -270,4 +297,3 @@ export default function ContactPage() {
     </div>
   );
 }
-

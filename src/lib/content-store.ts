@@ -467,7 +467,14 @@ const LOCAL_HOME_CONTENT_FALLBACK_KEY = "shivray-home-content-local-fallback-v1"
 let storefrontBootstrapPromise: Promise<void> | null = null;
 let productsCache: Product[] = [];
 let catalogueCache: CatalogueType[] = [];
-let homeContentCache: StoredHomeContent = { ...emptyHomeContent };
+let homeContentCache: StoredHomeContent = normalizeStoredHomeContent({
+  announcementBar: defaultAnnouncementBar,
+  spotlightProductIds: defaultSpotlightProductIds,
+  banners: defaultHomeBanners,
+  reviews: defaultHomeReviews,
+  videos: defaultHomeVideos,
+  blogPosts: defaultHomeBlogPosts,
+});
 
 function canUseWindow() {
   return typeof window !== "undefined";

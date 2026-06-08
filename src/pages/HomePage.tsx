@@ -14,6 +14,22 @@ import productWeapon1 from "@/assets/Products/product-5.jpeg";
 const heroBanner3 = "/assets/hero-banner-3.jpg";
 const productDhoop1 = "/assets/product-dhoop-1.jpg";
 
+function shouldDeferHeroVideoPlayback() {
+  if (typeof window === "undefined") return true;
+
+  const connection = navigator.connection as
+    | {
+        saveData?: boolean;
+        effectiveType?: string;
+      }
+    | undefined;
+  const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+  const hasSlowConnection = Boolean(connection?.saveData) || /2g|3g/.test(connection?.effectiveType ?? "");
+  const isSmallViewport = window.innerWidth < 768;
+
+  return prefersReducedMotion || hasSlowConnection || isSmallViewport;
+}
+
 // const features = [
 //   { icon: ShieldCheck, title: "Trusted Craftsmanship", copy: "Hand-finished products inspired by heritage, made for display, gifting, and devotion." },
 //   { icon: Clock3, title: "Fast Enquiry Flow", copy: "Designed for mobile users who want quick browsing, quick contact, and quick buying decisions." },
@@ -69,6 +85,7 @@ export default function HomePage() {
   const [currentReview, setCurrentReview] = useState(0);
   const [videoSlide, setVideoSlide] = useState(0);
   const [heroVideoReady, setHeroVideoReady] = useState(false);
+  const [shouldLoadHeroVideo, setShouldLoadHeroVideo] = useState(false);
   const [showDeferredSections, setShowDeferredSections] = useState(false);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
   const videosRef = useRef<HTMLDivElement | null>(null);
@@ -183,31 +200,69 @@ export default function HomePage() {
   const activeHeroPosterUrl = activeHeroSlide?.image || productWeapon1;
   const fallbackHeroTitleTop = resolvedLocale === "mr" ? "शिवराय" : "Shivray";
   const fallbackHeroTitleBottom = resolvedLocale === "mr" ? "आर्ट" : "Art";
+  const heroMediaFetchPriority: "high" | "auto" = currentSlide === 0 ? "high" : "auto";
 
   useEffect(() => {
     setHeroVideoReady(false);
   }, [activeHeroSlide?.id, activeHeroMediaType, activeHeroMediaUrl]);
 
   useEffect(() => {
-    if (!activeHeroSlide) return;
-    const href = activeHeroMediaType === "video" ? activeHeroPosterUrl : activeHeroMediaUrl;
-    if (!href) return;
+    if (activeHeroMediaType !== "video") {
+      setShouldLoadHeroVideo(false);
+      return;
+    }
 
-    const existingPreload = document.querySelector(`link[rel="preload"][as="image"][href="${href}"]`);
-    if (existingPreload) return;
+    if (shouldDeferHeroVideoPlayback()) {
+      setShouldLoadHeroVideo(false);
+      return;
+    }
 
-    const preload = document.createElement("link");
-    preload.rel = "preload";
-    preload.as = "image";
-    preload.href = href;
-    document.head.appendChild(preload);
-
-    return () => {
-      if (preload.parentNode) {
-        preload.parentNode.removeChild(preload);
+    let timeoutId: number | null = null;
+    let idleId: number | null = null;
+    let cancelled = false;
+    const enableVideo = () => {
+      if (!cancelled) {
+        setShouldLoadHeroVideo(true);
       }
     };
-  }, [activeHeroSlide, activeHeroMediaType, activeHeroMediaUrl, activeHeroPosterUrl]);
+
+    if ("requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(enableVideo, { timeout: 2200 });
+    } else {
+      timeoutId = window.setTimeout(enableVideo, 1400);
+    }
+
+    return () => {
+      cancelled = true;
+      if (idleId !== null && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [activeHeroMediaType, activeHeroSlide?.id]);
+
+  useEffect(() => {
+    if (heroSlides.length <= 1) return;
+
+    const nextSlide = heroSlides[(currentSlide + 1) % heroSlides.length];
+    if (!nextSlide) return;
+
+    const nextMediaType =
+      nextSlide.mediaType ?? (nextSlide.videoUrl ? "video" : "image");
+    const nextImageUrl =
+      nextMediaType === "video"
+        ? String(nextSlide.image || "").trim()
+        : String(nextSlide.image || "").trim();
+
+    if (!nextImageUrl) return;
+
+    const image = new Image();
+    image.decoding = "async";
+    image.fetchPriority = "low";
+    image.src = nextImageUrl;
+  }, [currentSlide, heroSlides]);
 
   const handleCategoriesScroll = () => {
     const node = categoriesRef.current;
@@ -293,22 +348,25 @@ export default function HomePage() {
                 src={activeHeroPosterUrl}
                 alt={resolveLocalizedText(activeHeroSlide.titleTop, resolvedLocale) || "Homepage banner"}
                 className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${heroVideoReady ? "opacity-0" : "opacity-100"}`}
-                fetchPriority="high"
+                sizes="100vw"
+                fetchPriority={heroMediaFetchPriority}
                 loading="eager"
                 decoding="async"
               />
-              <video
-                key={activeHeroSlide.id}
-                src={activeHeroMediaUrl}
-                poster={activeHeroPosterUrl || undefined}
-                className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${heroVideoReady ? "opacity-100" : "opacity-0"}`}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                onCanPlay={() => setHeroVideoReady(true)}
-              />
+              {shouldLoadHeroVideo ? (
+                <video
+                  key={activeHeroSlide.id}
+                  src={activeHeroMediaUrl}
+                  poster={activeHeroPosterUrl || undefined}
+                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${heroVideoReady ? "opacity-100" : "opacity-0"}`}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  onCanPlay={() => setHeroVideoReady(true)}
+                />
+              ) : null}
             </>
           ) : (
             <img
@@ -316,7 +374,8 @@ export default function HomePage() {
               src={activeHeroMediaUrl}
               alt={resolveLocalizedText(activeHeroSlide.titleTop, resolvedLocale) || "Homepage banner"}
               className="absolute inset-0 h-full w-full object-cover"
-              fetchPriority="high"
+              sizes="100vw"
+              fetchPriority={heroMediaFetchPriority}
               loading="eager"
               decoding="async"
             />
@@ -405,11 +464,29 @@ export default function HomePage() {
             </div>
             <Link to="/products" className="hidden text-sm font-semibold text-[#8b4d1d] md:inline-flex">{resolvedLocale === "mr" ? "सर्व पहा" : "View all"}</Link>
           </div>
-          <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {resolvedSpotlightProductCards.map((product) => (
-              <ProductGalleryCard key={product.id} product={product} isWishlisted={isWishlisted(product.id)} onToggleWishlist={toggleWishlist} />
-            ))}
-          </div>
+          {!showDeferredSections ? (
+            <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={`spotlight-placeholder-${index}`}
+                  className="overflow-hidden rounded-[1.75rem] border border-[#eadfce] bg-[#fffdf9] shadow-[0_24px_50px_-38px_rgba(77,41,19,0.45)]"
+                >
+                  <div className="h-[14rem] animate-pulse bg-[#efe6d9] md:h-[18rem] lg:h-[20rem]" />
+                  <div className="space-y-3 px-4 pb-5 pt-4">
+                    <div className="h-3 w-24 rounded-full bg-[#f2e7d8]" />
+                    <div className="h-5 w-3/4 rounded-full bg-[#eadfce]" />
+                    <div className="h-5 w-1/3 rounded-full bg-[#eadfce]" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {resolvedSpotlightProductCards.map((product) => (
+                <ProductGalleryCard key={product.id} product={product} isWishlisted={isWishlisted(product.id)} onToggleWishlist={toggleWishlist} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -422,11 +499,29 @@ export default function HomePage() {
             </div>
             <Link to="/products" className="hidden text-sm font-semibold text-[#8b4d1d] md:inline-flex">{resolvedLocale === "mr" ? "पूर्ण कॅटलॉग" : "Full catalogue"}</Link>
           </div>
-          <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {homeProducts.map((product) => (
-              <ProductGalleryCard key={product.id} product={product} isWishlisted={isWishlisted(product.id)} onToggleWishlist={toggleWishlist} />
-            ))}
-          </div>
+          {!showDeferredSections ? (
+            <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={`catalogue-placeholder-${index}`}
+                  className="overflow-hidden rounded-[1.75rem] border border-[#eadfce] bg-[#fffdf9] shadow-[0_24px_50px_-38px_rgba(77,41,19,0.45)]"
+                >
+                  <div className="h-[14rem] animate-pulse bg-[#efe6d9] md:h-[18rem] lg:h-[20rem]" />
+                  <div className="space-y-3 px-4 pb-5 pt-4">
+                    <div className="h-3 w-24 rounded-full bg-[#f2e7d8]" />
+                    <div className="h-5 w-3/4 rounded-full bg-[#eadfce]" />
+                    <div className="h-5 w-1/3 rounded-full bg-[#eadfce]" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {homeProducts.map((product) => (
+                <ProductGalleryCard key={product.id} product={product} isWishlisted={isWishlisted(product.id)} onToggleWishlist={toggleWishlist} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
       </div>

@@ -101,6 +101,10 @@ export default function Header() {
               <img
                 src={logoImg}
                 alt={brandName}
+                width={48}
+                height={48}
+                fetchPriority="high"
+                decoding="async"
                 className="h-12 w-12 rounded-full border border-[#cfae84] object-cover"
               />
               <div className="min-w-0">
@@ -138,6 +142,10 @@ export default function Header() {
               <img
                 src={logoImg}
                 alt={brandName}
+                width={80}
+                height={80}
+                fetchPriority="high"
+                decoding="async"
                 className="h-[72px] w-[72px] rounded-full border border-[#e3c7a5] bg-white p-1 object-cover 2xl:h-20 2xl:w-20"
               />
               <div className="min-w-0">

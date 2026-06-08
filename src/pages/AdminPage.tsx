@@ -31,7 +31,7 @@ import { homeContent as defaultHomeContent } from "@/data/home-content";
 import type { Product, ProductOption } from "@/data/products";
 import type { CatalogueType } from "@/lib/catalogue-types";
 import { defaultCatalogueTypes } from "@/lib/catalogue-types";
-import { changeAdminPassword, changeAdminUsername, logoutAdmin } from "@/lib/admin-auth";
+import { logoutAdmin } from "@/lib/admin-auth";
 import { resolveLocalizedText } from "@/lib/language";
 import { calculateDiscountedPrice, formatCurrencyAmount, normalizeDiscountPercentage, parseCurrencyAmount } from "@/lib/utils";
 import { isValidEmail, isValidName, isValidPhone } from "@/lib/form-validation";
@@ -1237,23 +1237,7 @@ export default function AdminPage() {
   const [mediaNotice, setMediaNotice] = useState("");
   const [mediaNoticeTone, setMediaNoticeTone] = useState<"success" | "error" | "info">("info");
   const [bannerNotice, setBannerNotice] = useState("");
-  const [showPasswordPanel, setShowPasswordPanel] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [changingUsername, setChangingUsername] = useState(false);
-  const [usernameError, setUsernameError] = useState("");
-  const [usernameSuccess, setUsernameSuccess] = useState("");
-  const [usernameForm, setUsernameForm] = useState({
-    newUsername: "",
-    currentPassword: "",
-  });
-  const [changingPassword, setChangingPassword] = useState(false);
-  const [passwordError, setPasswordError] = useState("");
-  const [passwordSuccess, setPasswordSuccess] = useState("");
-  const [passwordForm, setPasswordForm] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
   const [blogSubmissions, setBlogSubmissions] = useState<BlogSubmission[]>([]);
   const [blogSubmissionsLoading, setBlogSubmissionsLoading] = useState(false);
   const [loadedSubmissionForEditId, setLoadedSubmissionForEditId] = useState("");
@@ -1503,74 +1487,6 @@ export default function AdminPage() {
   function handleLogout() {
     logoutAdmin();
     navigate({ to: "/admin" });
-  }
-
-  async function handleAdminPasswordChange(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setPasswordError("");
-    setPasswordSuccess("");
-
-    if (!passwordForm.currentPassword.trim()) {
-      setPasswordError("Enter your current password.");
-      return;
-    }
-    if (passwordForm.newPassword.length < 8) {
-      setPasswordError("New password must be at least 8 characters.");
-      return;
-    }
-    if (passwordForm.newPassword === passwordForm.currentPassword) {
-      setPasswordError("New password must be different from current password.");
-      return;
-    }
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setPasswordError("New password and confirm password do not match.");
-      return;
-    }
-
-    setChangingPassword(true);
-    try {
-      await changeAdminPassword("", passwordForm.currentPassword, passwordForm.newPassword);
-      setPasswordSuccess("Password changed successfully.");
-      setPasswordForm({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-    } catch (error) {
-      setPasswordError(error instanceof Error ? error.message : "Unable to change password right now.");
-    } finally {
-      setChangingPassword(false);
-    }
-  }
-
-  async function handleAdminUsernameChange(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setUsernameError("");
-    setUsernameSuccess("");
-
-    const newUsername = usernameForm.newUsername.trim().toLowerCase();
-    if (!isValidEmail(newUsername)) {
-      setUsernameError("Enter a valid login ID email.");
-      return;
-    }
-    if (!usernameForm.currentPassword.trim()) {
-      setUsernameError("Enter your current password to confirm.");
-      return;
-    }
-
-    setChangingUsername(true);
-    try {
-      await changeAdminUsername(usernameForm.currentPassword, newUsername);
-      setUsernameSuccess("Login ID changed successfully. Use the new email next time you sign in.");
-      setUsernameForm({
-        newUsername: "",
-        currentPassword: "",
-      });
-    } catch (error) {
-      setUsernameError(error instanceof Error ? error.message : "Unable to change username right now.");
-    } finally {
-      setChangingUsername(false);
-    }
   }
 
   function applyProductFilters() {
@@ -2687,20 +2603,10 @@ export default function AdminPage() {
                     </div>
                   ) : null}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowPasswordPanel((value) => !value);
-                    setPasswordError("");
-                    setPasswordSuccess("");
-                    setUsernameError("");
-                    setUsernameSuccess("");
-                  }}
-                  className="text-right transition hover:opacity-80"
-                >
+                <div className="text-right">
                   <p className="text-2xl font-semibold text-[#121926]">Admin</p>
                   <p className="text-base text-[#5b6471]">Admin Profile</p>
-                </button>
+                </div>
                 <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#d5d8de] bg-white">
                   <UserRound className="h-8 w-8 text-[#6b7280]" />
                 </div>
@@ -2721,87 +2627,6 @@ export default function AdminPage() {
               </div>
             </div>
             {mediaNotice ? <p className="mt-3 text-sm font-medium text-[#8b4d1d]">{mediaNotice}</p> : null}
-            {showPasswordPanel ? (
-              <div className="mt-4 space-y-4 rounded-[10px] border border-[#dfe3ea] bg-white p-4">
-                <div>
-                  <h3 className="mb-2 text-lg font-semibold text-[#111827]">Change Login ID</h3>
-                  <form onSubmit={handleAdminUsernameChange} className="grid gap-3 md:grid-cols-2">
-                    <input
-                      type="email"
-                      value={usernameForm.newUsername}
-                      onChange={(event) =>
-                        setUsernameForm((current) => ({ ...current, newUsername: event.target.value }))
-                      }
-                      placeholder="New admin email"
-                      className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
-                      required
-                    />
-                    <input
-                      type="password"
-                      value={usernameForm.currentPassword}
-                      onChange={(event) =>
-                        setUsernameForm((current) => ({ ...current, currentPassword: event.target.value }))
-                      }
-                      placeholder="Current password"
-                      className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
-                      required
-                    />
-                    <div className="md:col-span-2 flex flex-wrap items-center gap-3">
-                      <button
-                        type="submit"
-                        disabled={changingUsername}
-                        className="rounded-lg bg-[#6f55dc] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {changingUsername ? "Updating..." : "Update Login ID"}
-                      </button>
-                      {usernameError ? <p className="text-sm text-[#b42318]">{usernameError}</p> : null}
-                      {usernameSuccess ? <p className="text-sm text-[#2d7a31]">{usernameSuccess}</p> : null}
-                    </div>
-                  </form>
-                </div>
-
-                <div className="border-t border-[#eceff3] pt-4">
-                  <h3 className="mb-2 text-lg font-semibold text-[#111827]">Change Password</h3>
-                  <form onSubmit={handleAdminPasswordChange} className="grid gap-3 md:grid-cols-2">
-                    <input
-                      type="password"
-                      value={passwordForm.currentPassword}
-                      onChange={(event) => setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))}
-                      placeholder="Current password"
-                      className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
-                      required
-                    />
-                    <input
-                      type="password"
-                      value={passwordForm.newPassword}
-                      onChange={(event) => setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))}
-                      placeholder="New password (min 8 chars)"
-                      className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
-                      required
-                    />
-                    <input
-                      type="password"
-                      value={passwordForm.confirmPassword}
-                      onChange={(event) => setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))}
-                      placeholder="Confirm new password"
-                      className="rounded-lg border border-[#d7dbe2] px-3 py-2 text-sm text-[#111827] outline-none"
-                      required
-                    />
-                    <div className="md:col-span-2 flex flex-wrap items-center gap-3">
-                      <button
-                        type="submit"
-                        disabled={changingPassword}
-                        className="rounded-lg bg-[#6f55dc] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {changingPassword ? "Updating..." : "Update Password"}
-                      </button>
-                      {passwordError ? <p className="text-sm text-[#b42318]">{passwordError}</p> : null}
-                      {passwordSuccess ? <p className="text-sm text-[#2d7a31]">{passwordSuccess}</p> : null}
-                    </div>
-                  </form>
-                </div>
-              </div>
-            ) : null}
           </section>
 
           {activeSection === "dashboard" ? (
