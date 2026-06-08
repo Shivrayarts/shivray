@@ -167,14 +167,6 @@ export default function HomePage() {
         }));
 
   useEffect(() => {
-    if (heroSlides.length <= 1) return;
-    const timer = window.setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 5000);
-    return () => window.clearInterval(timer);
-  }, [heroSlides.length]);
-
-  useEffect(() => {
     if (reviews.length <= 1) return;
     const timer = window.setInterval(() => {
       setCurrentReview((prev) => (prev + 1) % reviews.length);
@@ -243,27 +235,6 @@ export default function HomePage() {
     };
   }, [activeHeroMediaType, activeHeroSlide?.id]);
 
-  useEffect(() => {
-    if (heroSlides.length <= 1) return;
-
-    const nextSlide = heroSlides[(currentSlide + 1) % heroSlides.length];
-    if (!nextSlide) return;
-
-    const nextMediaType =
-      nextSlide.mediaType ?? (nextSlide.videoUrl ? "video" : "image");
-    const nextImageUrl =
-      nextMediaType === "video"
-        ? String(nextSlide.image || "").trim()
-        : String(nextSlide.image || "").trim();
-
-    if (!nextImageUrl) return;
-
-    const image = new Image();
-    image.decoding = "async";
-    image.fetchPriority = "low";
-    image.src = nextImageUrl;
-  }, [currentSlide, heroSlides]);
-
   const handleCategoriesScroll = () => {
     const node = categoriesRef.current;
     if (!node || window.innerWidth >= 768) return;
@@ -305,18 +276,6 @@ export default function HomePage() {
     node.scrollTo({ left: safeIndex * cardWidth, behavior });
     setVideoSlide(safeIndex);
   };
-
-  useEffect(() => {
-    if (homeCategoryCards.length <= 1) return;
-    const timer = window.setInterval(() => {
-      setCategorySlide((prev) => {
-        const next = (prev + 1) % homeCategoryCards.length;
-        scrollToCategorySlide(next);
-        return next;
-      });
-    }, 3200);
-    return () => window.clearInterval(timer);
-  }, [homeCategoryCards.length]);
 
   useEffect(() => {
     const node = deferredSectionsRef.current;

@@ -13,7 +13,7 @@ import {
   Plus,
   Youtube,
 } from "lucide-react";
-import logoImg from "@/assets/logo-dark.jpg";
+import logoImg from "@/assets/logo-dark-small.jpg";
 import { siteConfig } from "@/lib/site-config";
 
 type SectionKey = "shopping" | "information" | "newsletter";

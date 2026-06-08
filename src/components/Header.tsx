@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "@/lib/spa-router";
 import { FormEvent, useState } from "react";
 import { Heart, LogIn, Menu, Phone, Search, ShoppingCart, X } from "lucide-react";
-import logoImg from "@/assets/logo-dark.jpg";
+import logoImg from "@/assets/logo-dark-small.jpg";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";

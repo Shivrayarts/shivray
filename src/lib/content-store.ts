@@ -463,6 +463,8 @@ const HOME_CONTENT_EVENT = "shivray-home-content-updated";
 const LOCAL_PRODUCTS_FALLBACK_KEY = "shivray-products-local-fallback-v1";
 const LOCAL_CATALOGUES_FALLBACK_KEY = "shivray-catalogues-local-fallback-v1";
 const LOCAL_HOME_CONTENT_FALLBACK_KEY = "shivray-home-content-local-fallback-v1";
+const STOREFRONT_SESSION_CACHE_KEY = "shivray-storefront-session-v1";
+const STOREFRONT_SESSION_CACHE_TTL_MS = 5 * 60 * 1000;
 
 let storefrontBootstrapPromise: Promise<void> | null = null;
 let productsCache: Product[] = [];
@@ -555,6 +557,36 @@ function clearLocalHomeContentFallback() {
   window.localStorage.removeItem(LOCAL_HOME_CONTENT_FALLBACK_KEY);
 }
 
+function readSessionStorefrontCache(): StorefrontPayload | null {
+  if (!canUseWindow()) return null;
+  try {
+    const raw = window.sessionStorage.getItem(STOREFRONT_SESSION_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { cachedAt?: unknown; payload?: Partial<StorefrontPayload> };
+    const cachedAt = typeof parsed.cachedAt === "number" ? parsed.cachedAt : 0;
+    if (!cachedAt || Date.now() - cachedAt > STOREFRONT_SESSION_CACHE_TTL_MS) {
+      window.sessionStorage.removeItem(STOREFRONT_SESSION_CACHE_KEY);
+      return null;
+    }
+    if (!parsed.payload || typeof parsed.payload !== "object") return null;
+    return normalizeStorefrontPayload(parsed.payload) as StorefrontPayload;
+  } catch {
+    return null;
+  }
+}
+
+function writeSessionStorefrontCache(payload: Partial<StorefrontPayload>) {
+  if (!canUseWindow()) return;
+  try {
+    window.sessionStorage.setItem(
+      STOREFRONT_SESSION_CACHE_KEY,
+      JSON.stringify({ cachedAt: Date.now(), payload }),
+    );
+  } catch {
+    // Storage can be unavailable in private browsing or restricted contexts.
+  }
+}
+
 function dispatchStoreEvent(eventName: string) {
   if (!canUseWindow()) return;
   window.dispatchEvent(new Event(eventName));
@@ -583,7 +615,7 @@ function preloadHomeBannerMedia(content: StoredHomeContent) {
 
   const image = new Image();
   image.fetchPriority = "high";
-  image.decoding = "sync";
+  image.decoding = "async";
   image.src = mediaUrl;
 }
 
@@ -611,6 +643,7 @@ function applyStorefrontPayload(payload: Partial<StorefrontPayload>) {
 async function refreshStorefrontData() {
   const payload = await apiRequest<StorefrontPayload>("/api/storefront");
   applyStorefrontPayload(payload);
+  writeSessionStorefrontCache(payload);
   clearLocalProductsFallback();
   clearLocalHomeContentFallback();
 }
@@ -664,6 +697,11 @@ async function syncHomeContentToApi(content: StoredHomeContent) {
 
 function bootstrapStorefrontData() {
   if (!storefrontBootstrapPromise) {
+    const cachedPayload = readSessionStorefrontCache();
+    if (cachedPayload) {
+      applyStorefrontPayload(cachedPayload);
+    }
+
     storefrontBootstrapPromise = refreshStorefrontData().catch((error) => {
       storefrontBootstrapPromise = null;
       logSyncError("storefront bootstrap", error);
