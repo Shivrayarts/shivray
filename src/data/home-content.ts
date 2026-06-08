@@ -11,30 +11,7 @@ export const homeContent = {
     } as Translatable,
   },
   spotlightProductIds: [],
-  banners: [
-    {
-      id: "fallback-home-banner",
-      eyebrow: {
-        en: "Heritage Craft",
-        mr: "वारसा कारागिरी",
-      } as Translatable,
-      titleTop: {
-        en: "Shivray",
-        mr: "शिवराय",
-      } as Translatable,
-      titleBottom: {
-        en: "Art",
-        mr: "आर्ट",
-      } as Translatable,
-      copy: {
-        en: "Authentic Maratha-inspired statues, weapons, and devotional craftsmanship.",
-        mr: "अस्सल मराठा-प्रेरित मूर्ती, शस्त्रे आणि भक्तीमय कारागिरी.",
-      } as Translatable,
-      image: "/assets/product-statue-1.jpg",
-      mediaType: "image" as const,
-      videoUrl: "",
-    },
-  ],
+  banners: [],
   reviews: [
     {
       id: "review-1",
