@@ -29,6 +29,15 @@ export default function HomePage() {
   const featuredVideos = storedHomeContent.videos;
   const homeProducts = products.slice(0, 8);
   const spotlightIds = storedHomeContent.spotlightProductIds?.length ? storedHomeContent.spotlightProductIds : [];
+  const productCountByCategory = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const product of products) {
+      const key = String(product.category || "").trim();
+      if (!key) continue;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return counts;
+  }, [products]);
 
   const homeCategoryCards = useMemo(() => {
     const fallbackImages: Record<string, string> = {
@@ -40,6 +49,14 @@ export default function HomePage() {
 
     const adminCards = catalogueTypes
       .filter((catalogue) => catalogue.isActive)
+      .filter((catalogue) => {
+        const key =
+          (typeof catalogue.shortLabel === "string"
+            ? catalogue.shortLabel
+            : catalogue.shortLabel.en || catalogue.shortLabel.mr || "")
+            .trim();
+        return (productCountByCategory.get(key) ?? 0) > 0;
+      })
       .map((catalogue) => {
         const key =
           (typeof catalogue.shortLabel === "string"
@@ -64,7 +81,7 @@ export default function HomePage() {
       count: resolvedLocale === "mr" ? "कलेक्शन पाहा" : "Explore collection",
       image: fallbackImages[key] || productStatue1,
     }));
-  }, [catalogueTypes, products, resolvedLocale]);
+  }, [catalogueTypes, productCountByCategory, products, resolvedLocale]);
 
   const categoryLabelByKey = useMemo(() => {
     const labels = new Map<string, string>();
