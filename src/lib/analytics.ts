@@ -14,6 +14,7 @@ declare global {
 }
 
 const DEFAULT_GOOGLE_TAG_ID = "G-DZM6VCZXB6";
+let activeGoogleTagId = "";
 
 function appendScript(src: string) {
   if (typeof document === "undefined") return;
@@ -29,6 +30,7 @@ export function initAnalytics() {
   if (typeof window === "undefined") return;
 
   const googleTagId = import.meta.env.VITE_GOOGLE_TAG_ID || DEFAULT_GOOGLE_TAG_ID;
+  activeGoogleTagId = googleTagId;
   if (googleTagId) {
     appendScript(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(googleTagId)}`);
     window.dataLayer = window.dataLayer || [];
@@ -38,7 +40,7 @@ export function initAnalytics() {
         window.dataLayer?.push(args);
       };
     window.gtag("js", new Date());
-    window.gtag("config", googleTagId);
+    window.gtag("config", googleTagId, { send_page_view: false });
   }
 
   const facebookPixelId = import.meta.env.VITE_FACEBOOK_PIXEL_ID;
@@ -65,6 +67,18 @@ export function initAnalytics() {
     window.fbq?.("init", facebookPixelId);
     window.fbq?.("track", "PageView");
   }
+}
+
+export function trackPageView(path: string, title?: string) {
+  if (typeof window === "undefined") return;
+  if (!activeGoogleTagId || typeof window.gtag !== "function") return;
+
+  window.gtag("event", "page_view", {
+    page_path: path,
+    page_title: title,
+    page_location: window.location.href,
+    send_to: activeGoogleTagId,
+  });
 }
 
 export function scheduleAnalyticsInit() {

@@ -4,6 +4,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { LanguageProvider } from "@/lib/language";
 import { RouterProvider, useLocation } from "@/lib/spa-router";
 import { useAdminAuthState } from "@/lib/admin-auth";
+import { trackPageView } from "@/lib/analytics";
+import { applySeoMeta } from "@/lib/seo";
 import HomePage from "@/pages/HomePage";
 
 const Footer = lazy(() => import("@/components/Footer"));
@@ -32,50 +34,122 @@ function AppShell() {
 
   const page = useMemo(() => {
     if (location.pathname === "/") {
-      return { title: "Shivrayart", node: <HomePage /> };
+      return {
+        title: "Shivray Art | Maratha Heritage Statues, Weapons, and Replicas",
+        description:
+          "Explore Shivray Art's handcrafted Maratha heritage statues, weapons, shields, and historical replicas from Pune.",
+        canonicalPath: "/",
+        node: <HomePage />,
+      };
     }
     if (location.pathname === "/products") {
-      return { title: "Products - Shivrayart", node: <ProductsPage /> };
+      return {
+        title: "Products | Shivray Art",
+        description: "Browse handcrafted statues, weapons, shields, and heritage pieces by Shivray Art.",
+        canonicalPath: "/products",
+        node: <ProductsPage />,
+      };
     }
     if (location.pathname.startsWith("/products/")) {
       const productId = decodeURIComponent(location.pathname.replace("/products/", ""));
-      return { title: "Product Details - Shivrayart", node: <ProductDetailPage productId={productId} /> };
+      return {
+        title: "Product Details | Shivray Art",
+        description: "View product details, craftsmanship notes, and enquiry options for Shivray Art heritage pieces.",
+        canonicalPath: `/products/${encodeURIComponent(productId)}`,
+        node: <ProductDetailPage productId={productId} />,
+      };
     }
     if (location.pathname === "/required-catalogue") {
-      return { title: "Required Catalogue - Shivrayart", node: <RequiredCataloguePage /> };
+      return {
+        title: "Required Catalogue | Shivray Art",
+        description: "Request and review Shivray Art catalogues for statues, weapons, and heritage collections.",
+        canonicalPath: "/required-catalogue",
+        node: <RequiredCataloguePage />,
+      };
     }
     if (location.pathname === "/contact") {
-      return { title: "Contact - Shivrayart", node: <ContactPage /> };
+      return {
+        title: "Contact | Shivray Art",
+        description: "Contact Shivray Art in Pune for orders, custom requirements, and heritage craft enquiries.",
+        canonicalPath: "/contact",
+        node: <ContactPage />,
+      };
     }
     if (location.pathname === "/cart") {
-      return { title: "Cart - Shivrayart", node: <CartPage /> };
+      return {
+        title: "Cart | Shivray Art",
+        description: "Review selected Shivray Art products before placing your order.",
+        canonicalPath: "/cart",
+        robots: "noindex,nofollow",
+        node: <CartPage />,
+      };
     }
     if (location.pathname === "/wishlist") {
-      return { title: "Wishlist - Shivrayart", node: <WishlistPage /> };
+      return {
+        title: "Wishlist | Shivray Art",
+        description: "Save Shivray Art products you want to revisit later.",
+        canonicalPath: "/wishlist",
+        robots: "noindex,nofollow",
+        node: <WishlistPage />,
+      };
     }
     if (location.pathname === "/login") {
-      return { title: "Login - Shivrayart", node: <LoginPage /> };
+      return {
+        title: "Login | Shivray Art",
+        description: "Log in to Shivray Art.",
+        canonicalPath: "/login",
+        robots: "noindex,nofollow",
+        node: <LoginPage />,
+      };
     }
     if (location.pathname === "/about") {
-      return { title: "About Us - Shivrayart", node: <AboutPage /> };
+      return {
+        title: "About Us | Shivray Art",
+        description: "Learn about Shivray Art, our Pune studio, and our Maratha heritage craftsmanship.",
+        canonicalPath: "/about",
+        node: <AboutPage />,
+      };
     }
     if (location.pathname === "/blog") {
-      return { title: "Blog - Shivrayart", node: <BlogPage /> };
+      return {
+        title: "Blog | Shivray Art",
+        description: "Read Shivray Art news, customer stories, and updates from our heritage craft studio.",
+        canonicalPath: "/blog",
+        node: <BlogPage />,
+      };
     }
     if (location.pathname.startsWith("/blog/")) {
       const blogId = decodeURIComponent(location.pathname.replace("/blog/", ""));
-      return { title: "Blog - Shivrayart", node: <BlogDetailPage blogId={blogId} /> };
+      return {
+        title: "Story | Shivray Art",
+        description: "Read a detailed story and heritage update from Shivray Art.",
+        canonicalPath: `/blog/${encodeURIComponent(blogId)}`,
+        node: <BlogDetailPage blogId={blogId} />,
+      };
     }
     if (location.pathname === "/our-team") {
-      return { title: "Our Team - Shivrayart", node: <OurTeamPage /> };
+      return {
+        title: "Our Team | Shivray Art",
+        description: "Meet the Shivray Art team behind our handcrafted Maratha heritage creations.",
+        canonicalPath: "/our-team",
+        node: <OurTeamPage />,
+      };
     }
     if (location.pathname === "/wall-of-fame") {
-      return { title: "Wall of Fame - Shivrayart", node: <WallOfFamePage /> };
+      return {
+        title: "Wall of Fame | Shivray Art",
+        description: "See featured recognitions, customer appreciation, and memorable Shivray Art work.",
+        canonicalPath: "/wall-of-fame",
+        node: <WallOfFamePage />,
+      };
     }
     if (location.pathname === "/admin") {
       if (!adminAuthResolved) {
         return {
-          title: "Checking Admin Session - Shivrayart",
+          title: "Checking Admin Session | Shivray Art",
+          description: "Checking admin session.",
+          canonicalPath: "/admin",
+          robots: "noindex,nofollow",
           node: (
             <div className="flex min-h-[60vh] items-center justify-center px-4 py-20">
               <div className="rounded-[28px] border border-[#eadbc8] bg-white px-8 py-10 text-center shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)]">
@@ -88,12 +162,27 @@ function AppShell() {
         };
       }
       if (!isAdminAuthed) {
-        return { title: "Admin Login - Shivrayart", node: <AdminLoginPage /> };
+        return {
+          title: "Admin Login | Shivray Art",
+          description: "Admin login for Shivray Art.",
+          canonicalPath: "/admin",
+          robots: "noindex,nofollow",
+          node: <AdminLoginPage />,
+        };
       }
-      return { title: "Admin - Shivrayart", node: <AdminPage /> };
+      return {
+        title: "Admin | Shivray Art",
+        description: "Admin dashboard for Shivray Art.",
+        canonicalPath: "/admin",
+        robots: "noindex,nofollow",
+        node: <AdminPage />,
+      };
     }
     return {
-      title: "Page Not Found - Shivrayart",
+      title: "Page Not Found | Shivray Art",
+      description: "The requested page could not be found.",
+      canonicalPath: location.pathname,
+      robots: "noindex,nofollow",
       node: (
         <div className="flex min-h-[60vh] items-center justify-center px-4 py-20">
           <div className="max-w-md text-center">
@@ -112,12 +201,21 @@ function AppShell() {
   }, [adminAuthResolved, isAdminAuthed, location.pathname]);
 
   useEffect(() => {
-    document.title = page.title;
-  }, [page.title]);
+    applySeoMeta({
+      title: page.title,
+      description: page.description,
+      canonicalPath: page.canonicalPath,
+      robots: page.robots,
+    });
+  }, [page.canonicalPath, page.description, page.robots, page.title]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [location.href]);
+
+  useEffect(() => {
+    trackPageView(location.pathname + location.search + location.hash, page.title);
+  }, [location.hash, location.pathname, location.search, page.title]);
 
   return (
     <div className="min-h-screen flex flex-col">
