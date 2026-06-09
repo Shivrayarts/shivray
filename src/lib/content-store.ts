@@ -225,11 +225,16 @@ function normalizeHomeBanner(banner: HomeBanner): HomeBanner {
 }
 
 function normalizeHomeBlogPost(post: HomeBlogPost): HomeBlogPost {
+  const hasContent =
+    typeof post.content === "string"
+      ? post.content.trim().length > 0
+      : Boolean(post.content && (post.content.en?.trim() || post.content.mr?.trim()));
+
   return {
     ...post,
     title: asLocalizedText(post.title),
     excerpt: asLocalizedText(post.excerpt),
-    content: asLocalizedText(post.content ?? post.excerpt ?? ""),
+    content: asLocalizedText(hasContent ? post.content ?? "" : post.excerpt ?? ""),
     tag: asLocalizedText(post.tag),
     image: normalizeAssetUrl(String(post.image || "").trim()),
     href: String(post.href || "").trim(),

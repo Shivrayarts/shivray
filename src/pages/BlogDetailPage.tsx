@@ -1,4 +1,5 @@
 import { ExternalLink } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link } from "@/lib/spa-router";
 import { useStoredHomeContent } from "@/lib/content-store";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
@@ -6,10 +7,42 @@ import { resolveLocalizedText, useLanguage } from "@/lib/language";
 export default function BlogDetailPage({ blogId }: { blogId: string }) {
   const { resolvedLocale } = useLanguage();
   const { blogPosts } = useStoredHomeContent();
+  const [showMissingState, setShowMissingState] = useState(false);
   const post = blogPosts.find((item) => item.id === blogId);
-  const storyContent = post ? resolveLocalizedText(post.content ?? post.excerpt, resolvedLocale) : "";
+  const contentText = post ? resolveLocalizedText(post.content ?? "", resolvedLocale).trim() : "";
+  const excerptText = post ? resolveLocalizedText(post.excerpt, resolvedLocale).trim() : "";
+  const storyContent = contentText || excerptText;
+
+  useEffect(() => {
+    if (post || blogPosts.length > 0) {
+      setShowMissingState(false);
+      return;
+    }
+
+    const timer = window.setTimeout(() => setShowMissingState(true), 3500);
+    return () => window.clearTimeout(timer);
+  }, [blogPosts.length, post]);
 
   if (!post) {
+    if (blogPosts.length === 0 && !showMissingState) {
+      return (
+        <section className="bg-[#f7f1e7] px-4 py-16 md:px-6 md:py-24">
+          <div className="layout-shell overflow-hidden rounded-[30px] border border-[#eadbc8] bg-white shadow-[0_24px_60px_-40px_rgba(70,36,15,0.3)]">
+            <div className="aspect-[16/7] animate-pulse bg-[#efe6d9]" />
+            <div className="space-y-5 p-6 md:p-10">
+              <div className="h-6 w-32 animate-pulse rounded-full bg-[#f7efe4]" />
+              <div className="h-12 w-3/4 animate-pulse rounded-full bg-[#eadfce]" />
+              <div className="space-y-3">
+                <div className="h-4 w-full animate-pulse rounded-full bg-[#f2e7d8]" />
+                <div className="h-4 w-5/6 animate-pulse rounded-full bg-[#f2e7d8]" />
+                <div className="h-4 w-4/6 animate-pulse rounded-full bg-[#f2e7d8]" />
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
     return (
       <section className="bg-[#f7f1e7] px-4 py-16 md:px-6 md:py-24">
         <div className="layout-shell rounded-[30px] border border-[#eadbc8] bg-white p-8 text-center shadow-[0_24px_60px_-40px_rgba(70,36,15,0.3)]">
