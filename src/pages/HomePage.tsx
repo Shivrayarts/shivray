@@ -14,6 +14,30 @@ import productWeapon1 from "@/assets/Products/product-5.jpeg";
 const HomeDeferredSections = lazy(() => import("@/components/HomeDeferredSections"));
 const productShield1 = "/assets/product-shield-1.jpg";
 const productDhoop1 = "/assets/product-dhoop-1.jpg";
+const legacySeededCatalogueLabels: Record<string, string> = {
+  "statues-catalogue": "statues",
+  "weapons-catalogue": "weapons",
+  "shield-catalogue": "shields",
+  "dhoop-catalogue": "dhoop",
+  "full-catalogue": "full range",
+};
+
+function getCatalogueShortLabel(catalogue: { shortLabel: string | { en?: string; mr?: string } }) {
+  return (typeof catalogue.shortLabel === "string"
+    ? catalogue.shortLabel
+    : catalogue.shortLabel.en || catalogue.shortLabel.mr || ""
+  ).trim();
+}
+
+function isUnchangedLegacySeededCatalogue(catalogue: {
+  id?: string;
+  shortLabel: string | { en?: string; mr?: string };
+}) {
+  const id = String(catalogue.id || "").trim();
+  const legacyLabel = legacySeededCatalogueLabels[id];
+  if (!legacyLabel) return false;
+  return getCatalogueShortLabel(catalogue).toLowerCase() === legacyLabel;
+}
 
 export default function HomePage() {
   const { resolvedLocale } = useLanguage();
@@ -29,15 +53,6 @@ export default function HomePage() {
   const featuredVideos = storedHomeContent.videos;
   const homeProducts = products.slice(0, 8);
   const spotlightIds = storedHomeContent.spotlightProductIds?.length ? storedHomeContent.spotlightProductIds : [];
-  const productCountByCategory = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const product of products) {
-      const key = String(product.category || "").trim();
-      if (!key) continue;
-      counts.set(key, (counts.get(key) ?? 0) + 1);
-    }
-    return counts;
-  }, [products]);
 
   const homeCategoryCards = useMemo(() => {
     const fallbackImages: Record<string, string> = {
@@ -49,14 +64,7 @@ export default function HomePage() {
 
     const adminCards = catalogueTypes
       .filter((catalogue) => catalogue.isActive)
-      .filter((catalogue) => {
-        const key =
-          (typeof catalogue.shortLabel === "string"
-            ? catalogue.shortLabel
-            : catalogue.shortLabel.en || catalogue.shortLabel.mr || "")
-            .trim();
-        return (productCountByCategory.get(key) ?? 0) > 0;
-      })
+      .filter((catalogue) => !isUnchangedLegacySeededCatalogue(catalogue))
       .map((catalogue) => {
         const key =
           (typeof catalogue.shortLabel === "string"
@@ -81,7 +89,7 @@ export default function HomePage() {
       count: resolvedLocale === "mr" ? "कलेक्शन पाहा" : "Explore collection",
       image: fallbackImages[key] || productStatue1,
     }));
-  }, [catalogueTypes, productCountByCategory, products, resolvedLocale]);
+  }, [catalogueTypes, products, resolvedLocale]);
 
   const categoryLabelByKey = useMemo(() => {
     const labels = new Map<string, string>();

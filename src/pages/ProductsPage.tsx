@@ -18,6 +18,30 @@ import ProductGalleryCard from "@/components/ProductGalleryCard";
 
 const PRODUCTS_PER_PAGE = 12;
 const PLACEHOLDER_IMAGE = "/placeholder.svg";
+const legacySeededCatalogueLabels: Record<string, string> = {
+  "statues-catalogue": "statues",
+  "weapons-catalogue": "weapons",
+  "shield-catalogue": "shields",
+  "dhoop-catalogue": "dhoop",
+  "full-catalogue": "full range",
+};
+
+function getCatalogueShortLabel(catalogue: { shortLabel: string | { en?: string; mr?: string } }) {
+  return (typeof catalogue.shortLabel === "string"
+    ? catalogue.shortLabel
+    : catalogue.shortLabel.en || catalogue.shortLabel.mr || ""
+  ).trim();
+}
+
+function isUnchangedLegacySeededCatalogue(catalogue: {
+  id?: string;
+  shortLabel: string | { en?: string; mr?: string };
+}) {
+  const id = String(catalogue.id || "").trim();
+  const legacyLabel = legacySeededCatalogueLabels[id];
+  if (!legacyLabel) return false;
+  return getCatalogueShortLabel(catalogue).toLowerCase() === legacyLabel;
+}
 
 export default function ProductsPage() {
   const { resolvedLocale } = useLanguage();
@@ -35,15 +59,6 @@ export default function ProductsPage() {
   const products = useStoredProducts();
   const catalogueTypes = useStoredCatalogueTypes();
   const { isWishlisted, toggleWishlist } = useWishlist();
-  const productCountByCategory = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const product of products) {
-      const key = String(product.category || "").trim();
-      if (!key) continue;
-      counts.set(key, (counts.get(key) ?? 0) + 1);
-    }
-    return counts;
-  }, [products]);
 
   const getDisplayCategoryLabel = (rawCategory: string) => {
     const normalized = String(rawCategory || "").trim();
@@ -91,14 +106,7 @@ export default function ProductsPage() {
   const categoryCards = useMemo(() => {
     return catalogueTypes
       .filter((catalogue) => catalogue.isActive)
-      .filter((catalogue) => {
-        const key =
-          (typeof catalogue.shortLabel === "string"
-            ? catalogue.shortLabel
-            : catalogue.shortLabel.en || catalogue.shortLabel.mr || "")
-            .trim();
-        return (productCountByCategory.get(key) ?? 0) > 0;
-      })
+      .filter((catalogue) => !isUnchangedLegacySeededCatalogue(catalogue))
       .map((catalogue) => {
         const key =
           (typeof catalogue.shortLabel === "string"
@@ -114,7 +122,7 @@ export default function ProductsPage() {
           image: catalogue.image || products.find((product) => product.category === key)?.image || PLACEHOLDER_IMAGE,
         };
       });
-  }, [catalogueTypes, productCountByCategory, products, resolvedLocale]);
+  }, [catalogueTypes, products, resolvedLocale]);
 
   const visibleCategoryCards = useMemo(
     () =>
