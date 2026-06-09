@@ -49,6 +49,7 @@ export default function HomePage() {
   const featuredVideos = storedHomeContent.videos;
   const homeProducts = products.slice(0, 8);
   const spotlightIds = storedHomeContent.spotlightProductIds?.length ? storedHomeContent.spotlightProductIds : [];
+  const isStorefrontLoading = products.length === 0 && catalogueTypes.length === 0;
 
   const homeCategoryCards = useMemo(() => {
     const adminCards = catalogueTypes
@@ -223,6 +224,19 @@ export default function HomePage() {
                 ))}
               </div>
             </>
+          ) : isStorefrontLoading ? (
+            <div className="category-carousel-scroll mt-8 flex snap-x snap-mandatory gap-4 overflow-hidden pb-2">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={`category-loading-${index}`}
+                  className="w-[78vw] max-w-[22rem] shrink-0 snap-center text-center sm:w-[19rem] md:w-[16.5rem]"
+                >
+                  <div className="aspect-square animate-pulse rounded-[30px] bg-[#efe6d9]" />
+                  <div className="mx-auto mt-4 h-7 w-28 animate-pulse rounded-full bg-[#eadfce]" />
+                  <div className="mx-auto mt-3 h-4 w-32 animate-pulse rounded-full bg-[#f2e7d8]" />
+                </div>
+              ))}
+            </div>
           ) : (
             <p className="mt-8 text-center text-base text-[#7d766f]">
               {resolvedLocale === "mr"

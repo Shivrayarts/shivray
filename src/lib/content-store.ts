@@ -471,9 +471,11 @@ const LOCAL_PRODUCTS_FALLBACK_KEY = "shivray-products-local-fallback-v1";
 const LOCAL_CATALOGUES_FALLBACK_KEY = "shivray-catalogues-local-fallback-v1";
 const LOCAL_HOME_CONTENT_FALLBACK_KEY = "shivray-home-content-local-fallback-v1";
 const STOREFRONT_SESSION_CACHE_KEY = "shivray-storefront-session-v1";
+const STOREFRONT_PERSISTENT_CACHE_KEY = "shivray-storefront-persistent-v1";
 const STOREFRONT_SESSION_CACHE_TTL_MS = 5 * 60 * 1000;
 
 let storefrontBootstrapPromise: Promise<void> | null = null;
+let storefrontCacheHydrated = false;
 let productsCache: Product[] = [];
 let catalogueCache: CatalogueType[] = [];
 let homeContentCache: StoredHomeContent = normalizeStoredHomeContent({
@@ -567,12 +569,15 @@ function clearLocalHomeContentFallback() {
 function readSessionStorefrontCache(): StorefrontPayload | null {
   if (!canUseWindow()) return null;
   try {
-    const raw = window.sessionStorage.getItem(STOREFRONT_SESSION_CACHE_KEY);
+    const raw =
+      window.sessionStorage.getItem(STOREFRONT_SESSION_CACHE_KEY) ||
+      window.localStorage.getItem(STOREFRONT_PERSISTENT_CACHE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as { cachedAt?: unknown; payload?: Partial<StorefrontPayload> };
     const cachedAt = typeof parsed.cachedAt === "number" ? parsed.cachedAt : 0;
     if (!cachedAt || Date.now() - cachedAt > STOREFRONT_SESSION_CACHE_TTL_MS) {
       window.sessionStorage.removeItem(STOREFRONT_SESSION_CACHE_KEY);
+      window.localStorage.removeItem(STOREFRONT_PERSISTENT_CACHE_KEY);
       return null;
     }
     if (!parsed.payload || typeof parsed.payload !== "object") return null;
@@ -585,12 +590,27 @@ function readSessionStorefrontCache(): StorefrontPayload | null {
 function writeSessionStorefrontCache(payload: Partial<StorefrontPayload>) {
   if (!canUseWindow()) return;
   try {
-    window.sessionStorage.setItem(
-      STOREFRONT_SESSION_CACHE_KEY,
-      JSON.stringify({ cachedAt: Date.now(), payload }),
-    );
+    const serialized = JSON.stringify({ cachedAt: Date.now(), payload });
+    window.sessionStorage.setItem(STOREFRONT_SESSION_CACHE_KEY, serialized);
+    window.localStorage.setItem(STOREFRONT_PERSISTENT_CACHE_KEY, serialized);
   } catch {
     // Storage can be unavailable in private browsing or restricted contexts.
+  }
+}
+
+function hydrateStorefrontCacheFromBrowser() {
+  if (storefrontCacheHydrated) return;
+  storefrontCacheHydrated = true;
+  const cachedPayload = readSessionStorefrontCache();
+  if (!cachedPayload) return;
+  if (cachedPayload.products) {
+    productsCache = cachedPayload.products;
+  }
+  if (cachedPayload.catalogueTypes) {
+    catalogueCache = cachedPayload.catalogueTypes;
+  }
+  if (cachedPayload.homeContent) {
+    homeContentCache = normalizeStoredHomeContent(cachedPayload.homeContent, emptyHomeContent);
   }
 }
 
@@ -691,6 +711,7 @@ function bootstrapStorefrontData() {
 }
 
 export function getStoredProducts() {
+  hydrateStorefrontCacheFromBrowser();
   const localFallback = readLocalProductsFallback();
   if (localFallback && localFallback.length > 0) {
     productsCache = localFallback;
@@ -770,6 +791,7 @@ export function resetStoredProducts() {
 }
 
 export function getStoredCatalogueTypes() {
+  hydrateStorefrontCacheFromBrowser();
   const localFallback = readLocalCataloguesFallback();
   if (localFallback && localFallback.length > 0) {
     catalogueCache = localFallback;
@@ -804,6 +826,7 @@ export function resetStoredCatalogueTypes() {
 }
 
 export function getStoredHomeContent(): StoredHomeContent {
+  hydrateStorefrontCacheFromBrowser();
   const localFallback = readLocalHomeContentFallback();
   if (localFallback) {
     homeContentCache = normalizeStoredHomeContent(localFallback, emptyHomeContent);
