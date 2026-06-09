@@ -39,6 +39,10 @@ function getFallbackPool() {
 
 export function getPool() {
   if (!pool) {
+    if (!env.DB_HOST || !env.DB_USER || !env.DB_NAME) {
+      throw new Error("Database configuration is incomplete. Set DB_HOST, DB_USER, and DB_NAME or a MySQL DATABASE_URL.");
+    }
+
     pool = createPool({
       host: env.DB_HOST,
       port: env.DB_PORT,
