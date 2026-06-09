@@ -6,14 +6,10 @@ import {
   useStoredProducts,
 } from "@/lib/content-store";
 import { useWishlist } from "@/hooks/use-wishlist";
-import { getCategoryLabel, productCategories } from "@/data/products";
 import { useLanguage } from "@/lib/language";
-import productStatue1 from "@/assets/Products/product-2.jpeg";
-import productWeapon1 from "@/assets/Products/product-5.jpeg";
 
 const HomeDeferredSections = lazy(() => import("@/components/HomeDeferredSections"));
-const productShield1 = "/assets/product-shield-1.jpg";
-const productDhoop1 = "/assets/product-dhoop-1.jpg";
+const PLACEHOLDER_IMAGE = "/placeholder.svg";
 const legacySeededCatalogueLabels: Record<string, string> = {
   "statues-catalogue": "statues",
   "weapons-catalogue": "weapons",
@@ -55,13 +51,6 @@ export default function HomePage() {
   const spotlightIds = storedHomeContent.spotlightProductIds?.length ? storedHomeContent.spotlightProductIds : [];
 
   const homeCategoryCards = useMemo(() => {
-    const fallbackImages: Record<string, string> = {
-      Statues: productStatue1,
-      Weapons: productWeapon1,
-      Shields: productShield1,
-      Dhoop: productDhoop1,
-    };
-
     const adminCards = catalogueTypes
       .filter((catalogue) => catalogue.isActive)
       .filter((catalogue) => !isUnchangedLegacySeededCatalogue(catalogue))
@@ -77,18 +66,11 @@ export default function HomePage() {
           title,
           key,
           count: `${products.filter((product) => product.category === key).length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
-          image: catalogue.image || fallbackImages[key] || productStatue1,
+          image: catalogue.image || products.find((product) => product.category === key)?.image || PLACEHOLDER_IMAGE,
         };
       });
 
-    if (adminCards.length > 0) return adminCards;
-
-    return productCategories.map((key) => ({
-      title: getCategoryLabel(key, resolvedLocale),
-      key,
-      count: resolvedLocale === "mr" ? "कलेक्शन पाहा" : "Explore collection",
-      image: fallbackImages[key] || productStatue1,
-    }));
+    return adminCards;
   }, [catalogueTypes, products, resolvedLocale]);
 
   const categoryLabelByKey = useMemo(() => {
