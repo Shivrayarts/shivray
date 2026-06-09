@@ -364,7 +364,11 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
             <div><p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">{resolvedLocale === "mr" ? "\u0938\u092e\u093e\u0928 \u0928\u093f\u0935\u0921\u0940" : "Similar Picks"}</p><h2 className="mt-1 font-heading text-3xl text-[#34180e]">{resolvedLocale === "mr" ? "\u092f\u093e \u0938\u0902\u0917\u094d\u0930\u0939\u093e\u0924\u0940\u0932 \u0906\u0923\u0916\u0940" : "More from this collection"}</h2></div>
             <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
               {relatedProducts.map((item) => (
-                <ProductGalleryCard key={item.id} product={item} />
+                <ProductGalleryCard
+                  key={item.id}
+                  product={item}
+                  categoryLabel={getCategoryLabel(item.category, resolvedLocale)}
+                />
               ))}
             </div>
           </div>

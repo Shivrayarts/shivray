@@ -599,33 +599,6 @@ function dispatchStoreEvent(eventName: string) {
   window.dispatchEvent(new Event(eventName));
 }
 
-function preloadHomeBannerMedia(content: StoredHomeContent) {
-  if (!canUseWindow()) return;
-  const firstBanner = content.banners[0];
-  if (!firstBanner) return;
-
-  const mediaType =
-    firstBanner.mediaType ?? (firstBanner.videoUrl || /^data:video\//i.test(firstBanner.image) ? "video" : "image");
-  const mediaUrl =
-    mediaType === "video"
-      ? String(firstBanner.videoUrl || firstBanner.image || "").trim()
-      : String(firstBanner.image || "").trim();
-
-  if (!mediaUrl) return;
-
-  if (mediaType === "video") {
-    const video = document.createElement("video");
-    video.preload = "metadata";
-    video.src = mediaUrl;
-    return;
-  }
-
-  const image = new Image();
-  image.fetchPriority = "high";
-  image.decoding = "async";
-  image.src = mediaUrl;
-}
-
 function applyStorefrontPayload(payload: Partial<StorefrontPayload>) {
   const normalized = normalizeStorefrontPayload(payload);
 
@@ -642,7 +615,6 @@ function applyStorefrontPayload(payload: Partial<StorefrontPayload>) {
 
   if (normalized.homeContent) {
     homeContentCache = normalizeStoredHomeContent(normalized.homeContent, emptyHomeContent);
-    preloadHomeBannerMedia(homeContentCache);
     dispatchStoreEvent(HOME_CONTENT_EVENT);
   }
 }

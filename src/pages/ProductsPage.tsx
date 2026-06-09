@@ -329,6 +329,7 @@ export default function ProductsPage() {
               <ProductGalleryCard
                 key={product.id}
                 product={product}
+                categoryLabel={getDisplayCategoryLabel(product.category)}
                 isWishlisted={isWishlisted(product.id)}
                 onToggleWishlist={toggleWishlist}
               />
@@ -339,6 +340,7 @@ export default function ProductsPage() {
               <ProductGalleryCard
                 key={product.id}
                 product={product}
+                categoryLabel={getDisplayCategoryLabel(product.category)}
                 isWishlisted={isWishlisted(product.id)}
                 onToggleWishlist={toggleWishlist}
               />

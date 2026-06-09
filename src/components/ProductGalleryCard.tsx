@@ -1,6 +1,6 @@
+import { memo } from "react";
 import { Heart } from "lucide-react";
 import { Link } from "@/lib/spa-router";
-import { useStoredCatalogueTypes } from "@/lib/content-store";
 import { getCategoryLabel, type Product } from "@/data/products";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { getProductPricing, normalizeDisplayCase, normalizeDiscountPercentage } from "@/lib/utils";
@@ -12,33 +12,22 @@ type ProductGalleryCardProps = {
   imageClassName?: string;
   titleClassName?: string;
   className?: string;
+  categoryLabel?: string;
 };
 
-export default function ProductGalleryCard({
+function ProductGalleryCard({
   product,
   isWishlisted = false,
   onToggleWishlist,
   imageClassName = "h-[14rem] md:h-[18rem] lg:h-[20rem]",
   titleClassName = "min-h-[3rem] text-[1.2rem] md:min-h-[3.6rem] md:text-[1.6rem]",
   className = "",
+  categoryLabel,
 }: ProductGalleryCardProps) {
   const { resolvedLocale } = useLanguage();
-  const catalogueTypes = useStoredCatalogueTypes();
   const localizedName = normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale), "sentence");
-  const categoryValue = String(product.category || "").trim();
-  const matchedCatalogue = catalogueTypes.find((catalogue) => {
-    const localizedShortLabel =
-      typeof catalogue.shortLabel === "string"
-        ? { en: catalogue.shortLabel, mr: catalogue.shortLabel }
-        : catalogue.shortLabel;
-    return (
-      localizedShortLabel.en?.trim() === categoryValue ||
-      localizedShortLabel.mr?.trim() === categoryValue
-    );
-  });
-  const localizedCategoryLabel = matchedCatalogue
-    ? resolveLocalizedText(matchedCatalogue.shortLabel, resolvedLocale)
-    : getCategoryLabel(product.category, resolvedLocale);
+  const localizedCategoryLabel =
+    categoryLabel || getCategoryLabel(product.category, resolvedLocale);
   const productOptions = product.productOptions ?? [];
   const pricing = getProductPricing(product);
   const optionChips = productOptions.slice(0, 2);
@@ -129,3 +118,5 @@ export default function ProductGalleryCard({
     </div>
   );
 }
+
+export default memo(ProductGalleryCard);
