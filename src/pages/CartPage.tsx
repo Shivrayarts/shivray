@@ -6,7 +6,9 @@ import { useCart } from "@/hooks/use-cart";
 import { useStoredProducts } from "@/lib/content-store";
 import { isValidEmail, isValidName, isValidPhone, normalizeDigits } from "@/lib/form-validation";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
+import { siteConfig } from "@/lib/site-config";
 import { getProductPricing, normalizeDisplayCase, parseCurrencyAmount } from "@/lib/utils";
+import { createRazorpayOrder, getRazorpayKeyId, loadRazorpayCheckoutScript, verifyRazorpayPayment } from "@/lib/payments";
 import {
   type CustomerProfile,
   getStoredCustomers,
@@ -15,6 +17,12 @@ import {
   updateCustomerProfile,
   useCustomerSession,
 } from "@/lib/customer-orders";
+
+type RazorpaySuccessResponse = {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+};
 
 export default function CartPage() {
   const { resolvedLocale } = useLanguage();
@@ -27,7 +35,7 @@ export default function CartPage() {
     phone: "",
     address: "",
     pincode: "",
-    paymentMethod: "Cash On Delivery" as const,
+    paymentMethod: "Online Payment" as const,
   });
   const [orderMessage, setOrderMessage] = useState("");
   const [touched, setTouched] = useState({
@@ -61,8 +69,9 @@ export default function CartPage() {
   const resolvedPincode = checkoutForm.pincode.trim();
   const isPincodeValid = /^\d{6}$/.test(resolvedPincode);
   const shippingAddress = `${resolvedAddress}${resolvedPincode ? `\nPIN Code: ${resolvedPincode}` : ""}`;
+  const hasWeaponItems = items.some(({ product }) => String(product.category || "").trim() === "Weapons");
 
-  async function handlePlaceOrder() {
+  function ensureValidCheckoutDetails() {
     if (
       !isValidName(resolvedName) ||
       !isValidEmail(resolvedEmail) ||
@@ -72,47 +81,139 @@ export default function CartPage() {
     ) {
       setTouched({ name: true, email: true, phone: true, address: true, pincode: true });
       setOrderMessage("Please enter a valid name, email, 10-digit phone number, complete address, and 6-digit PIN code.");
-      return;
+      return false;
     }
 
-    try {
-      const customer =
-        currentCustomer ??
-        (await loginCustomer({
-          name: resolvedName,
-          email: resolvedEmail,
-          phone: resolvedPhone,
-          address: shippingAddress,
-        }));
+    return true;
+  }
 
-      await updateCustomerProfile(customer.id, {
+  async function persistCustomerProfile() {
+    const customer =
+      currentCustomer ??
+      (await loginCustomer({
         name: resolvedName,
         email: resolvedEmail,
         phone: resolvedPhone,
         address: shippingAddress,
-        lastLoginAt: new Date().toISOString(),
-      });
+      }));
 
-      const order = await placeOrder({
-        customer: {
-          ...customer,
+    await updateCustomerProfile(customer.id, {
+      name: resolvedName,
+      email: resolvedEmail,
+      phone: resolvedPhone,
+      address: shippingAddress,
+      lastLoginAt: new Date().toISOString(),
+    });
+
+    return customer;
+  }
+
+  function buildWhatsappOrderLink() {
+    const productLines = items.map(({ product, quantity }) => {
+      const name = resolveLocalizedText(product.name, resolvedLocale);
+      const price = getProductPricing(product).finalPrice;
+      return `- ${name} x${quantity} (${price})`;
+    });
+
+    const message = [
+      "Hi Shivray Art, I want to place an offline order for weapon products.",
+      "",
+      "Customer Details:",
+      `Name: ${resolvedName}`,
+      `Phone: ${resolvedPhone}`,
+      `Email: ${resolvedEmail}`,
+      `Address: ${shippingAddress}`,
+      "",
+      "Items:",
+      ...productLines,
+      "",
+      `Order Total: Rs. ${orderTotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+    ].join("\n");
+
+    return `${siteConfig.whatsappHref}?text=${encodeURIComponent(message)}`;
+  }
+
+  async function handlePlaceOrder() {
+    if (!ensureValidCheckoutDetails()) return;
+
+    if (hasWeaponItems) {
+      window.open(buildWhatsappOrderLink(), "_blank", "noopener,noreferrer");
+      setOrderMessage("Weapon orders are handled on WhatsApp. We opened the order message for you.");
+      return;
+    }
+
+    try {
+      const customer = await persistCustomerProfile();
+      await loadRazorpayCheckoutScript();
+
+      const razorpayOrder = await createRazorpayOrder(
+        Math.round(orderTotal * 100),
+        `order_${Date.now()}`,
+      );
+
+      if (!window.Razorpay) {
+        throw new Error("Razorpay checkout could not be initialized.");
+      }
+
+      const razorpayKeyId = razorpayOrder.keyId || getRazorpayKeyId();
+      const orderItems = items.map(({ product, quantity }) => ({
+        productId: product.id,
+        productName: resolveLocalizedText(product.name, resolvedLocale),
+        price: getProductPricing(product).finalPrice,
+        quantity,
+        image: product.image,
+      }));
+
+      const options = {
+        key: razorpayKeyId,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        name: siteConfig.brandName.en,
+        description: "Shivray Art order payment",
+        order_id: razorpayOrder.orderId,
+        prefill: {
           name: resolvedName,
           email: resolvedEmail,
-          phone: resolvedPhone,
-          address: shippingAddress,
+          contact: `+91${resolvedPhone}`,
         },
-        items: items.map(({ product, quantity }) => ({
-          productId: product.id,
-          productName: resolveLocalizedText(product.name, resolvedLocale),
-          price: getProductPricing(product).finalPrice,
-          quantity,
-          image: product.image,
-        })),
-        paymentMethod: checkoutForm.paymentMethod,
-      });
+        theme: {
+          color: "#34180e",
+        },
+        handler: async (response: RazorpaySuccessResponse) => {
+          try {
+            await verifyRazorpayPayment({
+              orderId: response.razorpay_order_id,
+              paymentId: response.razorpay_payment_id,
+              signature: response.razorpay_signature,
+            });
 
-      clearCart();
-      setOrderMessage(`Order ${order.id} placed successfully. Shipping confirmation and delivery timeline will be shared with you shortly.`);
+            const order = await placeOrder({
+              customer: {
+                ...customer,
+                name: resolvedName,
+                email: resolvedEmail,
+                phone: resolvedPhone,
+                address: shippingAddress,
+              },
+              items: orderItems,
+              paymentMethod: checkoutForm.paymentMethod,
+              paymentInfo: `Online Payment Paid (${response.razorpay_payment_id})`,
+            });
+
+            clearCart();
+            setOrderMessage(`Payment successful. Order ${order.id} has been placed successfully.`);
+          } catch (paymentError) {
+            setOrderMessage(
+              paymentError instanceof Error
+                ? paymentError.message
+                : "Payment was received but order confirmation could not be completed.",
+            );
+          }
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
     } catch (error) {
       setOrderMessage(error instanceof Error ? error.message : "Unable to place the order right now.");
     }
@@ -154,7 +255,9 @@ export default function CartPage() {
               <div className="rounded-lg border border-border bg-card p-5">
                 <h2 className="font-heading text-2xl font-semibold text-foreground">Place Order</h2>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Share your details and we will confirm payment and availability with you.
+                  {hasWeaponItems
+                    ? "Weapons are handled offline. Share your details and continue the order on WhatsApp."
+                    : "Share your details and continue with secure online payment."}
                 </p>
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
                   <input
@@ -213,8 +316,14 @@ export default function CartPage() {
                 </div>
                 <div className="mt-4 rounded-lg border border-[#eadbc8] bg-[#fcf8f2] p-4 text-sm text-[#6c4b33]">
                   <p className="font-semibold text-[#34180e]">Shipping & Payment</p>
-                  <p className="mt-2">Payment method: Cash On Delivery</p>
-                  <p className="mt-1">Shipping charges and delivery timeline will be confirmed on call or WhatsApp after order review.</p>
+                  <p className="mt-2">
+                    Payment method: {hasWeaponItems ? "Offline WhatsApp Order" : "Online Payment"}
+                  </p>
+                  <p className="mt-1">
+                    {hasWeaponItems
+                      ? "Weapon orders are completed on WhatsApp after order review."
+                      : "Shipping charges, payment confirmation, and delivery timeline will be shared with you after order review."}
+                  </p>
                 </div>
                 <div className="mt-3 space-y-1 text-sm text-[#b42318]">
                   {touched.name && !isValidName(resolvedName) ? <p>Please enter your full name.</p> : null}
@@ -232,7 +341,7 @@ export default function CartPage() {
                     onClick={handlePlaceOrder}
                     className="rounded-md bg-primary px-5 py-2 text-sm font-semibold uppercase tracking-wider text-primary-foreground"
                   >
-                    Place Order
+                    {hasWeaponItems ? "Order on WhatsApp" : "Pay with Razorpay"}
                   </button>
                 </div>
                 {orderMessage ? <p className="mt-4 text-sm font-medium text-green-700">{orderMessage}</p> : null}

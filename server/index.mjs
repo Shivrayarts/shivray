@@ -58,7 +58,12 @@ app.use(async (_req, _res, next) => {
   }
 });
 
-app.use("/api", (_req, res, next) => {
+app.use("/api", (req, res, next) => {
+  if ((req.method === "GET" || req.method === "HEAD") && req.path === "/storefront") {
+    next();
+    return;
+  }
+
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
   res.setHeader("Pragma", "no-cache");
   res.setHeader("Expires", "0");
@@ -97,7 +102,7 @@ const PRODUCT_OPTIONS_SETTING_KEY = "product_options_map";
 const PRODUCT_GALLERY_SETTING_KEY = "product_gallery_map";
 const BLOG_POSTS_SETTING_KEY = "blog_posts";
 const ANNOUNCEMENT_BAR_SETTING_KEY = "announcement_bar";
-const STOREFRONT_CACHE_TTL_MS = 60 * 1000;
+const STOREFRONT_CACHE_TTL_MS = 5 * 60 * 1000;
 const LEGACY_SEEDED_PRODUCT_SLUGS = [
   "shastradhari-maharaj-coloured",
   "ashwarudh-maharaj",
@@ -274,6 +279,31 @@ function toSha256(value) {
   return crypto.createHash("sha256").update(value).digest("hex");
 }
 
+function getRazorpayBasicAuthHeader() {
+  const keyId = String(env.RAZORPAY_KEY_ID || "").trim();
+  const keySecret = String(env.RAZORPAY_KEY_SECRET || "").trim();
+  if (!keyId || !keySecret) {
+    throw createHttpError(500, "Razorpay credentials are not configured on server.");
+  }
+
+  const encoded = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
+  return `Basic ${encoded}`;
+}
+
+function verifyRazorpayPaymentSignature(orderId, paymentId, signature) {
+  const secret = String(env.RAZORPAY_KEY_SECRET || "").trim();
+  if (!secret) {
+    throw createHttpError(500, "Razorpay credentials are not configured on server.");
+  }
+
+  const expectedSignature = crypto
+    .createHmac("sha256", secret)
+    .update(`${orderId}|${paymentId}`)
+    .digest("hex");
+
+  return expectedSignature === signature;
+}
+
 function createHttpError(statusCode, message) {
   const error = new Error(message);
   error.statusCode = statusCode;
@@ -404,7 +434,7 @@ function createMemoryOrder(payload, paymentMethod) {
       image: item.image || "",
     })),
     paymentMethod,
-    paymentInfo: `${paymentMethod} Pending`,
+    paymentInfo: String(payload.paymentInfo || `${paymentMethod} Pending`),
     status: "Pending",
     totalPrice: formatCurrency(totalAmount),
     createdAt: new Date().toISOString(),
@@ -1271,8 +1301,8 @@ async function fetchOrdersPayload() {
     customerPhone: row.customer_phone ?? "",
     customerAddress: row.shipping_address ?? "",
     items: itemsByOrderId.get(row.id) ?? [],
-    paymentMethod: row.payment_method ?? "Cash On Delivery",
-    paymentInfo: row.payment_info ?? `${row.payment_method ?? "Cash On Delivery"} ${mapOrderStatusFromDb(row.status)}`,
+    paymentMethod: row.payment_method ?? "Online Payment",
+    paymentInfo: row.payment_info ?? `${row.payment_method ?? "Online Payment"} ${mapOrderStatusFromDb(row.status)}`,
     status: mapOrderStatusFromDb(row.status),
     totalPrice: formatCurrency(row.total_amount),
     createdAt: new Date(row.created_at).toISOString(),
@@ -1290,7 +1320,8 @@ app.get("/api/health", async (_req, res) => {
 
 app.get("/api/storefront", async (_req, res) => {
   try {
-    res.setHeader("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+    res.setHeader("Cache-Control", "public, max-age=120, stale-while-revalidate=300");
+    res.setHeader("Vary", "Accept-Encoding");
     res.json(await fetchCachedStorefrontPayload());
   } catch (error) {
     res.status(500).json({ message: error instanceof Error ? error.message : "Unable to load storefront data." });
@@ -2080,6 +2111,7 @@ app.post("/api/orders", async (req, res) => {
   const customer = payload.customer ?? {};
   const items = Array.isArray(payload.items) ? payload.items : [];
   const paymentMethod = "Online Payment";
+  const paymentInfo = String(payload.paymentInfo ?? `${paymentMethod} Pending`).trim() || `${paymentMethod} Pending`;
 
   if (!customer.email || !customer.name || !customer.phone || !customer.address || items.length === 0) {
     res.status(400).json({ message: "Customer details and at least one order item are required." });
@@ -2140,8 +2172,6 @@ app.post("/api/orders", async (req, res) => {
 
       const orderNumber = buildOrderNumber();
       const orderStatus = "pending";
-      const paymentInfo = `${paymentMethod} Pending`;
-
       const [orderResult] = await connection.query(
         `
         INSERT INTO orders (
@@ -2226,7 +2256,7 @@ app.patch("/api/admin/orders/:orderId/status", requireAdmin, async (req, res) =>
   const status = String(req.body?.status ?? "");
   const orderNumber = String(req.params.orderId ?? "").trim();
   const dbStatus = mapOrderStatusToDb(status);
-  const paymentMethod = req.body?.paymentMethod === "Cash On Delivery" ? "Cash On Delivery" : "Online Payment";
+  const paymentMethod = "Online Payment";
   const paymentInfo =
     status === "Cancelled"
       ? `${paymentMethod} Cancelled`
@@ -2256,6 +2286,75 @@ app.patch("/api/admin/orders/:orderId/status", requireAdmin, async (req, res) =>
       order.paymentInfo = paymentInfo;
     }
     res.json({ ok: true });
+  }
+});
+
+app.post("/api/payments/razorpay/order", async (req, res) => {
+  const amount = Number(req.body?.amount ?? 0);
+  const receipt = String(req.body?.receipt ?? "").trim() || `receipt_${Date.now()}`;
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    res.status(400).json({ message: "A valid amount is required to create a Razorpay order." });
+    return;
+  }
+
+  try {
+    const response = await fetch("https://api.razorpay.com/v1/orders", {
+      method: "POST",
+      headers: {
+        Authorization: getRazorpayBasicAuthHeader(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        amount: Math.round(amount),
+        currency: "INR",
+        receipt,
+        payment_capture: 1,
+      }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const message = String(data?.error?.description || data?.message || "Unable to create Razorpay order.");
+      res.status(502).json({ message });
+      return;
+    }
+
+    res.json({
+      orderId: data.id,
+      amount: Number(data.amount || amount),
+      currency: data.currency || "INR",
+      keyId: String(env.RAZORPAY_KEY_ID || "").trim(),
+    });
+  } catch (error) {
+    console.error("Unable to create Razorpay order.", error);
+    res.status(500).json({ message: "Unable to create Razorpay order right now." });
+  }
+});
+
+app.post("/api/payments/razorpay/verify", async (req, res) => {
+  const orderId = String(req.body?.orderId ?? "").trim();
+  const paymentId = String(req.body?.paymentId ?? "").trim();
+  const signature = String(req.body?.signature ?? "").trim();
+
+  if (!orderId || !paymentId || !signature) {
+    res.status(400).json({ message: "Razorpay verification details are required." });
+    return;
+  }
+
+  try {
+    const verified = verifyRazorpayPaymentSignature(orderId, paymentId, signature);
+    if (!verified) {
+      res.status(400).json({ message: "Razorpay payment verification failed." });
+      return;
+    }
+
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("Unable to verify Razorpay payment.", error);
+    res.status(error?.statusCode || 500).json({
+      message: error instanceof Error ? error.message : "Unable to verify Razorpay payment right now.",
+    });
   }
 });
 

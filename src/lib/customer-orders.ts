@@ -45,7 +45,7 @@ export type OrderRecord = {
   customerPhone: string;
   customerAddress: string;
   items: OrderItem[];
-  paymentMethod: "Cash On Delivery" | "Online Payment";
+  paymentMethod: "Online Payment";
   paymentInfo: string;
   status: OrderStatus;
   totalPrice: string;
@@ -117,7 +117,7 @@ function formatCurrency(value: number) {
 }
 
 function computePaymentInfo(
-  paymentMethod: "Cash On Delivery" | "Online Payment",
+  paymentMethod: "Online Payment",
   status: OrderStatus,
 ) {
   if (status === "Cancelled") {
@@ -317,7 +317,8 @@ export async function submitCatalogueRequest(input: {
 export async function placeOrder(input: {
   customer: CustomerProfile;
   items: OrderItem[];
-  paymentMethod: "Cash On Delivery" | "Online Payment";
+  paymentMethod: "Online Payment";
+  paymentInfo?: string;
 }) {
   try {
     const response = await apiRequest<{ order: OrderRecord }>("/api/orders", {
@@ -344,7 +345,7 @@ export async function placeOrder(input: {
       customerAddress: input.customer.address,
       items: input.items,
       paymentMethod: input.paymentMethod,
-      paymentInfo: computePaymentInfo(input.paymentMethod, "Pending"),
+      paymentInfo: input.paymentInfo || computePaymentInfo(input.paymentMethod, "Pending"),
       status: "Pending",
       totalPrice: formatCurrency(totalPriceValue),
       createdAt: new Date().toISOString(),
