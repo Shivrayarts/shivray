@@ -30,7 +30,7 @@ export const homeContent = {
         en: "Handcrafted statues, weapons, and heritage pieces from Shivray Art.",
         mr: "शिवराय आर्टकडून हस्तकला मूर्ती, शस्त्रे आणि वारसा वस्तू.",
       } as Translatable,
-      image: "/assets/hero-banner-2.jpg",
+      image: "/assets/product-statue-1.jpg",
       mediaType: "image" as const,
     },
   ],

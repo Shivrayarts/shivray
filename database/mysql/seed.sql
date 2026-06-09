@@ -274,7 +274,7 @@ VALUES
     'Shield Catalogue',
     'Shields',
     'Decor shields, premium heritage shields, and combo display collections.',
-    '/assets/hero-banner-3.jpg',
+    '/assets/product-shield-1.jpg',
     '18 products',
     3,
     1
@@ -325,7 +325,7 @@ VALUES
     'Timeless Culture',
     'Modern Vision',
     'From heritage artifacts to custom statement pieces, each creation carries tradition, precision, and visual impact.',
-    '/assets/hero-banner-3.jpg',
+    '/assets/product-statue-1.jpg',
     1,
     1
   ),
@@ -345,7 +345,7 @@ VALUES
     'Royal Presence',
     'Bold Display',
     'Explore statement pieces designed for gifting, home decor, devotion, and unforgettable first impressions.',
-    '/assets/hero-banner-2.jpg',
+    '/assets/product-weapon-1.jpeg',
     3,
     1
   )

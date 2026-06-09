@@ -12,7 +12,7 @@ import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import ProductGalleryCard from "@/components/ProductGalleryCard";
 import productStatue1 from "@/assets/Products/product-2.jpeg";
 import productWeapon1 from "@/assets/Products/product-5.jpeg";
-const heroBanner3 = "/assets/hero-banner-3.jpg";
+const productShield1 = "/assets/product-shield-1.jpg";
 const productDhoop1 = "/assets/product-dhoop-1.jpg";
 
 function shouldDeferHeroVideoPlayback() {
@@ -104,7 +104,7 @@ export default function HomePage() {
     const fallbackImages: Record<string, string> = {
       Statues: productStatue1,
       Weapons: productWeapon1,
-      Shields: heroBanner3,
+      Shields: productShield1,
       Dhoop: productDhoop1,
     };
 
