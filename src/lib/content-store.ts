@@ -98,6 +98,10 @@ const defaultAnnouncementBar: HomeAnnouncementBar = {
 };
 
 const apiAssetBaseUrl = String(import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
+const legacyBannerAssetReplacements: Record<string, string> = {
+  "/assets/hero-banner-2.jpg": "/assets/product-statue-1.jpg",
+  "/assets/hero-banner-3.jpg": "/assets/product-weapon-1.jpeg",
+};
 
 function normalizeAssetUrl(value: string) {
   const raw = String(value || "").trim();
@@ -113,6 +117,9 @@ function normalizeAssetUrl(value: string) {
 }
 
 function resolveLegacyBannerAssetPath(rawPath: string) {
+  const knownReplacement = legacyBannerAssetReplacements[rawPath];
+  if (knownReplacement) return knownReplacement;
+
   const fileName = rawPath.split("/").pop() || "";
   const stem = fileName.replace(/\.[^.]+$/, "").toLowerCase();
   if (!stem) return "";

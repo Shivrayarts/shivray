@@ -764,12 +764,36 @@ async function normalizeLegacySeedAssetPaths() {
     ["/assets/product-weapon-3.jpg", "/assets/product-weapon-3.jpeg"],
     ["/assets/product-talwar-1.jpg", "/assets/product-talwar-1.jpeg"],
   ];
+  const homepageAssetReplacements = [
+    ["/assets/hero-banner-2.jpg", "/assets/product-statue-1.jpg"],
+    ["/assets/hero-banner-3.jpg", "/assets/product-weapon-1.jpeg"],
+  ];
 
   try {
     for (const [fromPath, toPath] of replacements) {
       await query(
         `
         UPDATE products
+        SET image_url = ?
+        WHERE image_url = ?
+        `,
+        [toPath, fromPath],
+      );
+    }
+
+    for (const [fromPath, toPath] of homepageAssetReplacements) {
+      await query(
+        `
+        UPDATE hero_banners
+        SET image_url = ?
+        WHERE image_url = ?
+        `,
+        [toPath, fromPath],
+      );
+
+      await query(
+        `
+        UPDATE catalogues
         SET image_url = ?
         WHERE image_url = ?
         `,
