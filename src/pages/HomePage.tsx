@@ -1,6 +1,6 @@
 ﻿import { Link } from "@/lib/spa-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Play, Star } from "lucide-react";
+import { Play, Star } from "lucide-react";
 import {
   useStoredHomeContent,
   useStoredCatalogueTypes,
@@ -81,19 +81,14 @@ export default function HomePage() {
   const catalogueTypes = useStoredCatalogueTypes();
   const storedHomeContent = useStoredHomeContent();
   const { isWishlisted, toggleWishlist } = useWishlist();
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [categorySlide, setCategorySlide] = useState(0);
   const [currentReview, setCurrentReview] = useState(0);
   const [videoSlide, setVideoSlide] = useState(0);
-  const [heroVideoReady, setHeroVideoReady] = useState(false);
-  const [shouldLoadHeroVideo, setShouldLoadHeroVideo] = useState(false);
   const [showDeferredSections, setShowDeferredSections] = useState(false);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
   const videosRef = useRef<HTMLDivElement | null>(null);
   const deferredSectionsRef = useRef<HTMLDivElement | null>(null);
-  const heroSlides = storedHomeContent.banners;
   const reviews = storedHomeContent.reviews;
-  const hasHeroSlides = heroSlides.length > 0;
   const hasReviews = reviews.length > 0;
   const featuredVideos = storedHomeContent.videos;
   const homeProducts = products.slice(0, 8);
@@ -183,65 +178,10 @@ export default function HomePage() {
   }, [reviews.length]);
 
   useEffect(() => {
-    setCurrentSlide((prev) => (heroSlides.length === 0 ? 0 : Math.min(prev, heroSlides.length - 1)));
-  }, [heroSlides.length]);
-  
-  useEffect(() => {
     setCurrentReview((prev) => (reviews.length === 0 ? 0 : Math.min(prev, reviews.length - 1)));
   }, [reviews.length]);
 
   const activeReview = hasReviews ? reviews[currentReview] : null;
-  const activeHeroSlide = hasHeroSlides ? heroSlides[currentSlide] : null;
-  const activeHeroMediaType = activeHeroSlide?.mediaType ?? (activeHeroSlide?.videoUrl ? "video" : "image");
-  const activeHeroMediaUrl =
-    activeHeroMediaType === "video"
-      ? activeHeroSlide?.videoUrl || activeHeroSlide?.image || ""
-      : activeHeroSlide?.image || "";
-  const activeHeroPosterUrl = activeHeroSlide?.image || productWeapon1;
-  const fallbackHeroTitleTop = resolvedLocale === "mr" ? "शिवराय" : "Shivray";
-  const fallbackHeroTitleBottom = resolvedLocale === "mr" ? "आर्ट" : "Art";
-  const heroMediaFetchPriority: "high" | "auto" = currentSlide === 0 ? "high" : "auto";
-
-  useEffect(() => {
-    setHeroVideoReady(false);
-  }, [activeHeroSlide?.id, activeHeroMediaType, activeHeroMediaUrl]);
-
-  useEffect(() => {
-    if (activeHeroMediaType !== "video") {
-      setShouldLoadHeroVideo(false);
-      return;
-    }
-
-    if (shouldDeferHeroVideoPlayback()) {
-      setShouldLoadHeroVideo(false);
-      return;
-    }
-
-    let timeoutId: number | null = null;
-    let idleId: number | null = null;
-    let cancelled = false;
-    const enableVideo = () => {
-      if (!cancelled) {
-        setShouldLoadHeroVideo(true);
-      }
-    };
-
-    if ("requestIdleCallback" in window) {
-      idleId = window.requestIdleCallback(enableVideo, { timeout: 2200 });
-    } else {
-      timeoutId = window.setTimeout(enableVideo, 1400);
-    }
-
-    return () => {
-      cancelled = true;
-      if (idleId !== null && "cancelIdleCallback" in window) {
-        window.cancelIdleCallback(idleId);
-      }
-      if (timeoutId !== null) {
-        window.clearTimeout(timeoutId);
-      }
-    };
-  }, [activeHeroMediaType, activeHeroSlide?.id]);
 
   const handleCategoriesScroll = () => {
     const node = categoriesRef.current;
@@ -307,65 +247,38 @@ export default function HomePage() {
   return (
     <div className="bg-[#f7f1e7]">
       <section className="relative isolate overflow-hidden bg-[#2b0b08] text-white">
-        {activeHeroSlide && activeHeroMediaUrl ? (
-          activeHeroMediaType === "video" ? (
-            <>
-              <img
-                key={`${activeHeroSlide.id}-poster`}
-                src={activeHeroPosterUrl}
-                alt={resolveLocalizedText(activeHeroSlide.titleTop, resolvedLocale) || "Homepage banner"}
-                className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${heroVideoReady ? "opacity-0" : "opacity-100"}`}
-                sizes="100vw"
-                fetchPriority={heroMediaFetchPriority}
-                loading="eager"
-                decoding="async"
-              />
-              {shouldLoadHeroVideo ? (
-                <video
-                  key={activeHeroSlide.id}
-                  src={activeHeroMediaUrl}
-                  poster={activeHeroPosterUrl || undefined}
-                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${heroVideoReady ? "opacity-100" : "opacity-0"}`}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                  onCanPlay={() => setHeroVideoReady(true)}
-                />
-              ) : null}
-            </>
-          ) : (
-            <img
-              key={activeHeroSlide.id}
-              src={activeHeroMediaUrl}
-              alt={resolveLocalizedText(activeHeroSlide.titleTop, resolvedLocale) || "Homepage banner"}
-              className="absolute inset-0 h-full w-full object-cover"
-              sizes="100vw"
-              fetchPriority={heroMediaFetchPriority}
-              loading="eager"
-              decoding="async"
-            />
-          )
-        ) : null}
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(20,8,4,0.35)_0%,rgba(20,8,4,0.2)_35%,rgba(20,8,4,0.62)_100%)]" />
-        <div className="relative flex w-full min-h-[460px] items-center justify-center px-0 py-0 text-center md:mx-auto md:min-h-[720px] md:max-w-[72rem] md:px-8 md:py-24">
-          <div className="sr-only">
-            {activeHeroSlide
-              ? `${resolveLocalizedText(activeHeroSlide.titleTop, resolvedLocale)} ${resolveLocalizedText(activeHeroSlide.titleBottom, resolvedLocale)}`
-              : `${fallbackHeroTitleTop} ${fallbackHeroTitleBottom}`}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#2b0b08_0%,#3b120d_45%,#1f0b07_100%)]" />
+        <div className="relative mx-auto flex min-h-[280px] w-full max-w-[72rem] items-center justify-center px-6 py-14 text-center md:min-h-[360px] md:px-8 md:py-20">
+          <div className="max-w-4xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#e3a92b] md:text-sm">
+              {resolvedLocale === "mr" ? "शिवराय आर्ट" : "Shivray Art"}
+            </p>
+            <h1 className="mt-5 font-heading text-4xl leading-tight text-[#fff3e1] md:text-6xl">
+              {resolvedLocale === "mr"
+                ? "मराठा वारशाची अस्सल कलाकुसर"
+                : "Authentic Maratha Heritage Craftsmanship"}
+            </h1>
+            <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-[#ecd7c0] md:text-base">
+              {resolvedLocale === "mr"
+                ? "मूर्ती, शस्त्रे, ढाली आणि वारसाप्रेरित संग्रह यांसाठी शिवराय आर्टचे निवडक हस्तकला काम पहा."
+                : "Explore Shivray Art's handcrafted statues, weapons, shields, and heritage collections."}
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                to="/products"
+                className="inline-flex rounded-full bg-[#e3a92b] px-6 py-3 text-sm font-semibold text-[#34180e]"
+              >
+                {resolvedLocale === "mr" ? "उत्पादने पहा" : "Browse Products"}
+              </Link>
+              <Link
+                to="/contact"
+                className="inline-flex rounded-full border border-[#a66a28] px-6 py-3 text-sm font-semibold text-[#fff3e1]"
+              >
+                {resolvedLocale === "mr" ? "संपर्क करा" : "Contact Us"}
+              </Link>
+            </div>
           </div>
         </div>
-        {heroSlides.length > 1 ? (
-          <>
-            <button type="button" onClick={() => setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)} aria-label="Previous slide" className="absolute left-2 top-1/2 z-10 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-[#a66a28] bg-[#4b0912]/45 text-[#e3a92b] md:left-8 md:h-14 md:w-14">
-              <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
-            </button>
-            <button type="button" onClick={() => setCurrentSlide((prev) => (prev + 1) % heroSlides.length)} aria-label="Next slide" className="absolute right-2 top-1/2 z-10 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-[#a66a28] bg-[#4b0912]/45 text-[#e3a92b] md:right-8 md:h-14 md:w-14">
-              <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
-            </button>
-          </>
-        ) : null}
       </section>
 
       <section className="px-4 py-10 md:px-6 md:py-14">
