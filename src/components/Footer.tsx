@@ -96,7 +96,7 @@ export default function Footer() {
 
             <div className="mt-10 space-y-6 text-lg leading-9 text-[#edd8c5]">
               <a
-                href={siteConfig.googleDirectionsHref}
+                href={siteConfig.addressMapHref}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-start gap-4 transition hover:text-[#ffd68d]"
@@ -227,7 +227,7 @@ export default function Footer() {
 
           <div className="mt-7 space-y-5 text-[15px] leading-7 text-[#f2dfcc]">
             <a
-              href={siteConfig.googleDirectionsHref}
+              href={siteConfig.addressMapHref}
               target="_blank"
               rel="noreferrer"
               className="flex items-start gap-3 transition hover:text-[#ffd68d]"

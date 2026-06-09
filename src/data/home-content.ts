@@ -11,7 +11,29 @@ export const homeContent = {
     } as Translatable,
   },
   spotlightProductIds: [],
-  banners: [],
+  banners: [
+    {
+      id: "default-home-banner",
+      eyebrow: {
+        en: "Shivray Art",
+        mr: "शिवराय आर्ट",
+      } as Translatable,
+      titleTop: {
+        en: "Maratha Heritage",
+        mr: "मराठा वारसा",
+      } as Translatable,
+      titleBottom: {
+        en: "Crafted With Pride",
+        mr: "अभिमानाने साकारलेले",
+      } as Translatable,
+      copy: {
+        en: "Handcrafted statues, weapons, and heritage pieces from Shivray Art.",
+        mr: "शिवराय आर्टकडून हस्तकला मूर्ती, शस्त्रे आणि वारसा वस्तू.",
+      } as Translatable,
+      image: "/assets/hero-banner-2.jpg",
+      mediaType: "image" as const,
+    },
+  ],
   reviews: [
     {
       id: "review-1",

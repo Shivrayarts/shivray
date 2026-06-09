@@ -7,6 +7,7 @@ import {
   useStoredProducts,
 } from "@/lib/content-store";
 import { useWishlist } from "@/hooks/use-wishlist";
+import { getCategoryLabel, productCategories } from "@/data/products";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import ProductGalleryCard from "@/components/ProductGalleryCard";
 import productStatue1 from "@/assets/Products/product-2.jpeg";
@@ -125,7 +126,14 @@ export default function HomePage() {
         };
       });
 
-    return adminCards;
+    if (adminCards.length > 0) return adminCards;
+
+    return productCategories.map((key) => ({
+      title: getCategoryLabel(key, resolvedLocale),
+      key,
+      count: resolvedLocale === "mr" ? "कलेक्शन पाहा" : "Explore collection",
+      image: fallbackImages[key] || productStatue1,
+    }));
   }, [catalogueTypes, products, resolvedLocale]);
   const spotlightProductCards = spotlightIds.flatMap((productId) => {
     const matchedProduct = products.find((item) => item.id === productId);
