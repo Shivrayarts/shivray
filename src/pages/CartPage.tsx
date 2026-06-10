@@ -9,6 +9,7 @@ import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { siteConfig } from "@/lib/site-config";
 import { getProductPricing, normalizeDisplayCase, parseCurrencyAmount } from "@/lib/utils";
 import { createRazorpayOrder, getRazorpayKeyId, loadRazorpayCheckoutScript, verifyRazorpayPayment } from "@/lib/payments";
+import { buildWhatsappUrl, getGeneralWhatsappMessage } from "@/lib/whatsapp-messages";
 import {
   type CustomerProfile,
   getStoredCustomers,
@@ -132,21 +133,21 @@ export default function CartPage() {
     });
 
     const message = [
-      "Hi Shivray Art, I want to place an order for these products.",
+      getGeneralWhatsappMessage(resolvedLocale),
       "",
-      "Customer Details:",
-      `Name: ${resolvedName}`,
-      `Phone: ${resolvedPhone}`,
-      `Email: ${resolvedEmail}`,
-      `Address: ${shippingAddress}`,
+      resolvedLocale === "mr" ? "ग्राहक तपशील:" : "Customer Details:",
+      `${resolvedLocale === "mr" ? "नाव" : "Name"}: ${resolvedName}`,
+      `${resolvedLocale === "mr" ? "फोन" : "Phone"}: ${resolvedPhone}`,
+      `${resolvedLocale === "mr" ? "ईमेल" : "Email"}: ${resolvedEmail}`,
+      `${resolvedLocale === "mr" ? "पत्ता" : "Address"}: ${shippingAddress}`,
       "",
-      "Items:",
+      resolvedLocale === "mr" ? "उत्पादने:" : "Items:",
       ...productLines,
       "",
-      `Order Total: Rs. ${orderTotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      `${resolvedLocale === "mr" ? "एकूण रक्कम" : "Order Total"}: Rs. ${orderTotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
     ].join("\n");
 
-    return `${siteConfig.whatsappHref}?text=${encodeURIComponent(message)}`;
+    return buildWhatsappUrl(siteConfig.whatsappHref, message);
   }
 
   async function handlePlaceOrder() {

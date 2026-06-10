@@ -10,6 +10,7 @@ import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
 import ProductGalleryCard from "@/components/ProductGalleryCard";
 import { toast } from "sonner";
+import { buildWhatsappUrl, getGeneralWhatsappMessage } from "@/lib/whatsapp-messages";
 
 function getRandomValue(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -125,9 +126,14 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
     );
   }
 
-  const whatsappLink = `${siteConfig.whatsappHref}?text=${encodeURIComponent(
-    `Hi Shivray, I want details for ${normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}. Please share price and availability.`,
-  )}`;
+  const productName = normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale));
+  const whatsappMessage =
+    getProductPaymentMode(product) === "whatsapp"
+      ? `${getGeneralWhatsappMessage(resolvedLocale)}\n\n${resolvedLocale === "mr" ? "मला या उत्पादनाबद्दल माहिती हवी आहे" : "I want details for this product"}: ${productName}`
+      : resolvedLocale === "mr"
+        ? `जय शिवराय\n\nमला ${productName} या उत्पादनाची माहिती हवी आहे. कृपया किंमत आणि उपलब्धता सांगा.`
+        : `Jai Shivray,\n\nI want details for ${productName}. Please share price and availability.`;
+  const whatsappLink = buildWhatsappUrl(siteConfig.whatsappHref, whatsappMessage);
   const galleryImages = [
     product.image,
     ...(product.galleryImages ?? []),

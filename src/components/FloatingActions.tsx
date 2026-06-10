@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { ArrowUp } from "lucide-react";
 import { useLanguage } from "@/lib/language";
 import { siteConfig } from "@/lib/site-config";
-
-const WHATSAPP_URL = `${siteConfig.whatsappHref}?text=Hi%20Shivray%2C%20I%20want%20to%20know%20more%20about%20your%20products.`;
+import { buildWhatsappUrl, getGeneralWhatsappMessage } from "@/lib/whatsapp-messages";
 
 export default function FloatingActions() {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const { resolvedLocale } = useLanguage();
+  const whatsappUrl = buildWhatsappUrl(siteConfig.whatsappHref, getGeneralWhatsappMessage(resolvedLocale));
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,7 +29,7 @@ export default function FloatingActions() {
   return (
     <div className="fixed bottom-24 right-4 z-40 flex flex-col gap-3 md:bottom-6 md:right-6">
       <a
-        href={WHATSAPP_URL}
+        href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={resolvedLocale === "mr" ? "व्हॉट्सअॅपवर चॅट करा" : "Chat on WhatsApp"}
