@@ -21,6 +21,6 @@ export const siteConfig = {
     pinterest: "https://pin.it/4T2tDXNBV",
   },
   addressMapHref: "https://maps.app.goo.gl/Lswc5pBK7mA6m6tn6",
-  googleBusinessHref: "https://www.google.com/maps/search/?api=1&query=Sainath+Chowk%2C+Dhankawadi%2C+Pune%2C+Maharashtra+411043",
+  googleBusinessHref: "https://share.google/aMyMp41RaTysLpzns",
   googleDirectionsHref: "https://www.google.com/maps/dir/?api=1&destination=Sainath+Chowk%2C+Dhankawadi%2C+Pune%2C+Maharashtra+411043&travelmode=driving",
 } as const;

@@ -50,7 +50,7 @@ export function loadRazorpayCheckoutScript() {
   return razorpayScriptPromise;
 }
 
-export async function createRazorpayOrder(amountInPaise: number, receipt: string) {
+export async function createRazorpayOrder(amountInPaise: number, receipt: string, productIds: string[]) {
   return apiRequest<{
     orderId: string;
     amount: number;
@@ -61,6 +61,7 @@ export async function createRazorpayOrder(amountInPaise: number, receipt: string
     body: {
       amount: amountInPaise,
       receipt,
+      productIds,
     },
   });
 }

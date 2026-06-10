@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
+import { OAuth2Client } from "google-auth-library";
 import { env } from "./env.mjs";
 import { query, withTransaction } from "./db.mjs";
 import {
@@ -36,6 +37,7 @@ function ensureServerBootstrap() {
       await ensureProductsCategoryColumnSupportsCustomValues();
       await ensureProductsLocalizedColumnsSupportJson();
       await ensureProductsDiscountColumns();
+      await ensureProductsPaymentModeColumn();
       await ensureOrderItemsProductSlugSnapshotColumn();
       await normalizeLegacySeedAssetPaths();
     })().catch((error) => {
@@ -128,6 +130,7 @@ const LEGACY_SEEDED_CATALOGUE_SLUGS = [
 
 let storefrontPayloadCache = null;
 let storefrontPayloadCacheExpiresAt = 0;
+const googleAuthClient = new OAuth2Client();
 
 function formatCurrency(value) {
   return `Rs. ${Number(value || 0).toLocaleString("en-IN", {
@@ -178,6 +181,13 @@ function parseDiscountPercentage(value) {
   return Math.min(parsed, 100);
 }
 
+function normalizePaymentMode(value, category) {
+  const raw = String(value ?? "").trim().toLowerCase();
+  if (raw === "whatsapp") return "whatsapp";
+  if (raw === "razorpay") return "razorpay";
+  return String(category || "").trim().toLowerCase() === "weapons" ? "whatsapp" : "razorpay";
+}
+
 function normalizeProductForDb(product) {
   const parsedPrice = parseProductPrice(product?.price);
   if (parsedPrice === null) return null;
@@ -219,6 +229,7 @@ function normalizeProductForDb(product) {
     material: encodeLocalizedValue(product?.material),
     dimensions: encodeLocalizedValue(product?.dimensions),
     historicalBackground: encodeLocalizedValue(product?.historicalBackground),
+    paymentMode: normalizePaymentMode(product?.paymentMode, product?.category),
     galleryImages: Array.isArray(product?.galleryImages)
       ? product.galleryImages
           .map((image) => String(image || "").trim())
@@ -233,9 +244,9 @@ async function upsertProductRow(connection, product, sortOrder) {
   await connection.query(
     `
     INSERT INTO products (
-      slug, name, price, discount_percentage, final_price, image_url, category, tag, short_description, details, material, dimensions, history_background, stock_quantity, is_published, sort_order
+      slug, name, price, discount_percentage, final_price, image_url, category, tag, short_description, details, material, dimensions, history_background, payment_mode, stock_quantity, is_published, sort_order
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1, ?)
     ON DUPLICATE KEY UPDATE
       name = VALUES(name),
       price = VALUES(price),
@@ -249,6 +260,7 @@ async function upsertProductRow(connection, product, sortOrder) {
       material = VALUES(material),
       dimensions = VALUES(dimensions),
       history_background = VALUES(history_background),
+      payment_mode = VALUES(payment_mode),
       is_published = VALUES(is_published),
       sort_order = VALUES(sort_order)
     `,
@@ -266,6 +278,7 @@ async function upsertProductRow(connection, product, sortOrder) {
       product.material,
       product.dimensions,
       product.historicalBackground,
+      product.paymentMode,
       sortOrder,
     ],
   );
@@ -721,6 +734,38 @@ async function ensureProductsDiscountColumns() {
   }
 }
 
+async function ensureProductsPaymentModeColumn() {
+  try {
+    const rows = await query(
+      `
+      SHOW COLUMNS FROM products LIKE 'payment_mode'
+      `,
+    );
+
+    if (Array.isArray(rows) && rows.length > 0) return;
+
+    await query(
+      `
+      ALTER TABLE products
+      ADD COLUMN payment_mode ENUM('razorpay', 'whatsapp') NOT NULL DEFAULT 'razorpay' AFTER history_background
+      `,
+    );
+
+    await query(
+      `
+      UPDATE products
+      SET payment_mode = 'whatsapp'
+      WHERE LOWER(category) = 'weapons'
+      `,
+    );
+  } catch (error) {
+    console.warn(
+      "Unable to verify product payment mode column.",
+      error instanceof Error ? error.message : error,
+    );
+  }
+}
+
 async function ensureOrderItemsProductSlugSnapshotColumn() {
   try {
     const rows = await query(
@@ -958,6 +1003,120 @@ async function findUserByEmail(email) {
   return rows[0] ?? null;
 }
 
+async function saveCustomerLogin(input) {
+  const name = String(input.name ?? "").trim();
+  const email = String(input.email ?? "").trim().toLowerCase();
+  const phone = String(input.phone ?? "").trim();
+  const address = String(input.address ?? "").trim();
+
+  if (!email) {
+    throw createHttpError(400, "Customer email is required.");
+  }
+
+  const existingUser = await findUserByEmail(email);
+  if (existingUser && existingUser.role !== "customer") {
+    throw createHttpError(409, "This email is reserved for an admin account. Use a different customer email.");
+  }
+
+  const customer = await withTransaction(async (connection) => {
+    const [existingRows] = await connection.query(
+      `
+      SELECT id, full_name, email, phone, address, created_at, last_login_at, updated_at
+      FROM users
+      WHERE email = ? AND role = 'customer'
+      LIMIT 1
+      `,
+      [email],
+    );
+
+    const existing = existingRows[0];
+    const now = new Date();
+
+    if (existing) {
+      await connection.query(
+        `
+        UPDATE users
+        SET
+          full_name = ?,
+          phone = ?,
+          address = ?,
+          last_login_at = ?,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+        `,
+        [name || existing.full_name || email.split("@")[0], phone || existing.phone || "", address || existing.address || "", now, existing.id],
+      );
+
+      return {
+        id: existing.id,
+        name: name || existing.full_name || email.split("@")[0],
+        email: existing.email,
+        phone: phone || existing.phone || "",
+        address: address || existing.address || "",
+        createdAt: new Date(existing.created_at).toISOString(),
+        lastLoginAt: now.toISOString(),
+      };
+    }
+
+    const [result] = await connection.query(
+      `
+      INSERT INTO users (
+        full_name, email, password_hash, role, is_active, phone, address, last_login_at
+      )
+      VALUES (?, ?, ?, 'customer', 1, ?, ?, ?)
+      `,
+      [name || email.split("@")[0] || "Customer", email, toSha256(`${email}:customer`), phone, address, now],
+    );
+
+    return {
+      id: result.insertId,
+      name: name || email.split("@")[0] || "Customer",
+      email,
+      phone,
+      address,
+      createdAt: now.toISOString(),
+      lastLoginAt: now.toISOString(),
+    };
+  });
+
+  return {
+    id: `customer-${customer.id}`,
+    name: customer.name,
+    email: customer.email,
+    phone: customer.phone,
+    address: customer.address,
+    createdAt: customer.createdAt,
+    lastLoginAt: customer.lastLoginAt,
+  };
+}
+
+async function verifyGoogleCredential(credential) {
+  const clientId = String(env.GOOGLE_CLIENT_ID || "").trim();
+  if (!clientId) {
+    throw createHttpError(500, "Google login is not configured on the server.");
+  }
+
+  if (!credential) {
+    throw createHttpError(400, "Google credential is required.");
+  }
+
+  const ticket = await googleAuthClient.verifyIdToken({
+    idToken: credential,
+    audience: clientId,
+  });
+  const payload = ticket.getPayload();
+  const email = String(payload?.email || "").trim().toLowerCase();
+
+  if (!payload?.email_verified || !email) {
+    throw createHttpError(401, "Google account email could not be verified.");
+  }
+
+  return {
+    email,
+    name: String(payload.name || payload.given_name || email.split("@")[0] || "Customer").trim(),
+  };
+}
+
 function requireAdmin(req, res, next) {
   const session = getAdminSession(req);
   if (!session?.userId) {
@@ -973,7 +1132,7 @@ async function fetchStorefrontPayload() {
   const [products, catalogues, banners, reviews, videos, spotlightSettings, productOptionsMap, productGalleryMap, blogPosts, announcementBar] = await Promise.all([
     query(
       `
-      SELECT slug, name, price, image_url, category, tag, short_description, details, material, dimensions, history_background
+      SELECT slug, name, price, image_url, category, tag, short_description, details, material, dimensions, history_background, payment_mode
       , discount_percentage, final_price
       FROM products
       WHERE is_published = 1
@@ -1053,6 +1212,7 @@ async function fetchStorefrontPayload() {
       material: decodeLocalizedValue(row.material),
       dimensions: decodeLocalizedValue(row.dimensions),
       historicalBackground: decodeLocalizedValue(row.history_background ?? ""),
+      paymentMode: normalizePaymentMode(row.payment_mode, row.category),
       galleryImages: Array.isArray(productGalleryMap?.[row.slug]) ? productGalleryMap[row.slug] : [],
       productOptions: Array.isArray(productOptionsMap?.[row.slug]) ? productOptionsMap[row.slug] : [],
     })),
@@ -1977,93 +2137,42 @@ app.post("/api/customers/login", async (req, res) => {
   const phone = String(req.body?.phone ?? "").trim();
   const address = String(req.body?.address ?? "").trim();
 
-  if (!email) {
-    res.status(400).json({ message: "Customer email is required." });
-    return;
-  }
-
   try {
-    const existingUser = await findUserByEmail(email);
-    if (existingUser && existingUser.role !== "customer") {
-      res.status(409).json({ message: "This email is reserved for an admin account. Use a different customer email." });
+    const customer = await saveCustomerLogin({ name, email, phone, address });
+    res.json({ customer });
+  } catch (error) {
+    if (error?.statusCode) {
+      res.status(error.statusCode).json({ message: error.message });
       return;
     }
 
-    const customer = await withTransaction(async (connection) => {
-      const [existingRows] = await connection.query(
-        `
-        SELECT id, full_name, email, phone, address, created_at, last_login_at, updated_at
-        FROM users
-        WHERE email = ? AND role = 'customer'
-        LIMIT 1
-        `,
-        [email],
-      );
-
-      const existing = existingRows[0];
-      const now = new Date();
-
-      if (existing) {
-        await connection.query(
-          `
-          UPDATE users
-          SET
-            full_name = ?,
-            phone = ?,
-            address = ?,
-            last_login_at = ?,
-            updated_at = CURRENT_TIMESTAMP
-          WHERE id = ?
-          `,
-          [name || existing.full_name || email.split("@")[0], phone || existing.phone || "", address || existing.address || "", now, existing.id],
-        );
-
-        return {
-          id: existing.id,
-          name: name || existing.full_name || email.split("@")[0],
-          email: existing.email,
-          phone: phone || existing.phone || "",
-          address: address || existing.address || "",
-          createdAt: new Date(existing.created_at).toISOString(),
-          lastLoginAt: now.toISOString(),
-        };
-      }
-
-      const [result] = await connection.query(
-        `
-        INSERT INTO users (
-          full_name, email, password_hash, role, is_active, phone, address, last_login_at
-        )
-        VALUES (?, ?, ?, 'customer', 1, ?, ?, ?)
-        `,
-        [name || email.split("@")[0] || "Customer", email, toSha256(`${email}:customer`), phone, address, now],
-      );
-
-      return {
-        id: result.insertId,
-        name: name || email.split("@")[0] || "Customer",
-        email,
-        phone,
-        address,
-        createdAt: now.toISOString(),
-        lastLoginAt: now.toISOString(),
-      };
-    });
-
-    res.json({
-      customer: {
-        id: `customer-${customer.id}`,
-        name: customer.name,
-        email: customer.email,
-        phone: customer.phone,
-        address: customer.address,
-        createdAt: customer.createdAt,
-        lastLoginAt: customer.lastLoginAt,
-      },
-    });
-  } catch (error) {
     console.error("Unable to save customer to database. Using memory fallback.", error);
     res.json({ customer: upsertMemoryCustomer({ name, email, phone, address }) });
+  }
+});
+
+app.post("/api/customers/google-login", async (req, res) => {
+  const credential = String(req.body?.credential ?? "").trim();
+  const phone = String(req.body?.phone ?? "").trim();
+  const address = String(req.body?.address ?? "").trim();
+
+  try {
+    const googleProfile = await verifyGoogleCredential(credential);
+    const customer = await saveCustomerLogin({
+      name: googleProfile.name,
+      email: googleProfile.email,
+      phone,
+      address,
+    });
+    res.json({ customer });
+  } catch (error) {
+    if (error?.statusCode) {
+      res.status(error.statusCode).json({ message: error.message });
+      return;
+    }
+
+    console.error("Unable to complete Google customer login.", error);
+    res.status(500).json({ message: "Unable to continue with Google right now." });
   }
 });
 
@@ -2316,13 +2425,45 @@ app.patch("/api/admin/orders/:orderId/status", requireAdmin, async (req, res) =>
 app.post("/api/payments/razorpay/order", async (req, res) => {
   const amount = Number(req.body?.amount ?? 0);
   const receipt = String(req.body?.receipt ?? "").trim() || `receipt_${Date.now()}`;
+  const productIds = Array.isArray(req.body?.productIds)
+    ? req.body.productIds.map((id) => String(id || "").trim()).filter(Boolean)
+    : [];
 
   if (!Number.isFinite(amount) || amount <= 0) {
     res.status(400).json({ message: "A valid amount is required to create a Razorpay order." });
     return;
   }
 
+  if (productIds.length === 0) {
+    res.status(400).json({ message: "Product details are required to create a Razorpay order." });
+    return;
+  }
+
   try {
+    const placeholders = productIds.map(() => "?").join(", ");
+    const products = await query(
+      `
+      SELECT slug, category, payment_mode
+      FROM products
+      WHERE slug IN (${placeholders}) AND is_published = 1
+      `,
+      productIds,
+    );
+    const foundSlugs = new Set(products.map((product) => String(product.slug)));
+    const missingProduct = productIds.find((productId) => !foundSlugs.has(productId));
+    if (missingProduct) {
+      res.status(400).json({ message: "One or more cart products are no longer available." });
+      return;
+    }
+
+    const whatsappOnlyProduct = products.find(
+      (product) => normalizePaymentMode(product.payment_mode, product.category) === "whatsapp",
+    );
+    if (whatsappOnlyProduct) {
+      res.status(400).json({ message: "This cart contains a WhatsApp-only product. Razorpay payment is not available." });
+      return;
+    }
+
     const response = await fetch("https://api.razorpay.com/v1/orders", {
       method: "POST",
       headers: {

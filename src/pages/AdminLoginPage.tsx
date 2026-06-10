@@ -53,7 +53,7 @@ export default function AdminLoginPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="mt-7 space-y-4">
+          <form onSubmit={handleSubmit} className="mt-7 space-y-4" autoComplete="on">
             <div>
               <label htmlFor="admin-email" className="text-sm font-medium text-[#34180e]">
                 Admin Email
@@ -62,10 +62,12 @@ export default function AdminLoginPage() {
                 <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#927863]" />
                 <input
                   id="admin-email"
+                  name="admin-email"
                   type="email"
                   value={email}
                   onBlur={() => setTouched((current) => ({ ...current, email: true }))}
                   onChange={(event) => setEmail(event.target.value)}
+                  autoComplete="section-admin email"
                   placeholder="Enter admin email"
                   className={`w-full rounded-2xl border bg-[#fcf8f2] py-3 pl-10 pr-4 text-sm text-[#34180e] outline-none ${
                     touched.email && !isValidEmail(email) ? "border-[#b42318]" : "border-[#eadbc8]"
@@ -86,10 +88,12 @@ export default function AdminLoginPage() {
                 <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#927863]" />
                 <input
                   id="admin-password"
+                  name="admin-password"
                   type="password"
                   value={password}
                   onBlur={() => setTouched((current) => ({ ...current, password: true }))}
                   onChange={(event) => setPassword(event.target.value)}
+                  autoComplete="section-admin current-password"
                   placeholder="Enter admin password"
                   className={`w-full rounded-2xl border bg-[#fcf8f2] py-3 pl-10 pr-4 text-sm text-[#34180e] outline-none ${
                     touched.password && !password.trim() ? "border-[#b42318]" : "border-[#eadbc8]"

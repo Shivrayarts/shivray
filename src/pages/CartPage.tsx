@@ -1,7 +1,7 @@
-import { Link } from "@/lib/spa-router";
-import { Minus, Plus, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { getCategoryLabel } from "@/data/products";
+import { Link, useNavigate } from "@/lib/spa-router";
+import { LockKeyhole, Minus, Plus, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { getCategoryLabel, getProductPaymentMode } from "@/data/products";
 import { useCart } from "@/hooks/use-cart";
 import { useStoredProducts } from "@/lib/content-store";
 import { isValidEmail, isValidName, isValidPhone, normalizeDigits } from "@/lib/form-validation";
@@ -26,6 +26,7 @@ type RazorpaySuccessResponse = {
 
 export default function CartPage() {
   const { resolvedLocale } = useLanguage();
+  const navigate = useNavigate();
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
   const catalog = useStoredProducts();
   const customerSession = useCustomerSession();
@@ -53,6 +54,21 @@ export default function CartPage() {
     if (!customerSession) return null;
     return getStoredCustomers().find((customer) => customer.id === customerSession.customerId) ?? null;
   }, [customerSession]);
+  const isLoggedIn = Boolean(customerSession && currentCustomer);
+
+  useEffect(() => {
+    if (!currentCustomer) return;
+
+    const [addressLine = "", pincodeLine = ""] = String(currentCustomer.address || "").split("\nPIN Code: ");
+    setCheckoutForm((value) => ({
+      ...value,
+      name: currentCustomer.name || value.name,
+      email: currentCustomer.email || value.email,
+      phone: currentCustomer.phone || value.phone,
+      address: addressLine || value.address,
+      pincode: pincodeLine || value.pincode,
+    }));
+  }, [currentCustomer]);
 
   const orderTotal = useMemo(
     () =>
@@ -69,7 +85,7 @@ export default function CartPage() {
   const resolvedPincode = checkoutForm.pincode.trim();
   const isPincodeValid = /^\d{6}$/.test(resolvedPincode);
   const shippingAddress = `${resolvedAddress}${resolvedPincode ? `\nPIN Code: ${resolvedPincode}` : ""}`;
-  const hasWeaponItems = items.some(({ product }) => String(product.category || "").trim() === "Weapons");
+  const hasWhatsappOnlyItems = items.some(({ product }) => getProductPaymentMode(product) === "whatsapp");
 
   function ensureValidCheckoutDetails() {
     if (
@@ -116,7 +132,7 @@ export default function CartPage() {
     });
 
     const message = [
-      "Hi Shivray Art, I want to place an offline order for weapon products.",
+      "Hi Shivray Art, I want to place an order for these products.",
       "",
       "Customer Details:",
       `Name: ${resolvedName}`,
@@ -134,11 +150,20 @@ export default function CartPage() {
   }
 
   async function handlePlaceOrder() {
+    if (!isLoggedIn) {
+      setOrderMessage("Please log in first to continue with checkout.");
+      navigate({
+        to: "/login",
+        search: { redirect: "/cart" },
+      });
+      return;
+    }
+
     if (!ensureValidCheckoutDetails()) return;
 
-    if (hasWeaponItems) {
+    if (hasWhatsappOnlyItems) {
       window.open(buildWhatsappOrderLink(), "_blank", "noopener,noreferrer");
-      setOrderMessage("Weapon orders are handled on WhatsApp. We opened the order message for you.");
+      setOrderMessage("This cart includes WhatsApp-only products. We opened the order message for you.");
       return;
     }
 
@@ -149,6 +174,7 @@ export default function CartPage() {
       const razorpayOrder = await createRazorpayOrder(
         Math.round(orderTotal * 100),
         `order_${Date.now()}`,
+        items.map(({ product }) => product.id),
       );
 
       if (!window.Razorpay) {
@@ -255,10 +281,31 @@ export default function CartPage() {
               <div className="rounded-lg border border-border bg-card p-5">
                 <h2 className="font-heading text-2xl font-semibold text-foreground">Place Order</h2>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {hasWeaponItems
-                    ? "Weapons are handled offline. Share your details and continue the order on WhatsApp."
+                  {hasWhatsappOnlyItems
+                    ? "This cart includes WhatsApp-only products. Share your details and continue the order on WhatsApp."
                     : "Share your details and continue with secure online payment."}
                 </p>
+                <div className={`mt-4 rounded-lg border p-4 text-sm ${isLoggedIn ? "border-[#d8e7c8] bg-[#f4fbf0] text-[#305724]" : "border-[#eadbc8] bg-[#fcf8f2] text-[#6c4b33]"}`}>
+                  {isLoggedIn ? (
+                    <p>
+                      Signed in as <span className="font-semibold">{currentCustomer?.email}</span>. You can continue with checkout.
+                    </p>
+                  ) : (
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="flex items-center gap-2">
+                        <LockKeyhole className="h-4 w-4" />
+                        Please log in before placing an order.
+                      </p>
+                      <Link
+                        to="/login"
+                        search={{ redirect: "/cart" }}
+                        className="inline-flex items-center justify-center rounded-md bg-[#34180e] px-4 py-2 text-sm font-semibold text-white"
+                      >
+                        Login to Continue
+                      </Link>
+                    </div>
+                  )}
+                </div>
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
                   <input
                     type="text"
@@ -266,6 +313,7 @@ export default function CartPage() {
                     onBlur={() => setTouched((value) => ({ ...value, name: true }))}
                     onChange={(event) => setCheckoutForm((value) => ({ ...value, name: event.target.value }))}
                     placeholder="Customer name"
+                    disabled={!isLoggedIn}
                     className={`rounded-md border bg-background px-4 py-3 text-sm ${
                       touched.name && !isValidName(resolvedName) ? "border-[#b42318]" : "border-border"
                     }`}
@@ -276,6 +324,7 @@ export default function CartPage() {
                     onBlur={() => setTouched((value) => ({ ...value, email: true }))}
                     onChange={(event) => setCheckoutForm((value) => ({ ...value, email: event.target.value }))}
                     placeholder="Email"
+                    disabled={!isLoggedIn}
                     className={`rounded-md border bg-background px-4 py-3 text-sm ${
                       touched.email && !isValidEmail(resolvedEmail) ? "border-[#b42318]" : "border-border"
                     }`}
@@ -286,6 +335,7 @@ export default function CartPage() {
                     onBlur={() => setTouched((value) => ({ ...value, phone: true }))}
                     onChange={(event) => setCheckoutForm((value) => ({ ...value, phone: normalizeDigits(event.target.value, 10) }))}
                     placeholder="Phone number"
+                    disabled={!isLoggedIn}
                     className={`rounded-md border bg-background px-4 py-3 text-sm ${
                       touched.phone && !isValidPhone(resolvedPhone) ? "border-[#b42318]" : "border-border"
                     }`}
@@ -296,6 +346,7 @@ export default function CartPage() {
                     onChange={(event) => setCheckoutForm((value) => ({ ...value, address: event.target.value }))}
                     placeholder="Delivery address"
                     rows={4}
+                    disabled={!isLoggedIn}
                     className={`rounded-md border bg-background px-4 py-3 text-sm md:col-span-2 ${
                       touched.address && resolvedAddress.length < 10 ? "border-[#b42318]" : "border-border"
                     }`}
@@ -309,6 +360,7 @@ export default function CartPage() {
                     onBlur={() => setTouched((value) => ({ ...value, pincode: true }))}
                     onChange={(event) => setCheckoutForm((value) => ({ ...value, pincode: normalizeDigits(event.target.value, 6) }))}
                     placeholder="PIN code"
+                    disabled={!isLoggedIn}
                     className={`rounded-md border bg-background px-4 py-3 text-sm md:col-span-2 ${
                       touched.pincode && !isPincodeValid ? "border-[#b42318]" : "border-border"
                     }`}
@@ -317,11 +369,11 @@ export default function CartPage() {
                 <div className="mt-4 rounded-lg border border-[#eadbc8] bg-[#fcf8f2] p-4 text-sm text-[#6c4b33]">
                   <p className="font-semibold text-[#34180e]">Shipping & Payment</p>
                   <p className="mt-2">
-                    Payment method: {hasWeaponItems ? "Offline WhatsApp Order" : "Online Payment"}
+                    Payment method: {hasWhatsappOnlyItems ? "Offline WhatsApp Order" : "Online Payment"}
                   </p>
                   <p className="mt-1">
-                    {hasWeaponItems
-                      ? "Weapon orders are completed on WhatsApp after order review."
+                    {hasWhatsappOnlyItems
+                      ? "WhatsApp-only products are completed after manual order review."
                       : "Shipping charges, payment confirmation, and delivery timeline will be shared with you after order review."}
                   </p>
                 </div>
@@ -339,9 +391,10 @@ export default function CartPage() {
                   <button
                     type="button"
                     onClick={handlePlaceOrder}
+                    disabled={!isLoggedIn}
                     className="rounded-md bg-primary px-5 py-2 text-sm font-semibold uppercase tracking-wider text-primary-foreground"
                   >
-                    {hasWeaponItems ? "Order on WhatsApp" : "Pay with Razorpay"}
+                    {!isLoggedIn ? "Login to Place Order" : hasWhatsappOnlyItems ? "Order on WhatsApp" : "Pay with Razorpay"}
                   </button>
                 </div>
                 {orderMessage ? <p className="mt-4 text-sm font-medium text-green-700">{orderMessage}</p> : null}

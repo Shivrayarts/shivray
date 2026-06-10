@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS products (
   material TEXT NOT NULL,
   dimensions TEXT NOT NULL,
   history_background TEXT DEFAULT NULL,
+  payment_mode ENUM('razorpay', 'whatsapp') NOT NULL DEFAULT 'razorpay',
   sort_order INT UNSIGNED NOT NULL DEFAULT 0,
   stock_quantity INT UNSIGNED NOT NULL DEFAULT 0,
   is_published TINYINT(1) NOT NULL DEFAULT 1,

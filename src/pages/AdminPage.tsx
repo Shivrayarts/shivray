@@ -76,6 +76,7 @@ const productTemplate: Product = {
   dimensions: "",
   historicalBackground: "",
   productOptions: [],
+  paymentMode: "razorpay",
 };
 
 const catalogueTemplate: CatalogueType = {
@@ -554,7 +555,7 @@ function ProductForm({
           + Add Another Option
         </button>
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         <select
           value={value.category}
           onChange={(event) =>
@@ -570,6 +571,19 @@ function ProductForm({
               {category}
             </option>
           ))}
+        </select>
+        <select
+          value={value.paymentMode === "whatsapp" ? "whatsapp" : "razorpay"}
+          onChange={(event) =>
+            onChange({
+              ...value,
+              paymentMode: event.target.value === "whatsapp" ? "whatsapp" : "razorpay",
+            })
+          }
+          className="rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#34180e] outline-none"
+        >
+          <option value="razorpay">Razorpay payment allowed</option>
+          <option value="whatsapp">WhatsApp order only</option>
         </select>
         <input
           list="product-tag-options"
@@ -1641,6 +1655,7 @@ export default function AdminPage() {
       finalPrice: normalizedFinalPrice,
       galleryImages: (productDraft.galleryImages ?? []).filter(Boolean).slice(0, 4),
       productOptions: validOptions,
+      paymentMode: productDraft.paymentMode === "whatsapp" ? "whatsapp" : "razorpay",
       historicalBackground: {
         en: historicalBackground.en.trim(),
         mr: historicalBackground.mr.trim(),
@@ -2861,6 +2876,16 @@ export default function AdminPage() {
                             <div>
                               <p className="text-sm text-[#8b95a4]">Brand</p>
                               <p className="text-2xl font-semibold text-[#111827]">{adminText(item.tag) || "Active"}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-[#8b95a4]">Payment</p>
+                              <p className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                                item.paymentMode === "whatsapp"
+                                  ? "bg-[#dcfce7] text-[#166534]"
+                                  : "bg-[#e0f2fe] text-[#075985]"
+                              }`}>
+                                {item.paymentMode === "whatsapp" ? "WhatsApp only" : "Razorpay allowed"}
+                              </p>
                             </div>
                             {!item.productOptions?.length && Number(item.discount || 0) > 0 ? (
                               <div>

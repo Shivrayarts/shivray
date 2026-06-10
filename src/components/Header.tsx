@@ -1,13 +1,13 @@
 import { Link, useLocation, useNavigate } from "@/lib/spa-router";
 import { FormEvent, useState } from "react";
-import { Heart, LogIn, Menu, Phone, Search, ShoppingCart, X } from "lucide-react";
+import { Heart, LogIn, LogOut, Menu, Phone, Search, ShoppingCart, UserRound, X } from "lucide-react";
 import logoImg from "@/assets/logo-dark-small.jpg";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
+import { logoutCustomer, useCustomerSession } from "@/lib/customer-orders";
 import { useStoredHomeContent } from "@/lib/content-store";
-import { useLanguage } from "@/lib/language";
-import { resolveLocalizedText } from "@/lib/language";
+import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { siteConfig } from "@/lib/site-config";
 
 export default function Header() {
@@ -18,9 +18,11 @@ export default function Header() {
   const navigate = useNavigate();
   const { wishlist } = useWishlist();
   const { getTotalItems } = useCart();
+  const customerSession = useCustomerSession();
   const { announcementBar } = useStoredHomeContent();
   const wishlistCount = wishlist.length;
   const cartCount = getTotalItems();
+  const loggedInCustomerLabel = customerSession?.name || customerSession?.email || "";
   const brandName = siteConfig.brandName[resolvedLocale];
   const brandNameClass =
     resolvedLocale === "mr"
@@ -28,11 +30,11 @@ export default function Header() {
       : "font-heading font-bold";
   const brandNameWrapClass = resolvedLocale === "mr" ? "whitespace-nowrap overflow-visible" : "truncate";
   const navLinks = [
-    { to: "/", label: resolvedLocale === "mr" ? "मुख्यपृष्ठ" : "Home" },
-    { to: "/products", label: resolvedLocale === "mr" ? "उत्पादने" : "Products" },
-    { to: "/required-catalogue", label: resolvedLocale === "mr" ? "कॅटलॉग" : "Catalogue" },
-    { to: "/contact", label: resolvedLocale === "mr" ? "संपर्क" : "Contact" },
-    { to: "/login", label: resolvedLocale === "mr" ? "लॉगिन" : "Login" },
+    { to: "/", label: resolvedLocale === "mr" ? "à¤®à¥à¤–à¥à¤¯à¤ªà¥ƒà¤·à¥à¤ " : "Home" },
+    { to: "/products", label: resolvedLocale === "mr" ? "à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡" : "Products" },
+    { to: "/required-catalogue", label: resolvedLocale === "mr" ? "à¤•à¥…à¤Ÿà¤²à¥‰à¤—" : "Catalogue" },
+    { to: "/contact", label: resolvedLocale === "mr" ? "à¤¸à¤‚à¤ªà¤°à¥à¤•" : "Contact" },
+    { to: "/login", label: resolvedLocale === "mr" ? "à¤²à¥‰à¤—à¤¿à¤¨" : "Login" },
   ] as const;
   const desktopNavLinks = navLinks.filter((link) => link.to !== "/login");
   const announcementText = resolveLocalizedText(announcementBar.text, resolvedLocale).trim();
@@ -57,6 +59,12 @@ export default function Header() {
     navigateToSearch(value);
   };
 
+  const handleLogout = () => {
+    logoutCustomer();
+    setMobileOpen(false);
+    navigate({ to: "/" });
+  };
+
   return (
     <header className="sticky top-0 z-50 border-b border-[#eadbc8] bg-[#fffaf4]/95 backdrop-blur-md">
       {showAnnouncement ? (
@@ -72,7 +80,7 @@ export default function Header() {
         <div className="layout-shell flex items-center justify-between gap-3 text-[11px]">
           <span className="truncate">
             {resolvedLocale === "mr"
-              ? "मोबाईलसाठी तयार कॅटलॉग आणि चौकशी अनुभव"
+              ? "à¤®à¥‹à¤¬à¤¾à¤ˆà¤²à¤¸à¤¾à¤ à¥€ à¤¤à¤¯à¤¾à¤° à¤•à¥…à¤Ÿà¤²à¥‰à¤— à¤†à¤£à¤¿ à¤šà¥Œà¤•à¤¶à¥€ à¤…à¤¨à¥à¤­à¤µ"
               : "Mobile-first catalogue and enquiry experience"}
           </span>
           <a
@@ -118,6 +126,16 @@ export default function Header() {
             </Link>
 
             <div className="flex items-center justify-end gap-2">
+              {customerSession ? (
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#8b6c52] bg-white/5 text-[#f7e7cf] transition hover:bg-white/10"
+                  aria-label="Logout"
+                >
+                  <LogOut className="h-5 w-5" />
+                </button>
+              ) : null}
               <LanguageSwitcher compact className="bg-white/5" />
             </div>
           </div>
@@ -128,9 +146,9 @@ export default function Header() {
                 type="search"
                 value={searchQuery}
                 onChange={(event) => handleSearchChange(event.target.value)}
-                placeholder={resolvedLocale === "mr" ? "उत्पादने शोधा" : "Search products"}
+                placeholder={resolvedLocale === "mr" ? "à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡ à¤¶à¥‹à¤§à¤¾" : "Search products"}
                 className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#34180e] outline-none placeholder:text-[#9b7757]"
-                aria-label={resolvedLocale === "mr" ? "उत्पादने किंवा श्रेणी शोधा" : "Search products or categories"}
+                aria-label={resolvedLocale === "mr" ? "à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡ à¤•à¤¿à¤‚à¤µà¤¾ à¤¶à¥à¤°à¥‡à¤£à¥€ à¤¶à¥‹à¤§à¤¾" : "Search products or categories"}
               />
             </div>
           </form>
@@ -179,6 +197,15 @@ export default function Header() {
             </nav>
 
             <div className="flex shrink-0 items-center gap-2 pl-2 2xl:gap-3 2xl:pl-4">
+              {customerSession ? (
+                <div className="flex max-w-[190px] items-center gap-2 rounded-[18px] border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#5f402b] xl:max-w-[220px] 2xl:px-4">
+                  <UserRound className="h-4 w-4 shrink-0 text-[#7a4d27]" />
+                  <div className="min-w-0">
+                    <p className="truncate text-[10px] uppercase tracking-[0.18em] text-[#9b7757]">Logged In</p>
+                    <p className="truncate font-semibold text-[#34180e]">{loggedInCustomerLabel}</p>
+                  </div>
+                </div>
+              ) : null}
               <LanguageSwitcher />
               <form onSubmit={handleSearchSubmit} className="flex items-center">
                 <div className="flex h-12 w-52 items-center gap-2 rounded-[18px] border border-[#eadbc8] bg-white px-4 focus-within:border-[#d6a35c] focus-within:bg-[#fffdf9] 2xl:h-[52px] 2xl:w-72 2xl:gap-3 2xl:px-5">
@@ -187,23 +214,34 @@ export default function Header() {
                     type="text"
                     value={searchQuery}
                     onChange={(event) => handleSearchChange(event.target.value)}
-                    placeholder={resolvedLocale === "mr" ? "उत्पादने शोधा" : "Search products"}
+                    placeholder={resolvedLocale === "mr" ? "à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡ à¤¶à¥‹à¤§à¤¾" : "Search products"}
                     className="w-full bg-transparent text-sm font-medium text-[#34180e] outline-none placeholder:text-[#9b7757] 2xl:text-base"
-                    aria-label={resolvedLocale === "mr" ? "उत्पादने किंवा श्रेणी शोधा" : "Search products or categories"}
+                    aria-label={resolvedLocale === "mr" ? "à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡ à¤•à¤¿à¤‚à¤µà¤¾ à¤¶à¥à¤°à¥‡à¤£à¥€ à¤¶à¥‹à¤§à¤¾" : "Search products or categories"}
                   />
                 </div>
               </form>
-              <Link
-                to="/login"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5] 2xl:h-12 2xl:w-12"
-                aria-label={resolvedLocale === "mr" ? "खाते उघडा" : "Open account"}
-              >
-                <LogIn className="h-5 w-5 2xl:h-6 2xl:w-6" />
-              </Link>
+              {customerSession ? (
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5] 2xl:h-12 2xl:w-12"
+                  aria-label="Logout"
+                >
+                  <LogOut className="h-5 w-5 2xl:h-6 2xl:w-6" />
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5] 2xl:h-12 2xl:w-12"
+                  aria-label={resolvedLocale === "mr" ? "à¤–à¤¾à¤¤à¥‡ à¤‰à¤˜à¤¡à¤¾" : "Open account"}
+                >
+                  <LogIn className="h-5 w-5 2xl:h-6 2xl:w-6" />
+                </Link>
+              )}
               <Link
                 to="/wishlist"
                 className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5] 2xl:h-12 2xl:w-12"
-                aria-label={resolvedLocale === "mr" ? "आवडीची उत्पादने उघडा" : "Open liked products"}
+                aria-label={resolvedLocale === "mr" ? "à¤†à¤µà¤¡à¥€à¤šà¥€ à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡ à¤‰à¤˜à¤¡à¤¾" : "Open liked products"}
               >
                 <Heart className={`h-5 w-5 2xl:h-6 2xl:w-6 ${wishlistCount > 0 ? "fill-current" : ""}`} />
                 {wishlistCount > 0 ? (
@@ -215,7 +253,7 @@ export default function Header() {
               <Link
                 to="/cart"
                 className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5] 2xl:h-12 2xl:w-12"
-                aria-label={resolvedLocale === "mr" ? "कार्ट उघडा" : "Open cart"}
+                aria-label={resolvedLocale === "mr" ? "à¤•à¤¾à¤°à¥à¤Ÿ à¤‰à¤˜à¤¡à¤¾" : "Open cart"}
               >
                 <ShoppingCart className="h-5 w-5 2xl:h-6 2xl:w-6" />
                 {cartCount > 0 ? (
@@ -232,6 +270,22 @@ export default function Header() {
       {mobileOpen ? (
         <div className="border-t border-[#eadbc8] bg-[#fffaf4] xl:hidden">
           <nav className="layout-shell grid gap-2 px-4 py-4 md:px-6">
+            {customerSession ? (
+              <div className="rounded-2xl border border-[#eadbc8] bg-white px-4 py-3 text-sm text-[#5f402b]">
+                <div className="flex items-center gap-2 font-semibold text-[#34180e]">
+                  <UserRound className="h-4 w-4" />
+                  <span className="truncate">{loggedInCustomerLabel}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[#7a4d27]"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </button>
+              </div>
+            ) : null}
             {navLinks.map((link) => {
               const active = location.pathname === link.to;
 

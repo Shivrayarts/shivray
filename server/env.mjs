@@ -127,6 +127,12 @@ export const env = {
     "shivray-change-this-session-secret",
   ADMIN_EMAIL: process.env.ADMIN_EMAIL ?? envFile.ADMIN_EMAIL ?? "admin@shivray.local",
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD ?? envFile.ADMIN_PASSWORD ?? "Admin@123",
+  GOOGLE_CLIENT_ID:
+    process.env.GOOGLE_CLIENT_ID ??
+    envFile.GOOGLE_CLIENT_ID ??
+    process.env.VITE_GOOGLE_CLIENT_ID ??
+    envFile.VITE_GOOGLE_CLIENT_ID ??
+    "",
   CORS_ORIGIN:
     process.env.CORS_ORIGIN ??
     envFile.CORS_ORIGIN ??

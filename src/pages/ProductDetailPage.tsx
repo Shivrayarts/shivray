@@ -1,7 +1,7 @@
 import { Link } from "@/lib/spa-router";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ChevronRight, Heart, MessageCircle, ShoppingCart } from "lucide-react";
-import { getCategoryLabel, type Product } from "@/data/products";
+import { getCategoryLabel, getProductPaymentMode, type Product } from "@/data/products";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { useStoredProducts } from "@/lib/content-store";
 import { siteConfig } from "@/lib/site-config";
@@ -162,6 +162,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   const selectedOriginalPrice = selectedOptionPricing?.originalPrice || basePricing.originalPrice;
   const selectedFinalPrice = selectedOptionPricing?.finalPrice || basePricing.finalPrice;
   const selectedDiscount = selectedOptionPricing?.discountPercentage ?? basePricing.discountPercentage;
+  const isWhatsappOnly = getProductPaymentMode(product) === "whatsapp";
 
   return (
     <div className="bg-[#f7f1e7] pb-8 md:pb-12">
@@ -281,6 +282,15 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
               </div>
             ) : null}
             <p className="mt-5 text-sm leading-7 text-[#6c4b33]">{resolveLocalizedText(product.details, resolvedLocale)}</p>
+            {isWhatsappOnly ? (
+              <div className="mt-5 rounded-[20px] border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-3 text-sm font-semibold text-[#166534]">
+                {resolvedLocale === "mr" ? "हा उत्पाद WhatsApp order साठी उपलब्ध आहे." : "This product is available for WhatsApp order only."}
+              </div>
+            ) : (
+              <div className="mt-5 rounded-[20px] border border-[#bae6fd] bg-[#f0f9ff] px-4 py-3 text-sm font-semibold text-[#075985]">
+                {resolvedLocale === "mr" ? "या उत्पादनासाठी Razorpay payment उपलब्ध आहे." : "Razorpay payment is available for this product."}
+              </div>
+            )}
             {productOptions.length ? (
               <div className="mt-6 overflow-hidden rounded-[24px] border border-[#eadbc8]">
                 <div className="grid grid-cols-4 bg-[#fcf8f2] text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b4d1d]">

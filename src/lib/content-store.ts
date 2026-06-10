@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { type Product } from "@/data/products";
+import { getProductPaymentMode, type Product } from "@/data/products";
 import { defaultCatalogueTypes, type CatalogueType } from "@/lib/catalogue-types";
 import { homeContent as defaultHomeContent } from "@/data/home-content";
 import { apiRequest } from "@/lib/api";
@@ -402,6 +402,7 @@ function normalizeProduct(product: Product): Product {
           }))
           .filter((option) => option.label || option.price || option.discount || option.finalPrice)
       : [],
+    paymentMode: getProductPaymentMode(product),
   };
 }
 

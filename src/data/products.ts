@@ -2,6 +2,7 @@ import type { Locale, LocalizedText } from "@/lib/language";
 
 type ProductCategory = string;
 type Translatable = string | LocalizedText;
+export type ProductPaymentMode = "razorpay" | "whatsapp";
 
 export type ProductOption = {
   label: string;
@@ -26,6 +27,7 @@ export type Product = {
   dimensions: Translatable;
   historicalBackground?: Translatable;
   productOptions?: ProductOption[];
+  paymentMode?: ProductPaymentMode;
 };
 
 export const productCategories = ["Statues", "Weapons", "Shields", "Dhoop"] as const;
@@ -57,6 +59,12 @@ export function getCategoryLabel(category: ProductCategory, locale: Locale) {
   const known = categoryLabels[normalizedKey || category];
   if (known) return known[locale];
   return category;
+}
+
+export function getProductPaymentMode(product: Pick<Product, "category" | "paymentMode">): ProductPaymentMode {
+  if (product.paymentMode === "whatsapp") return "whatsapp";
+  if (product.paymentMode === "razorpay") return "razorpay";
+  return String(product.category || "").trim().toLowerCase() === "weapons" ? "whatsapp" : "razorpay";
 }
 
 export const allProducts: Product[] = [];
