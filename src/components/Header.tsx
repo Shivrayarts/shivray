@@ -14,6 +14,7 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { resolvedLocale } = useLanguage();
+  const isMarathi = resolvedLocale === "mr";
   const location = useLocation();
   const navigate = useNavigate();
   const { wishlist } = useWishlist();
@@ -24,17 +25,17 @@ export default function Header() {
   const cartCount = getTotalItems();
   const loggedInCustomerLabel = customerSession?.name || customerSession?.email || "";
   const brandName = siteConfig.brandName[resolvedLocale];
-  const brandNameClass =
-    resolvedLocale === "mr"
-      ? "font-brand-marathi font-bold tracking-normal leading-[1.35]"
-      : "font-heading font-bold";
-  const brandNameWrapClass = resolvedLocale === "mr" ? "whitespace-nowrap overflow-visible" : "truncate";
+  const brandNameClass = isMarathi
+    ? "font-brand-marathi font-bold tracking-normal leading-[1.35]"
+    : "font-heading font-bold";
+  const brandNameWrapClass = isMarathi ? "whitespace-nowrap overflow-visible" : "truncate";
+  const marathiUiClass = isMarathi ? "font-brand-marathi tracking-normal" : "";
   const navLinks = [
-    { to: "/", label: resolvedLocale === "mr" ? "à¤®à¥à¤–à¥à¤¯à¤ªà¥ƒà¤·à¥à¤ " : "Home" },
-    { to: "/products", label: resolvedLocale === "mr" ? "à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡" : "Products" },
-    { to: "/required-catalogue", label: resolvedLocale === "mr" ? "à¤•à¥…à¤Ÿà¤²à¥‰à¤—" : "Catalogue" },
-    { to: "/contact", label: resolvedLocale === "mr" ? "à¤¸à¤‚à¤ªà¤°à¥à¤•" : "Contact" },
-    { to: "/login", label: resolvedLocale === "mr" ? "à¤²à¥‰à¤—à¤¿à¤¨" : "Login" },
+    { to: "/", label: isMarathi ? "मुख्यपृष्ठ" : "Home" },
+    { to: "/products", label: isMarathi ? "उत्पादने" : "Products" },
+    { to: "/required-catalogue", label: isMarathi ? "कॅटलॉग" : "Catalogue" },
+    { to: "/contact", label: isMarathi ? "संपर्क" : "Contact" },
+    { to: "/login", label: isMarathi ? "लॉगिन" : "Login" },
   ] as const;
   const desktopNavLinks = navLinks.filter((link) => link.to !== "/login");
   const announcementText = resolveLocalizedText(announcementBar.text, resolvedLocale).trim();
@@ -77,11 +78,9 @@ export default function Header() {
         </div>
       ) : null}
       <div className="hidden border-b border-[#f2e4d4] bg-[#2b130c] px-4 py-2 text-[#f8e8cf] md:block lg:hidden md:px-6">
-        <div className="layout-shell flex items-center justify-between gap-3 text-[11px]">
+        <div className={`layout-shell flex items-center justify-between gap-3 text-[11px] ${marathiUiClass}`.trim()}>
           <span className="truncate">
-            {resolvedLocale === "mr"
-              ? "à¤®à¥‹à¤¬à¤¾à¤ˆà¤²à¤¸à¤¾à¤ à¥€ à¤¤à¤¯à¤¾à¤° à¤•à¥…à¤Ÿà¤²à¥‰à¤— à¤†à¤£à¤¿ à¤šà¥Œà¤•à¤¶à¥€ à¤…à¤¨à¥à¤­à¤µ"
-              : "Mobile-first catalogue and enquiry experience"}
+            {isMarathi ? "मोबाईलसाठी तयार कॅटलॉग आणि चौकशी अनुभव" : "Mobile-first catalogue and enquiry experience"}
           </span>
           <a
             href={`tel:${siteConfig.phoneHref}`}
@@ -119,7 +118,7 @@ export default function Header() {
                 <p className={`${brandNameWrapClass} text-lg text-[#f8ecd9] ${brandNameClass}`}>
                   {brandName}
                 </p>
-                <p className="mt-1 truncate text-[10px] font-semibold text-[#d8b48b]">
+                <p className={`mt-1 truncate text-[10px] font-semibold text-[#d8b48b] ${marathiUiClass}`.trim()}>
                   {siteConfig.brandTagline[resolvedLocale]}
                 </p>
               </div>
@@ -139,16 +138,16 @@ export default function Header() {
               <LanguageSwitcher compact className="bg-white/5" />
             </div>
           </div>
-          <form onSubmit={handleSearchSubmit} className="bg-[#fffaf4] px-4 py-3">
+          <form onSubmit={handleSearchSubmit} className={`bg-[#fffaf4] px-4 py-3 ${marathiUiClass}`.trim()}>
             <div className="flex items-center gap-2 rounded-2xl border border-[#eadbc8] bg-white px-3 py-2.5 shadow-[0_14px_34px_-30px_rgba(52,24,14,0.55)] focus-within:border-[#d6a35c]">
               <Search className="h-4 w-4 shrink-0 text-[#7a4d27]" />
               <input
                 type="search"
                 value={searchQuery}
                 onChange={(event) => handleSearchChange(event.target.value)}
-                placeholder={resolvedLocale === "mr" ? "à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡ à¤¶à¥‹à¤§à¤¾" : "Search products"}
-                className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#34180e] outline-none placeholder:text-[#9b7757]"
-                aria-label={resolvedLocale === "mr" ? "à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡ à¤•à¤¿à¤‚à¤µà¤¾ à¤¶à¥à¤°à¥‡à¤£à¥€ à¤¶à¥‹à¤§à¤¾" : "Search products or categories"}
+                placeholder={isMarathi ? "उत्पादने शोधा" : "Search products"}
+                className={`min-w-0 flex-1 bg-transparent text-sm font-medium text-[#34180e] outline-none placeholder:text-[#9b7757] ${marathiUiClass}`.trim()}
+                aria-label={isMarathi ? "उत्पादने किंवा श्रेणी शोधा" : "Search products or categories"}
               />
             </div>
           </form>
@@ -170,13 +169,13 @@ export default function Header() {
                 <p className={`${brandNameWrapClass} text-3xl text-[#34180e] 2xl:text-[34px] ${brandNameClass}`}>
                   {brandName}
                 </p>
-                <p className="mt-2 truncate text-[11px] font-semibold text-[#9b7757] xl:text-xs 2xl:mt-3 2xl:text-[13px]">
+                <p className={`mt-2 truncate text-[11px] font-semibold text-[#9b7757] xl:text-xs 2xl:mt-3 2xl:text-[13px] ${marathiUiClass}`.trim()}>
                   {siteConfig.brandTagline[resolvedLocale]}
                 </p>
               </div>
             </Link>
 
-            <nav className="flex min-w-0 flex-1 items-center justify-center gap-1 2xl:gap-2">
+            <nav className={`flex min-w-0 flex-1 items-center justify-center gap-1 2xl:gap-2 ${marathiUiClass}`.trim()}>
               {desktopNavLinks.map((link) => {
                 const active = location.pathname === link.to;
 
@@ -202,21 +201,21 @@ export default function Header() {
                   <UserRound className="h-4 w-4 shrink-0 text-[#7a4d27]" />
                   <div className="min-w-0">
                     <p className="truncate text-[10px] uppercase tracking-[0.18em] text-[#9b7757]">Logged In</p>
-                    <p className="truncate font-semibold text-[#34180e]">{loggedInCustomerLabel}</p>
+                    <p className={`truncate font-semibold text-[#34180e] ${marathiUiClass}`.trim()}>{loggedInCustomerLabel}</p>
                   </div>
                 </div>
               ) : null}
               <LanguageSwitcher />
-              <form onSubmit={handleSearchSubmit} className="flex items-center">
+              <form onSubmit={handleSearchSubmit} className={`flex items-center ${marathiUiClass}`.trim()}>
                 <div className="flex h-12 w-52 items-center gap-2 rounded-[18px] border border-[#eadbc8] bg-white px-4 focus-within:border-[#d6a35c] focus-within:bg-[#fffdf9] 2xl:h-[52px] 2xl:w-72 2xl:gap-3 2xl:px-5">
                   <Search className="h-5 w-5 shrink-0 text-[#7a4d27]" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(event) => handleSearchChange(event.target.value)}
-                    placeholder={resolvedLocale === "mr" ? "à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡ à¤¶à¥‹à¤§à¤¾" : "Search products"}
-                    className="w-full bg-transparent text-sm font-medium text-[#34180e] outline-none placeholder:text-[#9b7757] 2xl:text-base"
-                    aria-label={resolvedLocale === "mr" ? "à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡ à¤•à¤¿à¤‚à¤µà¤¾ à¤¶à¥à¤°à¥‡à¤£à¥€ à¤¶à¥‹à¤§à¤¾" : "Search products or categories"}
+                    placeholder={isMarathi ? "उत्पादने शोधा" : "Search products"}
+                    className={`w-full bg-transparent text-sm font-medium text-[#34180e] outline-none placeholder:text-[#9b7757] 2xl:text-base ${marathiUiClass}`.trim()}
+                    aria-label={isMarathi ? "उत्पादने किंवा श्रेणी शोधा" : "Search products or categories"}
                   />
                 </div>
               </form>
@@ -233,7 +232,7 @@ export default function Header() {
                 <Link
                   to="/login"
                   className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5] 2xl:h-12 2xl:w-12"
-                  aria-label={resolvedLocale === "mr" ? "à¤–à¤¾à¤¤à¥‡ à¤‰à¤˜à¤¡à¤¾" : "Open account"}
+                  aria-label={isMarathi ? "खाते उघडा" : "Open account"}
                 >
                   <LogIn className="h-5 w-5 2xl:h-6 2xl:w-6" />
                 </Link>
@@ -241,7 +240,7 @@ export default function Header() {
               <Link
                 to="/wishlist"
                 className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5] 2xl:h-12 2xl:w-12"
-                aria-label={resolvedLocale === "mr" ? "à¤†à¤µà¤¡à¥€à¤šà¥€ à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡ à¤‰à¤˜à¤¡à¤¾" : "Open liked products"}
+                aria-label={isMarathi ? "आवडीची उत्पादने उघडा" : "Open liked products"}
               >
                 <Heart className={`h-5 w-5 2xl:h-6 2xl:w-6 ${wishlistCount > 0 ? "fill-current" : ""}`} />
                 {wishlistCount > 0 ? (
@@ -253,7 +252,7 @@ export default function Header() {
               <Link
                 to="/cart"
                 className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-[#7a4d27] transition hover:bg-[#f7efe5] 2xl:h-12 2xl:w-12"
-                aria-label={resolvedLocale === "mr" ? "à¤•à¤¾à¤°à¥à¤Ÿ à¤‰à¤˜à¤¡à¤¾" : "Open cart"}
+                aria-label={isMarathi ? "कार्ट उघडा" : "Open cart"}
               >
                 <ShoppingCart className="h-5 w-5 2xl:h-6 2xl:w-6" />
                 {cartCount > 0 ? (
@@ -269,7 +268,7 @@ export default function Header() {
 
       {mobileOpen ? (
         <div className="border-t border-[#eadbc8] bg-[#fffaf4] xl:hidden">
-          <nav className="layout-shell grid gap-2 px-4 py-4 md:px-6">
+          <nav className={`layout-shell grid gap-2 px-4 py-4 md:px-6 ${marathiUiClass}`.trim()}>
             {customerSession ? (
               <div className="rounded-2xl border border-[#eadbc8] bg-white px-4 py-3 text-sm text-[#5f402b]">
                 <div className="flex items-center gap-2 font-semibold text-[#34180e]">

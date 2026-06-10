@@ -44,6 +44,8 @@ function saveCustomerAccount(account: CustomerAccount) {
 
 export default function LoginPage() {
   const { resolvedLocale } = useLanguage();
+  const isMarathi = resolvedLocale === "mr";
+  const marathiUiClass = isMarathi ? "font-brand-marathi tracking-normal" : "";
   const location = useLocation();
   const navigate = useNavigate();
   const [mode, setMode] = useState<AuthMode>("login");
@@ -67,8 +69,8 @@ export default function LoginPage() {
     ) {
       setTouched({ name: isCreateMode, email: true, password: true });
       setMessage(
-        resolvedLocale === "mr"
-          ? "à¤•à¥ƒà¤ªà¤¯à¤¾ à¤µà¥ˆà¤§ à¤®à¤¾à¤¹à¤¿à¤¤à¥€ à¤­à¤°à¤¾. à¤ªà¤¾à¤¸à¤µà¤°à¥à¤¡ à¤•à¤¿à¤®à¤¾à¤¨ à¥¬ à¤…à¤•à¥à¤·à¤°à¤¾à¤‚à¤šà¤¾ à¤…à¤¸à¤¾à¤µà¤¾."
+        isMarathi
+          ? "कृपया वैध माहिती भरा. पासवर्ड किमान ६ अक्षरांचा असावा."
           : "Please enter valid details. Password must be at least 6 characters.",
       );
       return;
@@ -86,8 +88,8 @@ export default function LoginPage() {
         });
       } else if (!existingAccount || existingAccount.password !== password) {
         setMessage(
-          resolvedLocale === "mr"
-            ? "à¤–à¤¾à¤¤à¥‡ à¤¸à¤¾à¤ªà¤¡à¤²à¥‡ à¤¨à¤¾à¤¹à¥€ à¤•à¤¿à¤‚à¤µà¤¾ à¤ªà¤¾à¤¸à¤µà¤°à¥à¤¡ à¤šà¥à¤•à¥€à¤šà¤¾ à¤†à¤¹à¥‡. à¤†à¤§à¥€ à¤–à¤¾à¤¤à¥‡ à¤¤à¤¯à¤¾à¤° à¤•à¤°à¤¾."
+          isMarathi
+            ? "खाते सापडले नाही किंवा पासवर्ड चुकीचा आहे. आधी खाते तयार करा."
             : "Account not found or password is incorrect. Please create an account first.",
         );
         return;
@@ -98,15 +100,15 @@ export default function LoginPage() {
         email: normalizedEmail,
       });
 
-      setMessage(resolvedLocale === "mr" ? "à¤²à¥‰à¤—à¤¿à¤¨ à¤¯à¤¶à¤¸à¥à¤µà¥€ à¤à¤¾à¤²à¥‡." : "Login successful.");
-      toast.success(resolvedLocale === "mr" ? "तुम्ही लॉगिन झाला आहात." : "You are now logged in.");
+      setMessage(isMarathi ? "लॉगिन यशस्वी झाले." : "Login successful.");
+      toast.success(isMarathi ? "तुम्ही लॉगिन झाला आहात." : "You are now logged in.");
       navigate({ to: redirectTo });
     } catch (error) {
       setMessage(
         error instanceof Error
           ? error.message
-          : resolvedLocale === "mr"
-            ? "à¤—à¥à¤°à¤¾à¤¹à¤• à¤²à¥‰à¤—à¤¿à¤¨ à¤ªà¥‚à¤°à¥à¤£ à¤•à¤°à¤¤à¤¾ à¤†à¤²à¥‡ à¤¨à¤¾à¤¹à¥€."
+          : isMarathi
+            ? "ग्राहक लॉगिन पूर्ण करता आले नाही."
             : "Unable to complete customer login.",
       );
     }
@@ -130,9 +132,9 @@ export default function LoginPage() {
         email: response.customer.email,
       });
 
-      setMessage(resolvedLocale === "mr" ? "Google à¤²à¥‰à¤—à¤¿à¤¨ à¤¯à¤¶à¤¸à¥à¤µà¥€ à¤à¤¾à¤²à¥‡." : "Google login successful.");
+      setMessage(isMarathi ? "Google लॉगिन यशस्वी झाले." : "Google login successful.");
       toast.success(
-        resolvedLocale === "mr"
+        isMarathi
           ? `${response.customer.name} लॉगिन झाला आहे.`
           : `${response.customer.name} is logged in.`,
       );
@@ -143,12 +145,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-[#f7f1e7] pb-8 md:pb-12">
+    <div className={`bg-[#f7f1e7] pb-8 md:pb-12 ${marathiUiClass}`.trim()}>
       <section className="px-4 pt-6 md:px-6">
         <div className="layout-shell grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-[30px] border border-[#eadbc8] bg-white p-5 shadow-[0_24px_60px_-40px_rgba(70,36,15,0.7)] md:p-7">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
-              {resolvedLocale === "mr" ? "à¤«à¤¾à¤¯à¤¦à¥‡" : "Benefits"}
+              {isMarathi ? "फायदे" : "Benefits"}
             </p>
             <div className="mt-5 space-y-4">
               <Link
@@ -161,12 +163,10 @@ export default function LoginPage() {
                   </div>
                   <div>
                     <p className="font-semibold text-[#34180e]">
-                      {resolvedLocale === "mr" ? "à¤–à¤°à¥‡à¤¦à¥€ à¤¸à¥à¤°à¥‚ à¤ à¥‡à¤µà¤¾" : "Continue shopping"}
+                      {isMarathi ? "खरेदी सुरू ठेवा" : "Continue shopping"}
                     </p>
                     <p className="mt-1 text-sm text-[#7e624b]">
-                      {resolvedLocale === "mr"
-                        ? "à¤¸à¥à¤Ÿà¥‹à¤…à¤°à¤«à¥à¤°à¤‚à¤Ÿà¤®à¤§à¥€à¤² à¤‰à¤¤à¥à¤ªà¤¾à¤¦à¤¨à¥‡ à¤¸à¤¹à¤œ à¤ªà¤¾à¤¹à¤¾."
-                        : "Browse products like the reference storefront."}
+                      {isMarathi ? "स्टोअरफ्रंटमधील उत्पादने सहज पाहा." : "Browse products like the reference storefront."}
                     </p>
                   </div>
                 </div>
@@ -211,20 +211,20 @@ export default function LoginPage() {
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#a86c2b]">
                     {mode === "create"
-                      ? resolvedLocale === "mr"
-                        ? "à¤–à¤¾à¤¤à¥‡ à¤¤à¤¯à¤¾à¤° à¤•à¤°à¤¾"
+                      ? isMarathi
+                        ? "खाते तयार करा"
                         : "Create Account"
-                      : resolvedLocale === "mr"
-                        ? "à¤¸à¤¾à¤‡à¤¨ à¤‡à¤¨"
+                      : isMarathi
+                        ? "साइन इन"
                         : "Sign In"}
                   </p>
                   <h2 className="mt-1 font-heading text-3xl text-[#34180e]">
                     {mode === "create"
-                      ? resolvedLocale === "mr"
-                        ? "à¤¨à¤µà¥€à¤¨ à¤–à¤¾à¤¤à¥‡"
+                      ? isMarathi
+                        ? "नवीन खाते"
                         : "Create your account"
-                      : resolvedLocale === "mr"
-                        ? "à¤ªà¥à¤¨à¥à¤¹à¤¾ à¤¸à¥à¤µà¤¾à¤—à¤¤ à¤†à¤¹à¥‡"
+                      : isMarathi
+                        ? "पुन्हा स्वागत आहे"
                         : "Welcome back"}
                   </h2>
                 </div>
@@ -236,14 +236,14 @@ export default function LoginPage() {
                   onClick={() => setMode("login")}
                   className={`rounded-full px-4 py-2 ${mode === "login" ? "bg-[#34180e] text-white" : ""}`}
                 >
-                  {resolvedLocale === "mr" ? "à¤²à¥‰à¤—à¤¿à¤¨" : "Login"}
+                  {isMarathi ? "लॉगिन" : "Login"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setMode("create")}
                   className={`rounded-full px-4 py-2 ${mode === "create" ? "bg-[#34180e] text-white" : ""}`}
                 >
-                  {resolvedLocale === "mr" ? "à¤–à¤¾à¤¤à¥‡ à¤¤à¤¯à¤¾à¤° à¤•à¤°à¤¾" : "Create account"}
+                  {isMarathi ? "खाते तयार करा" : "Create account"}
                 </button>
               </div>
 
@@ -251,7 +251,7 @@ export default function LoginPage() {
                 {mode === "create" ? (
                   <div>
                     <label htmlFor="login-name" className="text-sm font-medium text-[#34180e]">
-                      {resolvedLocale === "mr" ? "à¤¨à¤¾à¤µ" : "Name"}
+                      {isMarathi ? "नाव" : "Name"}
                     </label>
                     <div className="relative mt-2">
                       <UserRound className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#927863]" />
@@ -263,13 +263,13 @@ export default function LoginPage() {
                         onBlur={() => setTouched((value) => ({ ...value, name: true }))}
                         onChange={(event) => setName(event.target.value)}
                         autoComplete="section-customer name"
-                        placeholder={resolvedLocale === "mr" ? "à¤¤à¥à¤®à¤šà¥‡ à¤¨à¤¾à¤µ" : "Your name"}
+                        placeholder={isMarathi ? "तुमचे नाव" : "Your name"}
                         className={`w-full rounded-2xl border bg-[#fcf8f2] py-3 pl-11 pr-4 text-sm text-[#34180e] ${touched.name && !isValidName(name) ? "border-[#b42318]" : "border-[#eadbc8]"}`}
                       />
                     </div>
                     {touched.name && !isValidName(name) ? (
                       <p className="mt-2 text-sm text-[#b42318]">
-                        {resolvedLocale === "mr" ? "à¤•à¥ƒà¤ªà¤¯à¤¾ à¤¤à¥à¤®à¤šà¥‡ à¤¨à¤¾à¤µ à¤Ÿà¤¾à¤•à¤¾." : "Please enter your name."}
+                        {isMarathi ? "कृपया तुमचे नाव टाका." : "Please enter your name."}
                       </p>
                     ) : null}
                   </div>
@@ -277,7 +277,7 @@ export default function LoginPage() {
 
                 <div>
                   <label htmlFor="login-email" className="text-sm font-medium text-[#34180e]">
-                    {resolvedLocale === "mr" ? "à¤ˆà¤®à¥‡à¤²" : "Email"}
+                    {isMarathi ? "ईमेल" : "Email"}
                   </label>
                   <div className="relative mt-2">
                     <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#927863]" />
@@ -295,16 +295,14 @@ export default function LoginPage() {
                   </div>
                   {touched.email && !isValidEmail(email) ? (
                     <p className="mt-2 text-sm text-[#b42318]">
-                      {resolvedLocale === "mr"
-                        ? "à¤•à¥ƒà¤ªà¤¯à¤¾ à¤µà¥ˆà¤§ à¤ˆà¤®à¥‡à¤² à¤ªà¤¤à¥à¤¤à¤¾ à¤Ÿà¤¾à¤•à¤¾."
-                        : "Please enter a valid email address."}
+                      {isMarathi ? "कृपया वैध ईमेल पत्ता टाका." : "Please enter a valid email address."}
                     </p>
                   ) : null}
                 </div>
 
                 <div>
                   <label htmlFor="login-password" className="text-sm font-medium text-[#34180e]">
-                    {resolvedLocale === "mr" ? "à¤ªà¤¾à¤¸à¤µà¤°à¥à¤¡" : "Password"}
+                    {isMarathi ? "पासवर्ड" : "Password"}
                   </label>
                   <div className="relative mt-2">
                     <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#927863]" />
@@ -316,15 +314,13 @@ export default function LoginPage() {
                       onBlur={() => setTouched((value) => ({ ...value, password: true }))}
                       onChange={(event) => setPassword(event.target.value)}
                       autoComplete={mode === "create" ? "section-customer new-password" : "section-customer current-password"}
-                      placeholder={resolvedLocale === "mr" ? "à¤ªà¤¾à¤¸à¤µà¤°à¥à¤¡ à¤Ÿà¤¾à¤•à¤¾" : "Enter password"}
+                      placeholder={isMarathi ? "पासवर्ड टाका" : "Enter password"}
                       className={`w-full rounded-2xl border bg-[#fcf8f2] py-3 pl-11 pr-4 text-sm text-[#34180e] ${touched.password && password.trim().length < 6 ? "border-[#b42318]" : "border-[#eadbc8]"}`}
                     />
                   </div>
                   {touched.password && password.trim().length < 6 ? (
                     <p className="mt-2 text-sm text-[#b42318]">
-                      {resolvedLocale === "mr"
-                        ? "à¤ªà¤¾à¤¸à¤µà¤°à¥à¤¡ à¤•à¤¿à¤®à¤¾à¤¨ à¥¬ à¤…à¤•à¥à¤·à¤°à¤¾à¤‚à¤šà¤¾ à¤…à¤¸à¤¾à¤µà¤¾."
-                        : "Password must be at least 6 characters."}
+                      {isMarathi ? "पासवर्ड किमान ६ अक्षरांचा असावा." : "Password must be at least 6 characters."}
                     </p>
                   ) : null}
                 </div>
@@ -333,13 +329,7 @@ export default function LoginPage() {
                   type="submit"
                   className="inline-flex w-full items-center justify-center rounded-full bg-[#34180e] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white"
                 >
-                  {mode === "create"
-                    ? resolvedLocale === "mr"
-                      ? "à¤–à¤¾à¤¤à¥‡ à¤¤à¤¯à¤¾à¤° à¤•à¤°à¤¾"
-                      : "Create Account"
-                    : resolvedLocale === "mr"
-                      ? "à¤²à¥‰à¤—à¤¿à¤¨"
-                      : "Login"}
+                  {mode === "create" ? (isMarathi ? "खाते तयार करा" : "Create Account") : isMarathi ? "लॉगिन" : "Login"}
                 </button>
               </form>
 
@@ -347,36 +337,28 @@ export default function LoginPage() {
                 <div className="mt-3 flex justify-center rounded-[24px] border border-[#d8b48b] bg-white px-4 py-3">
                   <GoogleOAuthProvider clientId={googleClientId}>
                     <GoogleLogin
-                    onSuccess={(credentialResponse) => {
-                      if (!credentialResponse.credential) {
-                        setMessage(
-                          resolvedLocale === "mr"
-                            ? "Google à¤²à¥‰à¤—à¤¿à¤¨ à¤ªà¥‚à¤°à¥à¤£ à¤à¤¾à¤²à¥‡ à¤¨à¤¾à¤¹à¥€."
-                            : "Google login did not complete.",
-                        );
-                        return;
-                      }
+                      onSuccess={(credentialResponse) => {
+                        if (!credentialResponse.credential) {
+                          setMessage(isMarathi ? "Google लॉगिन पूर्ण झाले नाही." : "Google login did not complete.");
+                          return;
+                        }
 
-                      void handleGoogleContinue(credentialResponse.credential);
-                    }}
-                    onError={() => {
-                      setMessage(
-                        resolvedLocale === "mr"
-                          ? "Google à¤²à¥‰à¤—à¤¿à¤¨ à¤…à¤¯à¤¶à¤¸à¥à¤µà¥€ à¤à¤¾à¤²à¥‡."
-                          : "Google login failed.",
-                      );
-                    }}
-                    theme="outline"
-                    size="large"
-                    text={mode === "create" ? "signup_with" : "signin_with"}
-                    shape="pill"
+                        void handleGoogleContinue(credentialResponse.credential);
+                      }}
+                      onError={() => {
+                        setMessage(isMarathi ? "Google लॉगिन अयशस्वी झाले." : "Google login failed.");
+                      }}
+                      theme="outline"
+                      size="large"
+                      text={mode === "create" ? "signup_with" : "signin_with"}
+                      shape="pill"
                     />
                   </GoogleOAuthProvider>
                 </div>
               ) : (
                 <p className="mt-3 rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#7e624b]">
-                  {resolvedLocale === "mr"
-                    ? "Set `VITE_GOOGLE_CLIENT_ID` à¤•à¤°à¥‚à¤¨ Google à¤²à¥‰à¤—à¤¿à¤¨ à¤¸à¤•à¥à¤°à¤¿à¤¯ à¤•à¤°à¤¾."
+                  {isMarathi
+                    ? "Google लॉगिन सुरू करण्यासाठी `VITE_GOOGLE_CLIENT_ID` सेट करा."
                     : "Set `VITE_GOOGLE_CLIENT_ID` to enable Google login."}
                 </p>
               )}
@@ -385,9 +367,7 @@ export default function LoginPage() {
 
               <div className="mt-5 flex flex-col gap-3 text-center text-sm text-[#7e624b]">
                 <Link to="/contact" className="transition hover:text-[#34180e]">
-                  {resolvedLocale === "mr"
-                    ? "à¤¤à¥à¤®à¤šà¥à¤¯à¤¾ à¤–à¤¾à¤¤à¥à¤¯à¤¾à¤¸à¤¾à¤ à¥€ à¤®à¤¦à¤¤ à¤¹à¤µà¥€ à¤†à¤¹à¥‡?"
-                    : "Need help with your account?"}
+                  {isMarathi ? "तुमच्या खात्यासाठी मदत हवी आहे?" : "Need help with your account?"}
                 </Link>
               </div>
             </div>
