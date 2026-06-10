@@ -1,6 +1,5 @@
-import { lazy, Suspense, useEffect, useMemo } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import Header from "@/components/Header";
-import { Toaster } from "@/components/ui/sonner";
 import { LanguageProvider } from "@/lib/language";
 import { RouterProvider, useLocation } from "@/lib/spa-router";
 import { useAdminAuthState } from "@/lib/admin-auth";
@@ -11,6 +10,7 @@ import HomePage from "@/pages/HomePage";
 const Footer = lazy(() => import("@/components/Footer"));
 const MobileTabBar = lazy(() => import("@/components/MobileTabBar"));
 const FloatingActions = lazy(() => import("@/components/FloatingActions"));
+const Toaster = lazy(() => import("@/components/ui/sonner").then((module) => ({ default: module.Toaster })));
 const ProductsPage = lazy(() => import("@/pages/ProductsPage"));
 const ProductDetailPage = lazy(() => import("@/pages/ProductDetailPage"));
 const RequiredCataloguePage = lazy(() => import("@/pages/RequiredCataloguePage"));
@@ -28,9 +28,11 @@ const AdminPage = lazy(() => import("@/pages/AdminPage"));
 
 function AppShell() {
   const location = useLocation();
-  const { authenticated: isAdminAuthed, resolved: adminAuthResolved } = useAdminAuthState();
   const isAdminRoute = location.pathname === "/admin";
+  const { authenticated: isAdminAuthed, resolved: adminAuthResolved } = useAdminAuthState(isAdminRoute);
   const hideFooter = isAdminRoute;
+  const [showPeripheralUi, setShowPeripheralUi] = useState(false);
+  const [showToaster, setShowToaster] = useState(false);
 
   const page = useMemo(() => {
     if (location.pathname === "/") {
@@ -217,6 +219,22 @@ function AppShell() {
     trackPageView(location.pathname + location.search + location.hash, page.title);
   }, [location.hash, location.pathname, location.search, page.title]);
 
+  useEffect(() => {
+    if (isAdminRoute) {
+      setShowPeripheralUi(false);
+      return;
+    }
+
+    setShowPeripheralUi(false);
+    const timerId = window.setTimeout(() => setShowPeripheralUi(true), 700);
+    return () => window.clearTimeout(timerId);
+  }, [isAdminRoute, location.pathname]);
+
+  useEffect(() => {
+    const timerId = window.setTimeout(() => setShowToaster(true), 700);
+    return () => window.clearTimeout(timerId);
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
       {isAdminRoute ? null : <Header />}
@@ -231,12 +249,18 @@ function AppShell() {
           {page.node}
         </Suspense>
       </main>
-      <Suspense fallback={null}>
-        {hideFooter ? null : <Footer />}
-        {isAdminRoute ? null : <MobileTabBar />}
-        {isAdminRoute ? null : <FloatingActions />}
-      </Suspense>
-      <Toaster position="top-center" richColors />
+      {showPeripheralUi ? (
+        <Suspense fallback={null}>
+          {hideFooter ? null : <Footer />}
+          {isAdminRoute ? null : <MobileTabBar />}
+          {isAdminRoute ? null : <FloatingActions />}
+        </Suspense>
+      ) : null}
+      {showToaster ? (
+        <Suspense fallback={null}>
+          <Toaster position="top-center" richColors />
+        </Suspense>
+      ) : null}
     </div>
   );
 }
