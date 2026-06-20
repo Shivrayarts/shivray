@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "@/lib/spa-router";
 import { Play, Star } from "lucide-react";
 import type { HomeReview, HomeVideo } from "@/lib/content-store";
-import { getCategoryLabel, type Product } from "@/data/products";
+import type { Product } from "@/data/products";
 import { resolveLocalizedText } from "@/lib/language";
 import ProductGalleryCard from "@/components/ProductGalleryCard";
 
@@ -120,7 +120,7 @@ export default function HomeDeferredSections({
               <ProductGalleryCard
                 key={product.id}
                 product={product}
-                categoryLabel={categoryLabelByKey.get(product.category) || getCategoryLabel(product.category, resolvedLocale)}
+                categoryLabel={categoryLabelByKey.get(product.category)}
                 isWishlisted={isWishlisted(product.id)}
                 onToggleWishlist={onToggleWishlist}
               />
@@ -143,7 +143,7 @@ export default function HomeDeferredSections({
               <ProductGalleryCard
                 key={product.id}
                 product={product}
-                categoryLabel={categoryLabelByKey.get(product.category) || getCategoryLabel(product.category, resolvedLocale)}
+                categoryLabel={categoryLabelByKey.get(product.category)}
                 isWishlisted={isWishlisted(product.id)}
                 onToggleWishlist={onToggleWishlist}
               />

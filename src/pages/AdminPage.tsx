@@ -376,6 +376,9 @@ function ProductForm({
 
   return (
     <div className="space-y-4">
+      <div className="rounded-2xl border border-[#efe1cf] bg-[#fffaf4] px-4 py-3 text-sm text-[#6c4b33]">
+        English values appear on the English storefront. Marathi values appear when the storefront language is Marathi.
+      </div>
       <div className="grid gap-4 md:grid-cols-2">
         <input
           value={localizedName.en}
@@ -1296,18 +1299,25 @@ export default function AdminPage() {
     [catalogueTypes],
   );
 
-  const orderTotalValue = useMemo(
-    () => orders.reduce((sum, order) => sum + parseCurrencyValue(order.totalPrice), 0),
+  const revenueOrders = useMemo(
+    () => orders.filter((order) => order.status !== "Cancelled"),
     [orders],
   );
 
-  const averageOrderValue = orders.length ? orderTotalValue / orders.length : 0;
+  const orderTotalValue = useMemo(
+    () => revenueOrders.reduce((sum, order) => sum + parseCurrencyValue(order.totalPrice), 0),
+    [revenueOrders],
+  );
+
+  const averageOrderValue = revenueOrders.length ? orderTotalValue / revenueOrders.length : 0;
 
   const enrichedCustomers = useMemo(
     () =>
       customers.map((customer) => {
         const customerOrders = orders.filter((order) => order.customerId === customer.id);
-        const totalSpent = customerOrders.reduce(
+        const totalSpent = customerOrders
+          .filter((order) => order.status !== "Cancelled")
+          .reduce(
           (sum, order) => sum + parseCurrencyValue(order.totalPrice),
           0,
         );
@@ -3014,9 +3024,14 @@ export default function AdminPage() {
                     <div key={item.id} className="rounded-[24px] border border-[#efe1cf] bg-[#fcf8f2] p-4">
                       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
-                          <p className="font-semibold text-[#34180e]">{adminText(item.title).replace(/catalogue/gi, "Category")}</p>
+                          <p className="font-semibold text-[#34180e]">
+                            {adminLocalizedText(item.title).en.replace(/catalogue/gi, "Category") || adminText(item.title).replace(/catalogue/gi, "Category")}
+                          </p>
                           <p className="mt-1 text-sm text-[#6c4b33]">
-                            {adminText(item.shortLabel)} • {item.isActive ? "Visible" : "Hidden"}
+                            EN: {adminLocalizedText(item.shortLabel).en || adminText(item.shortLabel)} • {item.isActive ? "Visible" : "Hidden"}
+                          </p>
+                          <p className="mt-1 text-sm text-[#8b6c52]">
+                            MR: {adminLocalizedText(item.shortLabel).mr || adminLocalizedText(item.shortLabel).en || "-"}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2">

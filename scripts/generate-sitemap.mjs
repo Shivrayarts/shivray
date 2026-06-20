@@ -62,5 +62,20 @@ const xml = [
   "",
 ].join("\n");
 
-writeFileSync(resolve("public", "sitemap.xml"), xml, "utf8");
-console.log(`Generated sitemap.xml for ${routes.length} routes.`);
+const sitemapPath = resolve("public", "sitemap.xml");
+const existingXml = existsSync(sitemapPath) ? readFileSync(sitemapPath, "utf8") : null;
+
+if (existingXml === xml) {
+  console.log(`sitemap.xml already up to date for ${routes.length} routes.`);
+} else {
+  try {
+    writeFileSync(sitemapPath, xml, "utf8");
+    console.log(`Generated sitemap.xml for ${routes.length} routes.`);
+  } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "EPERM") {
+      console.warn("Unable to update sitemap.xml because the file is locked. Continuing with the existing sitemap.");
+    } else {
+      throw error;
+    }
+  }
+}

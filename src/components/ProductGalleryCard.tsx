@@ -2,6 +2,8 @@ import { memo } from "react";
 import { Heart } from "lucide-react";
 import { Link } from "@/lib/spa-router";
 import { getCategoryLabel, type Product } from "@/data/products";
+import { getCategoryDisplayLabel } from "@/lib/category-matching";
+import { useStoredCatalogueTypes } from "@/lib/content-store";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { getProductPricing, normalizeDisplayCase, normalizeDiscountPercentage } from "@/lib/utils";
 
@@ -25,9 +27,12 @@ function ProductGalleryCard({
   categoryLabel,
 }: ProductGalleryCardProps) {
   const { resolvedLocale } = useLanguage();
+  const catalogueTypes = useStoredCatalogueTypes();
   const localizedName = normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale), "sentence");
   const localizedCategoryLabel =
-    categoryLabel || getCategoryLabel(product.category, resolvedLocale);
+    categoryLabel ||
+    getCategoryDisplayLabel(product.category, resolvedLocale, catalogueTypes) ||
+    getCategoryLabel(product.category, resolvedLocale);
   const productOptions = product.productOptions ?? [];
   const pricing = getProductPricing(product);
   const optionChips = productOptions.slice(0, 2);

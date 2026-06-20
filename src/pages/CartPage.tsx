@@ -3,7 +3,8 @@ import { LockKeyhole, Minus, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { getCategoryLabel, getProductPaymentMode } from "@/data/products";
 import { useCart } from "@/hooks/use-cart";
-import { useStoredProducts } from "@/lib/content-store";
+import { getCategoryDisplayLabel } from "@/lib/category-matching";
+import { useStoredCatalogueTypes, useStoredProducts } from "@/lib/content-store";
 import { isValidEmail, isValidName, isValidPhone, normalizeDigits } from "@/lib/form-validation";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { siteConfig } from "@/lib/site-config";
@@ -30,6 +31,7 @@ export default function CartPage() {
   const navigate = useNavigate();
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
   const catalog = useStoredProducts();
+  const catalogueTypes = useStoredCatalogueTypes();
   const customerSession = useCustomerSession();
   const [checkoutForm, setCheckoutForm] = useState({
     name: "",
@@ -261,10 +263,11 @@ export default function CartPage() {
             <div className="space-y-4">
               {items.map(({ product, quantity }) => {
                 const pricing = getProductPricing(product);
+                const isWhatsappOnlyProduct = getProductPaymentMode(product) === "whatsapp";
                 return (
                 <div key={product.id} className="grid grid-cols-1 gap-4 rounded-lg border border-border bg-card p-4 sm:grid-cols-[96px_1fr_auto]">
                   <img src={product.image} alt={normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))} className="h-24 w-24 rounded-md object-cover" loading="lazy" />
-                  <div><p className="text-xs uppercase tracking-wide text-gold">{getCategoryLabel(product.category, resolvedLocale)}</p><Link to="/products/$productId" params={{ productId: product.id }} className="mt-1 block font-heading text-base font-semibold text-foreground hover:text-primary">{normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}</Link><p className="mt-1 text-sm font-bold text-primary">{pricing.finalPrice}</p>{pricing.hasDiscount ? <div className="mt-1 flex items-center gap-2"><p className="text-xs text-muted-foreground line-through">{pricing.originalPrice}</p><p className="rounded-full bg-[#45ae4a] px-2 py-0.5 text-[10px] font-semibold text-white">{pricing.discountPercentage.toFixed(0)}% OFF</p></div> : null}</div>
+                  <div><p className="text-xs uppercase tracking-wide text-gold">{getCategoryDisplayLabel(product.category, resolvedLocale, catalogueTypes) || getCategoryLabel(product.category, resolvedLocale)}</p><Link to="/products/$productId" params={{ productId: product.id }} className="mt-1 block font-heading text-base font-semibold text-foreground hover:text-primary">{normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}</Link><p className="mt-1 text-sm font-bold text-primary">{pricing.finalPrice}</p>{pricing.hasDiscount ? <div className="mt-1 flex items-center gap-2"><p className="text-xs text-muted-foreground line-through">{pricing.originalPrice}</p><p className="rounded-full bg-[#45ae4a] px-2 py-0.5 text-[10px] font-semibold text-white">{pricing.discountPercentage.toFixed(0)}% OFF</p></div> : null}{isWhatsappOnlyProduct ? <p className="mt-2 inline-flex rounded-full border border-[#bbf7d0] bg-[#f0fdf4] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#166534]">{resolvedLocale === "mr" ? "हा उत्पाद WhatsApp वर ऑर्डर होईल" : "This product will be ordered on WhatsApp"}</p> : null}</div>
                   <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end">
                     <div className="flex items-center gap-2 rounded-md border border-border p-1">
                       <button onClick={() => updateQuantity(product.id, quantity - 1)} className="rounded p-1 hover:bg-muted" aria-label={`${resolvedLocale === "mr" ? "प्रमाण कमी करा" : "Decrease quantity of"} ${normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}`}><Minus className="h-4 w-4" /></button>

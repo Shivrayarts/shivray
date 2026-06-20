@@ -11,6 +11,15 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { useWishlist } from "@/hooks/use-wishlist";
+import {
+  categoriesMatch,
+  countProductsForCatalogue,
+  findFirstProductImageForCatalogue,
+  findMatchingCatalogue,
+  getCataloguePrimaryCategoryKey,
+  isUnchangedLegacySeededCatalogue,
+  resolveCategoryMatchKey,
+} from "@/lib/category-matching";
 import { useStoredCatalogueTypes, useStoredProducts } from "@/lib/content-store";
 import { getSearchableText, resolveLocalizedText, useLanguage } from "@/lib/language";
 import { getProductPricing, parseCurrencyAmount } from "@/lib/utils";
@@ -18,30 +27,6 @@ import ProductGalleryCard from "@/components/ProductGalleryCard";
 
 const PRODUCTS_PER_PAGE = 12;
 const PLACEHOLDER_IMAGE = "/placeholder.svg";
-const legacySeededCatalogueLabels: Record<string, string> = {
-  "statues-catalogue": "statues",
-  "weapons-catalogue": "weapons",
-  "shield-catalogue": "shields",
-  "dhoop-catalogue": "dhoop",
-  "full-catalogue": "full range",
-};
-
-function getCatalogueShortLabel(catalogue: { shortLabel: string | { en?: string; mr?: string } }) {
-  return (typeof catalogue.shortLabel === "string"
-    ? catalogue.shortLabel
-    : catalogue.shortLabel.en || catalogue.shortLabel.mr || ""
-  ).trim();
-}
-
-function isUnchangedLegacySeededCatalogue(catalogue: {
-  id?: string;
-  shortLabel: string | { en?: string; mr?: string };
-}) {
-  const id = String(catalogue.id || "").trim();
-  const legacyLabel = legacySeededCatalogueLabels[id];
-  if (!legacyLabel) return false;
-  return getCatalogueShortLabel(catalogue).toLowerCase() === legacyLabel;
-}
 
 export default function ProductsPage() {
   const { resolvedLocale } = useLanguage();
@@ -63,19 +48,10 @@ export default function ProductsPage() {
   const getDisplayCategoryLabel = (rawCategory: string) => {
     const normalized = String(rawCategory || "").trim();
     if (!normalized || normalized === "All") {
-      return resolvedLocale === "mr" ? "सर्व" : "All";
+      return resolvedLocale === "mr" ? "\u0938\u0930\u094d\u0935" : "All";
     }
 
-    const matchedCatalogue = catalogueTypes.find((catalogue) => {
-      const localizedShortLabel =
-        typeof catalogue.shortLabel === "string"
-          ? { en: catalogue.shortLabel, mr: catalogue.shortLabel }
-          : catalogue.shortLabel;
-      return (
-        localizedShortLabel.en?.trim() === normalized ||
-        localizedShortLabel.mr?.trim() === normalized
-      );
-    });
+    const matchedCatalogue = findMatchingCatalogue(normalized, catalogueTypes);
 
     if (matchedCatalogue) {
       return resolveLocalizedText(matchedCatalogue.shortLabel, resolvedLocale);
@@ -85,51 +61,64 @@ export default function ProductsPage() {
   };
 
   const categories = useMemo(() => {
-    const fromProducts = products.map((product) => String(product.category || "").trim()).filter(Boolean);
-    return ["All", ...Array.from(new Set(fromProducts))];
-  }, [products]);
+    const normalizedCategories = new Set<string>();
+
+    for (const product of products) {
+      const rawCategory = String(product.category || "").trim();
+      if (!rawCategory) continue;
+      normalizedCategories.add(resolveCategoryMatchKey(rawCategory, catalogueTypes));
+    }
+
+    return ["All", ...Array.from(normalizedCategories)];
+  }, [catalogueTypes, products]);
 
   const categoryParam = params.get("category");
-  const initialCategory = categories.includes(categoryParam ?? "") ? categoryParam ?? "All" : "All";
+  const initialCategory =
+    categoryParam == null
+      ? "All"
+      : categories.find((item) => categoriesMatch(item, categoryParam, catalogueTypes)) ?? "All";
   const hasRouteCategoryFilter = initialCategory !== "All";
 
   useEffect(() => {
     const nextParams = new URLSearchParams(location.search);
     const nextSearch = nextParams.get("q") ?? "";
     const nextCategoryParam = nextParams.get("category");
-    const nextCategory = categories.includes(nextCategoryParam ?? "") ? nextCategoryParam ?? "All" : "All";
+    const nextCategory =
+      nextCategoryParam == null
+        ? "All"
+        : categories.find((item) => categoriesMatch(item, nextCategoryParam, catalogueTypes)) ?? "All";
 
     setSearch(nextSearch);
     setCategory(nextCategory);
-  }, [categories, location.search]);
+  }, [catalogueTypes, categories, location.search]);
 
   const categoryCards = useMemo(() => {
     return catalogueTypes
       .filter((catalogue) => catalogue.isActive)
       .filter((catalogue) => !isUnchangedLegacySeededCatalogue(catalogue))
       .map((catalogue) => {
-        const key =
-          (typeof catalogue.shortLabel === "string"
-            ? catalogue.shortLabel
-            : catalogue.shortLabel.en || catalogue.shortLabel.mr || "")
-            .trim() || "General";
+        const key = getCataloguePrimaryCategoryKey(catalogue) || "General";
         const title =
           (typeof catalogue.title === "string" ? catalogue.title : catalogue.title[resolvedLocale]) || key;
+        const productCount = countProductsForCatalogue(catalogue, products);
+        if (productCount === 0) return null;
+
         return {
           title,
           key,
-          count: `${products.filter((product) => product.category === key).length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
-          image: catalogue.image || products.find((product) => product.category === key)?.image || PLACEHOLDER_IMAGE,
+          count: `${productCount} ${resolvedLocale === "mr" ? "\u0909\u0924\u094d\u092a\u093e\u0926\u0928\u0947" : "products"}`,
+          image: catalogue.image || findFirstProductImageForCatalogue(catalogue, products) || PLACEHOLDER_IMAGE,
         };
-      });
+      })
+      .filter((card): card is NonNullable<typeof card> => card !== null);
   }, [catalogueTypes, products, resolvedLocale]);
 
   const visibleCategoryCards = useMemo(
     () =>
       hasRouteCategoryFilter && category !== "All"
-        ? categoryCards.filter((card) => card.key === category)
+        ? categoryCards.filter((card) => categoriesMatch(card.key, category, catalogueTypes))
         : categoryCards,
-    [category, categoryCards, hasRouteCategoryFilter],
+    [catalogueTypes, category, categoryCards, hasRouteCategoryFilter],
   );
 
   useEffect(() => {
@@ -155,7 +144,8 @@ export default function ProductsPage() {
         .join(" ")
         .toLowerCase();
       const matchesSearch = normalizedSearch.length === 0 || haystack.includes(normalizedSearch);
-      const matchesCategory = category === "All" || product.category === category;
+      const matchesCategory =
+        category === "All" || categoriesMatch(product.category, category, catalogueTypes);
       return matchesSearch && matchesCategory;
     });
     const sortedProducts = [...matchedProducts];
@@ -163,7 +153,7 @@ export default function ProductsPage() {
     if (sortBy === "price-high") sortedProducts.sort((a, b) => parseCurrencyAmount(getProductPricing(b).finalPrice) - parseCurrencyAmount(getProductPricing(a).finalPrice));
     if (sortBy === "name") sortedProducts.sort((a, b) => resolveLocalizedText(a.name, resolvedLocale).localeCompare(resolveLocalizedText(b.name, resolvedLocale)));
     return sortedProducts;
-  }, [category, products, resolvedLocale, search, sortBy]);
+  }, [catalogueTypes, category, products, resolvedLocale, search, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PRODUCTS_PER_PAGE));
   const paginatedProducts = useMemo(() => {
@@ -345,7 +335,7 @@ export default function ProductsPage() {
           <div className="mb-4 hidden items-center justify-between gap-3 md:flex">
             <div>
               <p className="text-[11px] font-semibold tracking-[0.28em] text-[#a86c2b]">{resolvedLocale === "mr" ? "\u0928\u093f\u0915\u093e\u0932" : "Results"}</p>
-              <h2 className="mt-1 font-heading text-2xl text-[#34180e]">{resolvedLocale === "mr" ? "तुमच्यासाठी शिफारस केलेली उत्पादने" : "Recommended Products for You"}</h2>
+              <h2 className="mt-1 font-heading text-2xl text-[#34180e]">{resolvedLocale === "mr" ? "\u0924\u0941\u092e\u091a\u094d\u092f\u093e\u0938\u093e\u0920\u0940 \u0936\u093f\u092b\u093e\u0930\u0938 \u0915\u0947\u0932\u0947\u0932\u0940 \u0909\u0924\u094d\u092a\u093e\u0926\u0928\u0947" : "Recommended Products for You"}</h2>
             </div>
             <Link to="/required-catalogue" className="hidden rounded-full border border-[#d8b48b] px-4 py-2 text-xs font-semibold tracking-[0.18em] text-[#34180e] md:inline-flex">{resolvedLocale === "mr" ? "\u092a\u0942\u0930\u094d\u0923 \u0915\u0945\u091f\u0932\u0949\u0917 \u092e\u093f\u0933\u0935\u093e" : "Get full catalogue"}</Link>
           </div>

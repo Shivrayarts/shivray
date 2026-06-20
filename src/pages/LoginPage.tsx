@@ -1,4 +1,4 @@
-import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
 import { ArrowRight, LockKeyhole, Mail, ShieldCheck, ShoppingBag, Smartphone, UserRound } from "lucide-react";
 import { useState } from "react";
 import { apiRequest } from "@/lib/api";
@@ -335,8 +335,7 @@ export default function LoginPage() {
 
               {googleClientId ? (
                 <div className="mt-3 flex justify-center rounded-[24px] border border-[#d8b48b] bg-white px-4 py-3">
-                  <GoogleOAuthProvider clientId={googleClientId}>
-                    <GoogleLogin
+                  <GoogleLogin
                       onSuccess={(credentialResponse) => {
                         if (!credentialResponse.credential) {
                           setMessage(isMarathi ? "Google लॉगिन पूर्ण झाले नाही." : "Google login did not complete.");
@@ -352,8 +351,7 @@ export default function LoginPage() {
                       size="large"
                       text={mode === "create" ? "signup_with" : "signin_with"}
                       shape="pill"
-                    />
-                  </GoogleOAuthProvider>
+                  />
                 </div>
               ) : (
                 <p className="mt-3 rounded-2xl border border-[#eadbc8] bg-[#fcf8f2] px-4 py-3 text-sm text-[#7e624b]">

@@ -185,7 +185,7 @@ function normalizePaymentMode(value, category) {
   const raw = String(value ?? "").trim().toLowerCase();
   if (raw === "whatsapp") return "whatsapp";
   if (raw === "razorpay") return "razorpay";
-  return String(category || "").trim().toLowerCase() === "weapons" ? "whatsapp" : "razorpay";
+  return "whatsapp";
 }
 
 function normalizeProductForDb(product) {

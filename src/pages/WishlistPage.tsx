@@ -1,9 +1,10 @@
 import { Link } from "@/lib/spa-router";
 import { Heart, ShoppingCart, Trash2 } from "lucide-react";
 import { getCategoryLabel } from "@/data/products";
+import { getCategoryDisplayLabel } from "@/lib/category-matching";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { useCart } from "@/hooks/use-cart";
-import { useStoredProducts } from "@/lib/content-store";
+import { useStoredCatalogueTypes, useStoredProducts } from "@/lib/content-store";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { getProductPricing, normalizeDisplayCase } from "@/lib/utils";
 import { toast } from "sonner";
@@ -13,6 +14,7 @@ export default function WishlistPage() {
   const { wishlist, removeFromWishlist, clearWishlist } = useWishlist();
   const { addToCart } = useCart();
   const catalog = useStoredProducts();
+  const catalogueTypes = useStoredCatalogueTypes();
   const items = wishlist
     .map((id) => catalog.find((product) => product.id === id) ?? null)
     .filter((item): item is NonNullable<typeof item> => item !== null);
@@ -64,7 +66,7 @@ export default function WishlistPage() {
                   />
                   <div>
                     <p className="text-xs uppercase tracking-wide text-gold">
-                      {getCategoryLabel(product.category, resolvedLocale)}
+                      {getCategoryDisplayLabel(product.category, resolvedLocale, catalogueTypes) || getCategoryLabel(product.category, resolvedLocale)}
                     </p>
                     <Link
                       to="/products/$productId"

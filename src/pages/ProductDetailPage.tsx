@@ -2,8 +2,9 @@ import { Link } from "@/lib/spa-router";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ChevronRight, Heart, MessageCircle, ShoppingCart } from "lucide-react";
 import { getCategoryLabel, getProductPaymentMode, type Product } from "@/data/products";
+import { getCategoryDisplayLabel } from "@/lib/category-matching";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
-import { useStoredProducts } from "@/lib/content-store";
+import { useStoredCatalogueTypes, useStoredProducts } from "@/lib/content-store";
 import { siteConfig } from "@/lib/site-config";
 import { getHighlightedProductOptionIndex, getProductOptionPricing, getProductPricing, normalizeDisplayCase } from "@/lib/utils";
 import { useCart } from "@/hooks/use-cart";
@@ -82,6 +83,7 @@ function getMoreBackgroundInfo(product: Product, locale: "en" | "mr") {
 export default function ProductDetailPage({ productId }: { productId: string }) {
   const { resolvedLocale } = useLanguage();
   const products = useStoredProducts();
+  const catalogueTypes = useStoredCatalogueTypes();
   const product = products.find((item) => item.id === productId);
   const [selectedImage, setSelectedImage] = useState("");
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(0);
@@ -127,6 +129,9 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   }
 
   const productName = normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale));
+  const localizedCategoryLabel =
+    getCategoryDisplayLabel(product.category, resolvedLocale, catalogueTypes) ||
+    getCategoryLabel(product.category, resolvedLocale);
   const whatsappMessage =
     getProductPaymentMode(product) === "whatsapp"
       ? `${getGeneralWhatsappMessage(resolvedLocale)}\n\n${resolvedLocale === "mr" ? "मला या उत्पादनाबद्दल माहिती हवी आहे" : "I want details for this product"}: ${productName}`
@@ -184,7 +189,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
               <ArrowLeft className="h-4 w-4" />{resolvedLocale === "mr" ? "\u0909\u0924\u094d\u092a\u093e\u0926\u0928\u093e\u0902\u0915\u0921\u0947 \u092a\u0930\u0924" : "Back to Products"}
             </Link>
           </div>
-          <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2bb64] md:text-center">{getCategoryLabel(product.category, resolvedLocale)}</p>
+          <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2bb64] md:text-center">{localizedCategoryLabel}</p>
           <h1 className="mt-2 font-heading text-4xl leading-none text-black md:text-center md:text-6xl">{normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}</h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-black md:mx-auto md:text-center md:text-base">{resolveLocalizedText(product.shortDescription, resolvedLocale)}</p>
         </div>
@@ -383,7 +388,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
                 <ProductGalleryCard
                   key={item.id}
                   product={item}
-                  categoryLabel={getCategoryLabel(item.category, resolvedLocale)}
+                  categoryLabel={getCategoryDisplayLabel(item.category, resolvedLocale, catalogueTypes) || getCategoryLabel(item.category, resolvedLocale)}
                 />
               ))}
             </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getProductPaymentMode, type Product } from "@/data/products";
+import { allProducts, getProductPaymentMode, type Product } from "@/data/products";
 import { defaultCatalogueTypes, type CatalogueType } from "@/lib/catalogue-types";
 import { homeContent as defaultHomeContent } from "@/data/home-content";
 import { apiRequest } from "@/lib/api";
@@ -65,7 +65,7 @@ type StorefrontPayload = {
   homeContent: StoredHomeContent;
 };
 
-const defaultProductById = new Map<string, Product>();
+const defaultProductById = new Map<string, Product>(allProducts.map((product) => [product.id, product]));
 
 const defaultBannerImageById = new Map<string, string>(
   defaultHomeContent.banners.map((banner) => [banner.id, banner.image]),
@@ -482,8 +482,11 @@ const STOREFRONT_SESSION_CACHE_TTL_MS = 5 * 60 * 1000;
 
 let storefrontBootstrapPromise: Promise<void> | null = null;
 let storefrontCacheHydrated = false;
-let productsCache: Product[] = [];
-let catalogueCache: CatalogueType[] = [];
+let productsCache: Product[] = allProducts.map((product) => normalizeProduct(product));
+let catalogueCache: CatalogueType[] = defaultCatalogueTypes.map((catalogue) => ({
+  ...catalogue,
+  image: normalizeAssetUrl(catalogue.image),
+}));
 let homeContentCache: StoredHomeContent = normalizeStoredHomeContent({
   announcementBar: defaultAnnouncementBar,
   spotlightProductIds: defaultSpotlightProductIds,

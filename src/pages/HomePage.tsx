@@ -6,34 +6,17 @@ import {
   useStoredProducts,
 } from "@/lib/content-store";
 import { useWishlist } from "@/hooks/use-wishlist";
+import {
+  categoriesMatch,
+  countProductsForCatalogue,
+  findFirstProductImageForCatalogue,
+  getCataloguePrimaryCategoryKey,
+  isUnchangedLegacySeededCatalogue,
+} from "@/lib/category-matching";
 import { useLanguage } from "@/lib/language";
 
 const HomeDeferredSections = lazy(() => import("@/components/HomeDeferredSections"));
 const PLACEHOLDER_IMAGE = "/placeholder.svg";
-const legacySeededCatalogueLabels: Record<string, string> = {
-  "statues-catalogue": "statues",
-  "weapons-catalogue": "weapons",
-  "shield-catalogue": "shields",
-  "dhoop-catalogue": "dhoop",
-  "full-catalogue": "full range",
-};
-
-function getCatalogueShortLabel(catalogue: { shortLabel: string | { en?: string; mr?: string } }) {
-  return (typeof catalogue.shortLabel === "string"
-    ? catalogue.shortLabel
-    : catalogue.shortLabel.en || catalogue.shortLabel.mr || ""
-  ).trim();
-}
-
-function isUnchangedLegacySeededCatalogue(catalogue: {
-  id?: string;
-  shortLabel: string | { en?: string; mr?: string };
-}) {
-  const id = String(catalogue.id || "").trim();
-  const legacyLabel = legacySeededCatalogueLabels[id];
-  if (!legacyLabel) return false;
-  return getCatalogueShortLabel(catalogue).toLowerCase() === legacyLabel;
-}
 
 export default function HomePage() {
   const { resolvedLocale } = useLanguage();
@@ -56,38 +39,51 @@ export default function HomePage() {
       .filter((catalogue) => catalogue.isActive)
       .filter((catalogue) => !isUnchangedLegacySeededCatalogue(catalogue))
       .map((catalogue) => {
-        const key =
-          (typeof catalogue.shortLabel === "string"
-            ? catalogue.shortLabel
-            : catalogue.shortLabel.en || catalogue.shortLabel.mr || "")
-            .trim() || "General";
+        const key = getCataloguePrimaryCategoryKey(catalogue) || "General";
         const title =
           (typeof catalogue.title === "string" ? catalogue.title : catalogue.title[resolvedLocale]) || key;
+        const productCount = countProductsForCatalogue(catalogue, products);
+        if (productCount === 0) return null;
         return {
           title,
           key,
           count: `${products.filter((product) => product.category === key).length} ${resolvedLocale === "mr" ? "उत्पादने" : "products"}`,
-          image: catalogue.image || products.find((product) => product.category === key)?.image || PLACEHOLDER_IMAGE,
+          image: catalogue.image || findFirstProductImageForCatalogue(catalogue, products) || PLACEHOLDER_IMAGE,
         };
-      });
+      })
+      .filter((card): card is NonNullable<typeof card> => card !== null);
 
-    return adminCards;
+    return adminCards.map((card) => ({
+      ...card,
+      count: `${products.filter((product) => categoriesMatch(product.category, card.key, catalogueTypes)).length} ${resolvedLocale === "mr" ? "\u0909\u0924\u094d\u092a\u093e\u0926\u0928\u0947" : "products"}`,
+    }));
   }, [catalogueTypes, products, resolvedLocale]);
 
   const categoryLabelByKey = useMemo(() => {
     const labels = new Map<string, string>();
     for (const catalogue of catalogueTypes) {
-      const key =
-        (typeof catalogue.shortLabel === "string"
-          ? catalogue.shortLabel
-          : catalogue.shortLabel.en || catalogue.shortLabel.mr || "")
-          .trim();
+      const key = getCataloguePrimaryCategoryKey(catalogue);
       if (!key) continue;
       const localizedLabel =
         typeof catalogue.shortLabel === "string"
           ? catalogue.shortLabel
           : catalogue.shortLabel[resolvedLocale] || catalogue.shortLabel.en || catalogue.shortLabel.mr || key;
       labels.set(key, localizedLabel);
+
+      const rawAliases = [
+        ...(typeof catalogue.shortLabel === "string"
+          ? [catalogue.shortLabel]
+          : [catalogue.shortLabel.en ?? "", catalogue.shortLabel.mr ?? ""]),
+        ...(typeof catalogue.title === "string"
+          ? [catalogue.title]
+          : [catalogue.title.en ?? "", catalogue.title.mr ?? ""]),
+      ];
+
+      for (const alias of rawAliases) {
+        const normalizedAlias = alias.trim();
+        if (!normalizedAlias) continue;
+        labels.set(normalizedAlias, localizedLabel);
+      }
     }
     return labels;
   }, [catalogueTypes, resolvedLocale]);
