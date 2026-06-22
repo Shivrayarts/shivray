@@ -1,12 +1,14 @@
 import { Link } from "@/lib/spa-router";
 import { Heart, ShoppingCart, Trash2 } from "lucide-react";
-import { getCategoryLabel } from "@/data/products";
+import { getCategoryLabel, getProductPaymentMode } from "@/data/products";
 import { getCategoryDisplayLabel } from "@/lib/category-matching";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { useCart } from "@/hooks/use-cart";
 import { useStoredCatalogueTypes, useStoredProducts } from "@/lib/content-store";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { getProductPricing, normalizeDisplayCase } from "@/lib/utils";
+import { siteConfig } from "@/lib/site-config";
+import { buildWhatsappUrl, getGeneralWhatsappMessage } from "@/lib/whatsapp-messages";
 import { toast } from "sonner";
 
 export default function WishlistPage() {
@@ -53,6 +55,16 @@ export default function WishlistPage() {
             <div className="space-y-4">
               {items.map((product) => {
                 const pricing = getProductPricing(product);
+                const isWhatsappOnly = getProductPaymentMode(product) === "whatsapp";
+                const productName = normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale));
+                const whatsappLink = buildWhatsappUrl(
+                  siteConfig.whatsappHref,
+                  `${getGeneralWhatsappMessage(resolvedLocale)}\n\n${
+                    resolvedLocale === "mr"
+                      ? `मला ${productName} या उत्पादनाबद्दल माहिती हवी आहे. कृपया किंमत आणि उपलब्धता सांगा.`
+                      : `I want details for ${productName}. Please share price and availability.`
+                  }`,
+                );
                 return (
                 <div
                   key={product.id}
@@ -60,7 +72,7 @@ export default function WishlistPage() {
                 >
                   <img
                     src={product.image}
-                    alt={normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}
+                    alt={productName}
                     className="h-24 w-24 rounded-md object-cover"
                     loading="lazy"
                   />
@@ -73,7 +85,7 @@ export default function WishlistPage() {
                       params={{ productId: product.id }}
                       className="mt-1 block font-heading text-base font-semibold text-foreground hover:text-primary"
                     >
-                      {normalizeDisplayCase(resolveLocalizedText(product.name, resolvedLocale))}
+                      {productName}
                     </Link>
                     <p className="mt-1 text-sm font-bold text-primary">{pricing.finalPrice}</p>
                     {pricing.hasDiscount ? (
@@ -87,26 +99,38 @@ export default function WishlistPage() {
                     </p>
                   </div>
                   <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end">
-                    <button
-                      onClick={() => {
-                        addToCart(product.id);
-                        toast.success(
-                          resolvedLocale === "mr" ? "उत्पादन कार्टमध्ये जोडले." : "Product added to cart.",
-                          {
-                            action: {
-                              label: resolvedLocale === "mr" ? "कार्ट" : "Cart",
-                              onClick: () => {
-                                window.location.href = "/cart";
+                    {isWhatsappOnly ? (
+                      <a
+                        href={whatsappLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold uppercase tracking-wider text-primary-foreground"
+                      >
+                        <ShoppingCart className="h-4 w-4" />
+                        {resolvedLocale === "mr" ? "WhatsApp वर ऑर्डर" : "Order on WhatsApp"}
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          addToCart(product.id);
+                          toast.success(
+                            resolvedLocale === "mr" ? "उत्पादन कार्टमध्ये जोडले." : "Product added to cart.",
+                            {
+                              action: {
+                                label: resolvedLocale === "mr" ? "कार्ट" : "Cart",
+                                onClick: () => {
+                                  window.location.href = "/cart";
+                                },
                               },
                             },
-                          },
-                        );
-                      }}
-                      className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold uppercase tracking-wider text-primary-foreground"
-                    >
-                      <ShoppingCart className="h-4 w-4" />
-                      {resolvedLocale === "mr" ? "कार्टमध्ये जोडा" : "Add to Cart"}
-                    </button>
+                          );
+                        }}
+                        className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold uppercase tracking-wider text-primary-foreground"
+                      >
+                        <ShoppingCart className="h-4 w-4" />
+                        {resolvedLocale === "mr" ? "कार्टमध्ये जोडा" : "Add to Cart"}
+                      </button>
+                    )}
                     <button
                       onClick={() => removeFromWishlist(product.id)}
                       className="inline-flex items-center gap-1 text-xs text-destructive hover:opacity-80"

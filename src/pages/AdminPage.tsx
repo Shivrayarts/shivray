@@ -601,6 +601,9 @@ function ProductForm({
           ))}
         </datalist>
       </div>
+      <div className="rounded-2xl border border-[#d8e7f8] bg-[#f3f8ff] px-4 py-3 text-sm text-[#2b4f75]">
+        Razorpay payment allowed means this product can be added to cart and paid online. WhatsApp order only means the storefront will skip cart for this product and send the customer to WhatsApp instead.
+      </div>
       <input
         type="hidden"
         value={value.image}
@@ -1687,6 +1690,33 @@ export default function AdminPage() {
       window.alert(`Product "${englishName}" saved successfully.`);
     }
     toast.success(`Product "${englishName}" saved successfully.`);
+  }
+
+  async function toggleProductPaymentMode(product: Product) {
+    const nextProduct: Product = {
+      ...product,
+      paymentMode: product.paymentMode === "whatsapp" ? "razorpay" : "whatsapp",
+    };
+
+    const saved = await saveStoredProduct(nextProduct);
+    if (!saved) {
+      setMediaNoticeTone("error");
+      setMediaNotice(`Unable to update payment mode for "${adminText(product.name)}". Please try again.`);
+      toast.error(`Unable to update payment mode for "${adminText(product.name)}". Please try again.`);
+      return;
+    }
+
+    setMediaNoticeTone("success");
+    setMediaNotice(
+      `"${adminText(product.name)}" is now ${
+        nextProduct.paymentMode === "whatsapp" ? "WhatsApp only" : "cart and Razorpay enabled"
+      }.`,
+    );
+    toast.success(
+      `"${adminText(product.name)}" is now ${
+        nextProduct.paymentMode === "whatsapp" ? "WhatsApp only" : "cart and Razorpay enabled"
+      }.`,
+    );
   }
 
   function downloadCustomersExcel() {
@@ -2907,7 +2937,18 @@ export default function AdminPage() {
                         </div>
                         <div className="mt-4">
                           <p className="mb-2 text-sm text-[#7f8897]">Action</p>
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => void toggleProductPaymentMode(item)}
+                              className={`rounded-lg px-3 py-2 text-xs font-semibold ${
+                                item.paymentMode === "whatsapp"
+                                  ? "bg-[#dcfce7] text-[#166534]"
+                                  : "bg-[#e0f2fe] text-[#075985]"
+                              }`}
+                            >
+                              {item.paymentMode === "whatsapp" ? "Set Cart Enabled" : "Set WhatsApp Only"}
+                            </button>
                             <button type="button" onClick={() => { setProductDraft(item); setProductViewMode("add"); }} className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#6f55dc] text-white"><SquarePen className="h-4 w-4" /></button>
                             <button type="button" onClick={() => void deleteProduct(item.id)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#ef4357] text-white"><Trash2 className="h-4 w-4" /></button>
                             <button type="button" onClick={() => void reorderProduct(index, -1)} className="rounded-lg border border-[#d7dbe3] px-3 py-2 text-xs font-semibold text-[#4b5563]">Up</button>
@@ -2958,6 +2999,17 @@ export default function AdminPage() {
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => void toggleProductPaymentMode(item)}
+                            className={`rounded-full px-4 py-2 text-sm font-semibold ${
+                              item.paymentMode === "whatsapp"
+                                ? "bg-[#dcfce7] text-[#166534]"
+                                : "bg-[#e0f2fe] text-[#075985]"
+                            }`}
+                          >
+                            {item.paymentMode === "whatsapp" ? "Set Cart Enabled" : "Set WhatsApp Only"}
+                          </button>
                           <button type="button" onClick={() => { setProductDraft(item); setProductViewMode("add"); }} className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#6f55dc] text-white"><SquarePen className="h-4 w-4" /></button>
                           <button type="button" onClick={() => void reorderProduct(index, -1)} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowUp className="h-4 w-4" /></button>
                           <button type="button" onClick={() => void reorderProduct(index, 1)} className="rounded-full border border-[#eadbc8] bg-white px-3 py-2 text-sm text-[#6c4b33]"><ArrowDown className="h-4 w-4" /></button>

@@ -165,6 +165,7 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
   ];
   const addToCartLabel = resolvedLocale === "mr" ? "कार्टमध्ये जोडा" : "Add to Cart";
   const removeFromCartLabel = resolvedLocale === "mr" ? "कार्टमधून काढा" : "Remove from Cart";
+  const whatsappOrderLabel = resolvedLocale === "mr" ? "WhatsApp वर ऑर्डर करा" : "Order on WhatsApp";
   const isInCart = cart.some((item) => item.id === product.id);
   const productOptions = product.productOptions ?? [];
   const selectedOption = productOptions[selectedOptionIndex] ?? null;
@@ -327,45 +328,47 @@ export default function ProductDetailPage({ productId }: { productId: string }) 
               <div className="rounded-[24px] bg-[#fcf8f2] p-4"><p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">{resolvedLocale === "mr" ? "\u0938\u093e\u0939\u093f\u0924\u094d\u092f" : "Material"}</p><p className="mt-2 text-sm text-[#34180e]">{resolveLocalizedText(product.material, resolvedLocale)}</p></div>
               <div className="rounded-[24px] bg-[#fcf8f2] p-4"><p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a86c2b]">{resolvedLocale === "mr" ? "\u092a\u0930\u093f\u092e\u093e\u0923" : "Dimensions"}</p><p className="mt-2 text-sm text-[#34180e]">{resolveLocalizedText(product.dimensions, resolvedLocale)}</p></div>
             </div>
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              <button
-                type="button"
-                onClick={() => {
-                  if (isInCart) {
-                    removeFromCart(product.id);
-                    toast.success(
-                      resolvedLocale === "mr" ? "उत्पादन कार्टमधून काढले." : "Product removed from cart.",
-                    );
-                  } else {
-                    addToCart(product.id);
-                    toast.success(
-                      resolvedLocale === "mr" ? "उत्पादन कार्टमध्ये जोडले." : "Product added to cart.",
-                      {
-                        action: {
-                          label: resolvedLocale === "mr" ? "कार्ट" : "Cart",
-                          onClick: () => {
-                            window.location.href = "/cart";
+            <div className={`mt-6 grid gap-3 ${isWhatsappOnly ? "sm:grid-cols-2" : "sm:grid-cols-3"}`}>
+              {!isWhatsappOnly ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isInCart) {
+                      removeFromCart(product.id);
+                      toast.success(
+                        resolvedLocale === "mr" ? "उत्पादन कार्टमधून काढले." : "Product removed from cart.",
+                      );
+                    } else {
+                      addToCart(product.id);
+                      toast.success(
+                        resolvedLocale === "mr" ? "उत्पादन कार्टमध्ये जोडले." : "Product added to cart.",
+                        {
+                          action: {
+                            label: resolvedLocale === "mr" ? "कार्ट" : "Cart",
+                            onClick: () => {
+                              window.location.href = "/cart";
+                            },
                           },
                         },
-                      },
-                    );
-                  }
-                }}
-                className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] transition ${
-                  isInCart
-                    ? "bg-[#34180e] text-white"
-                    : "border border-[#d8b48b] text-[#34180e]"
-                }`}
-              >
-                <ShoppingCart className="h-4 w-4" />
-                {isInCart ? removeFromCartLabel : addToCartLabel}
-              </button>
+                      );
+                    }
+                  }}
+                  className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] transition ${
+                    isInCart
+                      ? "bg-[#34180e] text-white"
+                      : "border border-[#d8b48b] text-[#34180e]"
+                  }`}
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  {isInCart ? removeFromCartLabel : addToCartLabel}
+                </button>
+              ) : null}
               <button type="button" onClick={() => toggleWishlist(product.id)} className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] ${isWishlisted(product.id) ? "bg-[#34180e] text-white" : "border border-[#d8b48b] text-[#34180e]"}`}>
                 <Heart className={`h-4 w-4 ${isWishlisted(product.id) ? "fill-current" : ""}`} />
                 {isWishlisted(product.id) ? (resolvedLocale === "mr" ? "\u0906\u0935\u0921\u0932\u0947" : "Liked") : (resolvedLocale === "mr" ? "\u0906\u0935\u0921\u0932\u0947" : "Like")}
               </button>
               <a href={whatsappLink} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full border border-[#d8b48b] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#34180e]">
-                <MessageCircle className="h-4 w-4" />{resolvedLocale === "mr" ? "\u0906\u0924\u093e \u091a\u094c\u0915\u0936\u0940 \u0915\u0930\u093e" : "Enquire Now"}
+                <MessageCircle className="h-4 w-4" />{isWhatsappOnly ? whatsappOrderLabel : (resolvedLocale === "mr" ? "\u0906\u0924\u093e \u091a\u094c\u0915\u0936\u0940 \u0915\u0930\u093e" : "Enquire Now")}
               </a>
             </div>
             <div className="mt-6 flex flex-col rounded-[28px] bg-[#fcf8f2] px-5 py-5 sm:px-6">

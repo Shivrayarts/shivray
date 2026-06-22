@@ -64,7 +64,7 @@ export function getCategoryLabel(category: ProductCategory, locale: Locale) {
 export function getProductPaymentMode(product: Pick<Product, "category" | "paymentMode">): ProductPaymentMode {
   if (product.paymentMode === "whatsapp") return "whatsapp";
   if (product.paymentMode === "razorpay") return "razorpay";
-  return "whatsapp";
+  return "razorpay";
 }
 
 export const allProducts: Product[] = [
