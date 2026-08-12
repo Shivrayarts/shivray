@@ -4,10 +4,10 @@ type Translatable = string | LocalizedText;
 
 export const homeContent = {
   announcementBar: {
-    enabled: false,
+    enabled: true,
     text: {
-      en: "",
-      mr: "",
+      en: "Maratha Sword, Maratha Dhop, Dhop Talwar, धोप तलवार, Sword of Shivaji maharaj , Jagdamba Talwar, Maratha Weapons, Bhawani Sword, Bhawani Talwar",
+      mr: "Maratha Sword, Maratha Dhop, Dhop Talwar, धोप तलवार, Sword of Shivaji maharaj , Jagdamba Talwar, Maratha Weapons, Bhawani Sword, Bhawani Talwar",
     } as Translatable,
   },
   spotlightProductIds: [],

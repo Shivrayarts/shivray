@@ -120,7 +120,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const node = deferredSectionsRef.current;
-    if (!node || showDeferredSections) return;
+    if (!node || showDeferredSections || isStorefrontLoading) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -134,7 +134,7 @@ export default function HomePage() {
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, [showDeferredSections]);
+  }, [isStorefrontLoading, showDeferredSections]);
 
   return (
     <div className="bg-[#f7f1e7]">
@@ -221,17 +221,8 @@ export default function HomePage() {
               </div>
             </>
           ) : isStorefrontLoading ? (
-            <div className="category-carousel-scroll mt-8 flex snap-x snap-mandatory gap-4 overflow-hidden pb-2">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div
-                  key={`category-loading-${index}`}
-                  className="w-[78vw] max-w-[22rem] shrink-0 snap-center text-center sm:w-[19rem] md:w-[16.5rem]"
-                >
-                  <div className="aspect-square animate-pulse rounded-[30px] bg-[#efe6d9]" />
-                  <div className="mx-auto mt-4 h-7 w-28 animate-pulse rounded-full bg-[#eadfce]" />
-                  <div className="mx-auto mt-3 h-4 w-32 animate-pulse rounded-full bg-[#f2e7d8]" />
-                </div>
-              ))}
+            <div className="mt-8 flex min-h-6 items-center justify-center">
+              <div className="h-5 w-72 max-w-full animate-pulse rounded-full bg-[#eadfce]" />
             </div>
           ) : (
             <p className="mt-8 text-center text-base text-[#7d766f]">
@@ -243,9 +234,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div ref={deferredSectionsRef}>
+      <div ref={deferredSectionsRef} className="min-h-[1780px] md:min-h-[2350px] lg:min-h-[2460px]">
         {!showDeferredSections ? (
-          <div className="min-h-[1780px] md:min-h-[2350px] lg:min-h-[2460px]">
+          <>
             <section className="px-4 pb-8 md:px-6 md:pb-14">
               <div className="layout-shell">
                 <div className="flex items-end justify-between gap-3">
@@ -276,7 +267,7 @@ export default function HomePage() {
                 {resolvedLocale === "mr" ? "अधिक विभाग लोड होत आहेत..." : "Loading more sections..."}
               </div>
             </section>
-          </div>
+          </>
         ) : (
           <Suspense
             fallback={

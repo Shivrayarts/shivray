@@ -411,10 +411,7 @@ function ensureArray<T>(value: unknown, fallback: readonly T[]): T[] {
 }
 
 const emptyHomeContent: StoredHomeContent = {
-  announcementBar: {
-    enabled: false,
-    text: { en: "", mr: "" },
-  },
+  announcementBar: defaultAnnouncementBar,
   spotlightProductIds: [],
   banners: [],
   reviews: [],
@@ -482,19 +479,28 @@ const STOREFRONT_SESSION_CACHE_TTL_MS = 5 * 60 * 1000;
 
 let storefrontBootstrapPromise: Promise<void> | null = null;
 let storefrontCacheHydrated = false;
-let productsCache: Product[] = allProducts.map((product) => normalizeProduct(product));
-let catalogueCache: CatalogueType[] = defaultCatalogueTypes.map((catalogue) => ({
-  ...catalogue,
-  image: normalizeAssetUrl(catalogue.image),
-}));
-let homeContentCache: StoredHomeContent = normalizeStoredHomeContent({
-  announcementBar: defaultAnnouncementBar,
-  spotlightProductIds: defaultSpotlightProductIds,
-  banners: defaultHomeBanners,
-  reviews: defaultHomeReviews,
-  videos: defaultHomeVideos,
-  blogPosts: defaultHomeBlogPosts,
-});
+const useSeededFallback = import.meta.env.DEV;
+
+let productsCache: Product[] = useSeededFallback ? allProducts.map((product) => normalizeProduct(product)) : [];
+let catalogueCache: CatalogueType[] = useSeededFallback
+  ? defaultCatalogueTypes.map((catalogue) => ({
+      ...catalogue,
+      image: normalizeAssetUrl(catalogue.image),
+    }))
+  : [];
+let homeContentCache: StoredHomeContent = normalizeStoredHomeContent(
+  useSeededFallback
+    ? {
+        announcementBar: defaultAnnouncementBar,
+        spotlightProductIds: defaultSpotlightProductIds,
+        banners: defaultHomeBanners,
+        reviews: defaultHomeReviews,
+        videos: defaultHomeVideos,
+        blogPosts: defaultHomeBlogPosts,
+      }
+    : emptyHomeContent,
+  emptyHomeContent,
+);
 
 function canUseWindow() {
   return typeof window !== "undefined";
