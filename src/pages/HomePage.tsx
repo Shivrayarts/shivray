@@ -128,7 +128,7 @@ export default function HomePage() {
       observer?.disconnect();
     };
 
-    const idleTimerId = window.setTimeout(loadDeferredSections, 6000);
+    const idleTimerId = window.setTimeout(loadDeferredSections, 1200);
     const scrollAbortController = new AbortController();
     window.addEventListener("scroll", loadDeferredSections, { once: true, passive: true, signal: scrollAbortController.signal });
 
@@ -138,7 +138,7 @@ export default function HomePage() {
           loadDeferredSections();
         }
       },
-      { rootMargin: "-15% 0px" },
+      { rootMargin: "300px 0px" },
     );
 
     observer.observe(node);
