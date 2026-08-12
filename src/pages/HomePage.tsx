@@ -31,7 +31,6 @@ export default function HomePage() {
   const reviews = storedHomeContent.reviews;
   const featuredVideos = storedHomeContent.videos;
   const homeProducts = products.slice(0, 8);
-  const spotlightIds = storedHomeContent.spotlightProductIds?.length ? storedHomeContent.spotlightProductIds : [];
   const isStorefrontLoading = products.length === 0 && catalogueTypes.length === 0;
 
   const homeCategoryCards = useMemo(() => {
@@ -89,13 +88,14 @@ export default function HomePage() {
   }, [catalogueTypes, resolvedLocale]);
 
   const spotlightProducts = useMemo(() => {
+    const spotlightIds = storedHomeContent.spotlightProductIds?.length ? storedHomeContent.spotlightProductIds : [];
     const selected = spotlightIds.flatMap((productId) => {
       const matchedProduct = products.find((item) => item.id === productId);
       return matchedProduct ? [matchedProduct] : [];
     });
 
     return selected.length > 0 ? selected : products.slice(0, 4);
-  }, [products, spotlightIds]);
+  }, [products, storedHomeContent.spotlightProductIds]);
 
   const handleCategoriesScroll = () => {
     const node = categoriesRef.current;
@@ -129,7 +129,7 @@ export default function HomePage() {
           observer.disconnect();
         }
       },
-      { rootMargin: "300px 0px" },
+      { rootMargin: "100px 0px" },
     );
 
     observer.observe(node);
@@ -245,7 +245,7 @@ export default function HomePage() {
 
       <div ref={deferredSectionsRef}>
         {!showDeferredSections ? (
-          <>
+          <div className="min-h-[1780px] md:min-h-[2350px] lg:min-h-[2460px]">
             <section className="px-4 pb-8 md:px-6 md:pb-14">
               <div className="layout-shell">
                 <div className="flex items-end justify-between gap-3">
@@ -276,7 +276,7 @@ export default function HomePage() {
                 {resolvedLocale === "mr" ? "अधिक विभाग लोड होत आहेत..." : "Loading more sections..."}
               </div>
             </section>
-          </>
+          </div>
         ) : (
           <Suspense
             fallback={

@@ -188,6 +188,33 @@
   .border-gold-gradient {
     border-image: linear-gradient(135deg, oklch(0.75 0.14 75), oklch(0.85 0.12 80)) 1;
   }
+  .announcement-marquee {
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .announcement-marquee > span {
+    display: inline-block;
+    min-width: 100%;
+    padding-inline-start: 100%;
+    animation: announcement-marquee 24s linear infinite;
+  }
+  .announcement-marquee:hover > span {
+    animation-play-state: paused;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .announcement-marquee > span {
+      padding-inline-start: 0;
+      animation: none;
+    }
+  }
+  @keyframes announcement-marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-100%);
+    }
+  }
   .history-scroll {
     scrollbar-gutter: stable;
     scrollbar-width: thin;
