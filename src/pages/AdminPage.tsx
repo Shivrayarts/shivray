@@ -46,6 +46,7 @@ import {
   type HomeBlogPost,
   type HomeReview,
   type HomeVideo,
+  useFullStorefrontData,
   useStoredCatalogueTypes,
   useStoredHomeContent,
   useStoredProducts,
@@ -1213,6 +1214,7 @@ function StatCard({
 
 export default function AdminPage() {
   const navigate = useNavigate();
+  useFullStorefrontData();
   const products = useStoredProducts();
   const catalogueTypes = useStoredCatalogueTypes();
   const storedHomeContent = useStoredHomeContent();

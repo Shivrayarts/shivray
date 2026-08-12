@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { allProducts, getProductPaymentMode, type Product } from "@/data/products";
+import type { Product } from "@/data/products";
 import { defaultCatalogueTypes, type CatalogueType } from "@/lib/catalogue-types";
 import { homeContent as defaultHomeContent } from "@/data/home-content";
 import { apiRequest } from "@/lib/api";
@@ -65,7 +65,7 @@ type StorefrontPayload = {
   homeContent: StoredHomeContent;
 };
 
-const defaultProductById = new Map<string, Product>(allProducts.map((product) => [product.id, product]));
+const defaultProductById = new Map<string, Product>();
 
 const defaultBannerImageById = new Map<string, string>(
   defaultHomeContent.banners.map((banner) => [banner.id, banner.image]),
@@ -402,7 +402,7 @@ function normalizeProduct(product: Product): Product {
           }))
           .filter((option) => option.label || option.price || option.discount || option.finalPrice)
       : [],
-    paymentMode: getProductPaymentMode(product),
+    paymentMode: product.paymentMode === "whatsapp" ? "whatsapp" : "razorpay",
   };
 }
 
@@ -478,16 +478,13 @@ const STOREFRONT_PERSISTENT_CACHE_KEY = "shivray-storefront-persistent-v1";
 const STOREFRONT_SESSION_CACHE_TTL_MS = 5 * 60 * 1000;
 
 let storefrontBootstrapPromise: Promise<void> | null = null;
+let storefrontFullBootstrapPromise: Promise<void> | null = null;
 let storefrontCacheHydrated = false;
-const useSeededFallback = import.meta.env.DEV;
+let storefrontPayloadIsFull = false;
+const useSeededFallback = false;
 
-let productsCache: Product[] = useSeededFallback ? allProducts.map((product) => normalizeProduct(product)) : [];
-let catalogueCache: CatalogueType[] = useSeededFallback
-  ? defaultCatalogueTypes.map((catalogue) => ({
-      ...catalogue,
-      image: normalizeAssetUrl(catalogue.image),
-    }))
-  : [];
+let productsCache: Product[] = [];
+let catalogueCache: CatalogueType[] = [];
 let homeContentCache: StoredHomeContent = normalizeStoredHomeContent(
   useSeededFallback
     ? {
@@ -654,10 +651,16 @@ function applyStorefrontPayload(payload: Partial<StorefrontPayload>) {
   }
 }
 
-async function refreshStorefrontData() {
-  const payload = await apiRequest<StorefrontPayload>("/api/storefront");
+async function refreshStorefrontData({ full = false }: { full?: boolean } = {}) {
+  const payload = await apiRequest<StorefrontPayload>(full ? "/api/storefront?full=1" : "/api/storefront");
+  if (!full && storefrontPayloadIsFull) return;
   applyStorefrontPayload(payload);
-  writeSessionStorefrontCache(payload);
+  if (full) {
+    storefrontPayloadIsFull = true;
+  }
+  if (!full) {
+    writeSessionStorefrontCache(payload);
+  }
   clearLocalProductsFallback();
   clearLocalHomeContentFallback();
 }
@@ -709,7 +712,18 @@ async function syncHomeContentToApi(content: StoredHomeContent) {
   applyStorefrontPayload(payload);
 }
 
-function bootstrapStorefrontData() {
+function bootstrapStorefrontData({ full = false }: { full?: boolean } = {}) {
+  if (full) {
+    if (!storefrontFullBootstrapPromise) {
+      storefrontFullBootstrapPromise = refreshStorefrontData({ full: true }).catch((error) => {
+        storefrontFullBootstrapPromise = null;
+        logSyncError("storefront bootstrap", error);
+      });
+    }
+
+    return storefrontFullBootstrapPromise;
+  }
+
   if (!storefrontBootstrapPromise) {
     const cachedPayload = readSessionStorefrontCache();
     if (cachedPayload) {
@@ -898,6 +912,13 @@ function useStoredValue<T>(read: () => T, eventName: string) {
   }, [eventName, read]);
 
   return value;
+}
+
+export function useFullStorefrontData() {
+  useEffect(() => {
+    if (!canUseWindow()) return;
+    void refreshStorefrontData({ full: true }).catch((error) => logSyncError("full storefront", error));
+  }, []);
 }
 
 export function useStoredProducts() {

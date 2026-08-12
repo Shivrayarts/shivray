@@ -1,7 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "@/App";
-import { scheduleAnalyticsInit } from "@/lib/analytics";
 import logoImg from "@/assets/logo-dark-small.jpg";
 import "@/styles.css";
 
@@ -23,4 +22,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   </React.StrictMode>,
 );
 
-scheduleAnalyticsInit();
+window.setTimeout(() => {
+  void import("@/lib/analytics").then(({ scheduleAnalyticsInit }) => scheduleAnalyticsInit());
+}, 8000);

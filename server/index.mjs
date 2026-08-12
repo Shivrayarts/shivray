@@ -130,6 +130,8 @@ const LEGACY_SEEDED_CATALOGUE_SLUGS = [
 
 let storefrontPayloadCache = null;
 let storefrontPayloadCacheExpiresAt = 0;
+let storefrontSummaryPayloadCache = null;
+let storefrontSummaryPayloadCacheExpiresAt = 0;
 const googleAuthClient = new OAuth2Client();
 
 function formatCurrency(value) {
@@ -1272,6 +1274,8 @@ async function fetchStorefrontPayload() {
 function invalidateStorefrontPayloadCache() {
   storefrontPayloadCache = null;
   storefrontPayloadCacheExpiresAt = 0;
+  storefrontSummaryPayloadCache = null;
+  storefrontSummaryPayloadCacheExpiresAt = 0;
 }
 
 async function fetchCachedStorefrontPayload({ forceFresh = false } = {}) {
@@ -1284,6 +1288,52 @@ async function fetchCachedStorefrontPayload({ forceFresh = false } = {}) {
   storefrontPayloadCache = payload;
   storefrontPayloadCacheExpiresAt = now + STOREFRONT_CACHE_TTL_MS;
   return payload;
+}
+
+function toStorefrontSummaryPayload(payload) {
+  return {
+    products: payload.products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      discount: product.discount,
+      finalPrice: product.finalPrice,
+      image: product.image,
+      category: product.category,
+      tag: product.tag,
+      shortDescription: product.shortDescription,
+      paymentMode: product.paymentMode,
+    })),
+    catalogueTypes: payload.catalogueTypes,
+    homeContent: {
+      announcementBar: payload.homeContent.announcementBar,
+      spotlightProductIds: payload.homeContent.spotlightProductIds,
+      banners: payload.homeContent.banners,
+      reviews: payload.homeContent.reviews,
+      videos: payload.homeContent.videos,
+      blogPosts: payload.homeContent.blogPosts.map((post) => ({
+        id: post.id,
+        title: post.title,
+        excerpt: post.excerpt,
+        image: post.image,
+        tag: post.tag,
+        href: post.href,
+      })),
+    },
+  };
+}
+
+async function fetchCachedStorefrontSummaryPayload({ forceFresh = false } = {}) {
+  const now = Date.now();
+  if (!forceFresh && storefrontSummaryPayloadCache && storefrontSummaryPayloadCacheExpiresAt > now) {
+    return storefrontSummaryPayloadCache;
+  }
+
+  const payload = await fetchCachedStorefrontPayload({ forceFresh });
+  const summaryPayload = toStorefrontSummaryPayload(payload);
+  storefrontSummaryPayloadCache = summaryPayload;
+  storefrontSummaryPayloadCacheExpiresAt = now + STOREFRONT_CACHE_TTL_MS;
+  return summaryPayload;
 }
 
 async function fetchCustomersPayload() {
@@ -1502,11 +1552,12 @@ app.get("/api/health", async (_req, res) => {
   }
 });
 
-app.get("/api/storefront", async (_req, res) => {
+app.get("/api/storefront", async (req, res) => {
   try {
     res.setHeader("Cache-Control", "public, max-age=120, stale-while-revalidate=300");
     res.setHeader("Vary", "Accept-Encoding");
-    res.json(await fetchCachedStorefrontPayload());
+    const fullPayload = req.query?.full === "1";
+    res.json(fullPayload ? await fetchCachedStorefrontPayload() : await fetchCachedStorefrontSummaryPayload());
   } catch (error) {
     res.status(500).json({ message: error instanceof Error ? error.message : "Unable to load storefront data." });
   }

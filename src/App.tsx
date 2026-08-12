@@ -3,7 +3,6 @@ import Header from "@/components/Header";
 import { LanguageProvider } from "@/lib/language";
 import { RouterProvider, useLocation } from "@/lib/spa-router";
 import { useAdminAuthState } from "@/lib/admin-auth";
-import { trackPageView } from "@/lib/analytics";
 import { applySeoMeta } from "@/lib/seo";
 import HomePage from "@/pages/HomePage";
 
@@ -216,7 +215,13 @@ function AppShell() {
   }, [location.href]);
 
   useEffect(() => {
-    trackPageView(location.pathname + location.search + location.hash, page.title);
+    const timerId = window.setTimeout(() => {
+      void import("@/lib/analytics").then(({ trackPageView }) => {
+        trackPageView(location.pathname + location.search + location.hash, page.title);
+      });
+    }, 8000);
+
+    return () => window.clearTimeout(timerId);
   }, [location.hash, location.pathname, location.search, page.title]);
 
   useEffect(() => {
@@ -226,12 +231,12 @@ function AppShell() {
     }
 
     setShowPeripheralUi(false);
-    const timerId = window.setTimeout(() => setShowPeripheralUi(true), 700);
+    const timerId = window.setTimeout(() => setShowPeripheralUi(true), 4000);
     return () => window.clearTimeout(timerId);
   }, [isAdminRoute, location.pathname]);
 
   useEffect(() => {
-    const timerId = window.setTimeout(() => setShowToaster(true), 700);
+    const timerId = window.setTimeout(() => setShowToaster(true), 8000);
     return () => window.clearTimeout(timerId);
   }, []);
 

@@ -4,7 +4,7 @@ import { ArrowLeft, ChevronRight, Heart, MessageCircle, ShoppingCart } from "luc
 import { getCategoryLabel, getProductPaymentMode, type Product } from "@/data/products";
 import { getCategoryDisplayLabel } from "@/lib/category-matching";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
-import { useStoredCatalogueTypes, useStoredProducts } from "@/lib/content-store";
+import { useFullStorefrontData, useStoredCatalogueTypes, useStoredProducts } from "@/lib/content-store";
 import { siteConfig } from "@/lib/site-config";
 import { getHighlightedProductOptionIndex, getProductOptionPricing, getProductPricing, normalizeDisplayCase } from "@/lib/utils";
 import { useCart } from "@/hooks/use-cart";
@@ -82,6 +82,7 @@ function getMoreBackgroundInfo(product: Product, locale: "en" | "mr") {
 
 export default function ProductDetailPage({ productId }: { productId: string }) {
   const { resolvedLocale } = useLanguage();
+  useFullStorefrontData();
   const products = useStoredProducts();
   const catalogueTypes = useStoredCatalogueTypes();
   const product = products.find((item) => item.id === productId);
