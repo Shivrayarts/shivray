@@ -2524,7 +2524,17 @@ app.post("/api/payments/razorpay/verify", async (req, res) => {
 });
 
 if (hasBuiltClient) {
-  app.use(express.static(distDir));
+  app.use(
+    express.static(distDir, {
+      maxAge: "30d",
+      immutable: true,
+      setHeaders(res, filePath) {
+        if (path.basename(filePath) === "index.html") {
+          res.setHeader("Cache-Control", "no-cache");
+        }
+      },
+    }),
+  );
   app.get("/{*path}", (req, res, next) => {
     if (req.path.startsWith("/api/")) {
       next();

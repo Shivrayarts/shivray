@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS catalogues (
   short_label VARCHAR(100) NOT NULL,
   description TEXT NOT NULL,
   image_url MEDIUMTEXT NOT NULL,
+  download_url MEDIUMTEXT NULL,
   item_count_label VARCHAR(60) DEFAULT NULL,
   sort_order INT UNSIGNED NOT NULL DEFAULT 0,
   is_active TINYINT(1) NOT NULL DEFAULT 1,
