@@ -1,5 +1,5 @@
 import { Link } from "@/lib/spa-router";
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useMemo, useRef, useState } from "react";
 import {
   useStoredHomeContent,
   useStoredCatalogueTypes,
@@ -14,8 +14,8 @@ import {
   isUnchangedLegacySeededCatalogue,
 } from "@/lib/category-matching";
 import { useLanguage } from "@/lib/language";
+import HomeDeferredSections from "@/components/HomeDeferredSections";
 
-const HomeDeferredSections = lazy(() => import("@/components/HomeDeferredSections"));
 const PLACEHOLDER_IMAGE = "/placeholder.svg";
 
 export default function HomePage() {
@@ -25,9 +25,7 @@ export default function HomePage() {
   const storedHomeContent = useStoredHomeContent();
   const { isWishlisted, toggleWishlist } = useWishlist();
   const [categorySlide, setCategorySlide] = useState(0);
-  const [showDeferredSections, setShowDeferredSections] = useState(false);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
-  const deferredSectionsRef = useRef<HTMLDivElement | null>(null);
   const reviews = storedHomeContent.reviews;
   const featuredVideos = storedHomeContent.videos;
   const homeProducts = products.slice(0, 8);
@@ -117,37 +115,6 @@ export default function HomePage() {
     node.scrollTo({ left: safeIndex * cardWidth, behavior });
     setCategorySlide(safeIndex);
   };
-
-  useEffect(() => {
-    const node = deferredSectionsRef.current;
-    if (!node || showDeferredSections || isStorefrontLoading) return;
-
-    let observer: IntersectionObserver | null = null;
-    const loadDeferredSections = () => {
-      setShowDeferredSections(true);
-      observer?.disconnect();
-    };
-
-    const idleTimerId = window.setTimeout(loadDeferredSections, 1200);
-    const scrollAbortController = new AbortController();
-    window.addEventListener("scroll", loadDeferredSections, { once: true, passive: true, signal: scrollAbortController.signal });
-
-    observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          loadDeferredSections();
-        }
-      },
-      { rootMargin: "300px 0px" },
-    );
-
-    observer.observe(node);
-    return () => {
-      window.clearTimeout(idleTimerId);
-      scrollAbortController.abort();
-      observer?.disconnect();
-    };
-  }, [isStorefrontLoading, showDeferredSections]);
 
   return (
     <div className="bg-[#f7f1e7]">
@@ -247,8 +214,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div ref={deferredSectionsRef} className="min-h-[1780px] md:min-h-[2350px] lg:min-h-[2460px]">
-        {!showDeferredSections ? (
+      <div>
+        {isStorefrontLoading && homeProducts.length < 0 ? (
           <>
             <section className="px-4 pb-8 md:px-6 md:pb-14">
               <div className="layout-shell">
