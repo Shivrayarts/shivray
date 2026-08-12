@@ -17,6 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, "..");
 const distDir = path.join(projectRoot, "dist");
+const publicDir = path.join(projectRoot, "public");
 
 const app = express();
 const hasBuiltClient = existsSync(path.join(distDir, "index.html"));
@@ -2575,6 +2576,13 @@ app.post("/api/payments/razorpay/verify", async (req, res) => {
 });
 
 if (hasBuiltClient) {
+  app.get("/llms.txt", (_req, res) => {
+    const builtLlmsPath = path.join(distDir, "llms.txt");
+    const sourceLlmsPath = path.join(publicDir, "llms.txt");
+    res.type("text/markdown");
+    res.sendFile(existsSync(builtLlmsPath) ? builtLlmsPath : sourceLlmsPath);
+  });
+
   app.use("/assets", (_req, res, next) => {
     res.setHeader("Cache-Control", "public, max-age=2592000, immutable");
     next();
