@@ -1,7 +1,7 @@
 import { Link, useLocation } from "@/lib/spa-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
-import { getCategoryLabel } from "@/data/products";
+import { getCategoryLabel } from "@/lib/product-model";
 import {
   Pagination,
   PaginationContent,

@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Heart } from "lucide-react";
 import { Link } from "@/lib/spa-router";
-import { getCategoryLabel, type Product } from "@/data/products";
+import { getCategoryLabel, type Product } from "@/lib/product-model";
 import { getCategoryDisplayLabel } from "@/lib/category-matching";
 import { useStoredCatalogueTypes } from "@/lib/content-store";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";

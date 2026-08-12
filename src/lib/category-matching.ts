@@ -1,4 +1,4 @@
-import type { Product } from "@/data/products";
+import type { Product } from "@/lib/product-model";
 import type { CatalogueType } from "@/lib/catalogue-types";
 import type { Locale } from "@/lib/language";
 

@@ -1,7 +1,7 @@
 import { Link } from "@/lib/spa-router";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ChevronRight, Heart, MessageCircle, ShoppingCart } from "lucide-react";
-import { getCategoryLabel, getProductPaymentMode, type Product } from "@/data/products";
+import { getCategoryLabel, getProductPaymentMode, type Product } from "@/lib/product-model";
 import { getCategoryDisplayLabel } from "@/lib/category-matching";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { useFullStorefrontData, useStoredCatalogueTypes, useStoredProducts } from "@/lib/content-store";

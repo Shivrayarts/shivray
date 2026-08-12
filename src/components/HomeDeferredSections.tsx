@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "@/lib/spa-router";
 import { Play, Star } from "lucide-react";
 import type { HomeReview, HomeVideo } from "@/lib/content-store";
-import type { Product } from "@/data/products";
+import type { Product } from "@/lib/product-model";
 import { resolveLocalizedText } from "@/lib/language";
 import ProductGalleryCard from "@/components/ProductGalleryCard";
 

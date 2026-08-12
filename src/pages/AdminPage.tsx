@@ -28,7 +28,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { homeContent as defaultHomeContent } from "@/data/home-content";
-import type { Product, ProductOption } from "@/data/products";
+import type { Product, ProductOption } from "@/lib/product-model";
 import type { CatalogueType } from "@/lib/catalogue-types";
 import { defaultCatalogueTypes } from "@/lib/catalogue-types";
 import { logoutAdmin } from "@/lib/admin-auth";

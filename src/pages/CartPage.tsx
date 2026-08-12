@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@/lib/spa-router";
 import { LockKeyhole, Minus, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { getCategoryLabel, getProductPaymentMode } from "@/data/products";
+import { getCategoryLabel, getProductPaymentMode } from "@/lib/product-model";
 import { useCart } from "@/hooks/use-cart";
 import { getCategoryDisplayLabel } from "@/lib/category-matching";
 import { useStoredCatalogueTypes, useStoredProducts } from "@/lib/content-store";

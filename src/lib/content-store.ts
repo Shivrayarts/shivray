@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Product } from "@/data/products";
+import type { Product } from "@/lib/product-model";
 import { defaultCatalogueTypes, type CatalogueType } from "@/lib/catalogue-types";
 import { homeContent as defaultHomeContent } from "@/data/home-content";
 import { apiRequest } from "@/lib/api";

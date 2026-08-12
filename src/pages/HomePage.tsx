@@ -122,18 +122,31 @@ export default function HomePage() {
     const node = deferredSectionsRef.current;
     if (!node || showDeferredSections || isStorefrontLoading) return;
 
-    const observer = new IntersectionObserver(
+    let observer: IntersectionObserver | null = null;
+    const loadDeferredSections = () => {
+      setShowDeferredSections(true);
+      observer?.disconnect();
+    };
+
+    const idleTimerId = window.setTimeout(loadDeferredSections, 6000);
+    const scrollAbortController = new AbortController();
+    window.addEventListener("scroll", loadDeferredSections, { once: true, passive: true, signal: scrollAbortController.signal });
+
+    observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
-          setShowDeferredSections(true);
-          observer.disconnect();
+          loadDeferredSections();
         }
       },
-      { rootMargin: "100px 0px" },
+      { rootMargin: "-15% 0px" },
     );
 
     observer.observe(node);
-    return () => observer.disconnect();
+    return () => {
+      window.clearTimeout(idleTimerId);
+      scrollAbortController.abort();
+      observer?.disconnect();
+    };
   }, [isStorefrontLoading, showDeferredSections]);
 
   return (

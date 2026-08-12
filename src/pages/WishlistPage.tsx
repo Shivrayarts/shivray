@@ -1,6 +1,6 @@
 import { Link } from "@/lib/spa-router";
 import { Heart, ShoppingCart, Trash2 } from "lucide-react";
-import { getCategoryLabel, getProductPaymentMode } from "@/data/products";
+import { getCategoryLabel, getProductPaymentMode } from "@/lib/product-model";
 import { getCategoryDisplayLabel } from "@/lib/category-matching";
 import { resolveLocalizedText, useLanguage } from "@/lib/language";
 import { useCart } from "@/hooks/use-cart";
