@@ -2524,6 +2524,10 @@ app.post("/api/payments/razorpay/verify", async (req, res) => {
 });
 
 if (hasBuiltClient) {
+  app.use("/assets", (_req, res, next) => {
+    res.setHeader("Cache-Control", "public, max-age=2592000, immutable");
+    next();
+  });
   app.use(
     express.static(distDir, {
       maxAge: "30d",
