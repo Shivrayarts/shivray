@@ -1,0 +1,24 @@
+# Shivray Art
+
+Shivray Art is a Pune-based Maratha heritage craft storefront for handcrafted statues, decorative weapons, shields, catalogues, and custom enquiries.
+
+## Website
+
+- Home: https://www.shivrayart.in/
+- Products: https://www.shivrayart.in/products
+- Catalogue request: https://www.shivrayart.in/required-catalogue
+- Contact: https://www.shivrayart.in/contact
+- About: https://www.shivrayart.in/about
+- Blog: https://www.shivrayart.in/blog
+- Sitemap: https://www.shivrayart.in/sitemap.xml
+- Robots: https://www.shivrayart.in/robots.txt
+
+## API
+
+- Public storefront data: https://www.shivrayart.in/api/storefront
+
+## Notes For AI Agents
+
+- Use the public storefront pages as the source of truth for customer-facing product and catalogue information.
+- Do not use admin routes or private endpoints for crawling.
+- Product availability, prices, and catalogue content can change through the Shivray Art admin panel.
