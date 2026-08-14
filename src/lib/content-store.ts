@@ -256,10 +256,24 @@ function isBrokenObjectPlaceholder(value: Translatable) {
   return typeof value === "string" && value.trim().toLowerCase() === "[object object]";
 }
 
-function asLocalizedText(value: Translatable, fallback?: Translatable): LocalizedText {
-  if (typeof value !== "string") {
+function isLocalizedText(value: unknown): value is LocalizedText {
+  return Boolean(value && typeof value === "object");
+}
+
+function asLocalizedText(value: Translatable | null | undefined, fallback?: Translatable | null): LocalizedText {
+  if (!isLocalizedText(value) && typeof value !== "string") {
+    if (typeof fallback === "string") {
+      return { en: fallback, mr: fallback };
+    }
+    if (isLocalizedText(fallback)) {
+      return { en: fallback.en || fallback.mr || "", mr: fallback.mr || fallback.en || "" };
+    }
+    return { en: "", mr: "" };
+  }
+
+  if (isLocalizedText(value)) {
     return {
-      en: value.en || (typeof fallback === "string" ? fallback : fallback?.en) || "",
+      en: value.en || (typeof fallback === "string" ? fallback : fallback?.en) || value.mr || "",
       mr: value.mr || (typeof fallback === "string" ? fallback : fallback?.mr) || value.en || "",
     };
   }
@@ -451,6 +465,10 @@ function normalizeStorefrontPayload(payload: Partial<StorefrontPayload>) {
     products: payload.products?.map((product) => normalizeProduct(product)),
     catalogueTypes: payload.catalogueTypes?.map((catalogue) => ({
       ...catalogue,
+      title: asLocalizedText(catalogue.title),
+      shortLabel: asLocalizedText(catalogue.shortLabel),
+      description: asLocalizedText(catalogue.description),
+      itemCountLabel: asLocalizedText(catalogue.itemCountLabel),
       image: normalizeAssetUrl(catalogue.image),
     })),
     homeContent: payload.homeContent
