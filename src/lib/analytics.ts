@@ -2,6 +2,7 @@ declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
+    __shivrayInlineGaPageView?: boolean;
     fbq?: ((...args: unknown[]) => void) & {
       callMethod?: (...args: unknown[]) => void;
       queue?: unknown[];
@@ -15,6 +16,7 @@ declare global {
 
 const DEFAULT_GOOGLE_TAG_ID = "G-DZM6VCZXB6";
 let activeGoogleTagId = "";
+let skippedInlineInitialPageView = false;
 
 function appendScript(src: string) {
   if (typeof document === "undefined") return;
@@ -72,6 +74,14 @@ export function initAnalytics() {
 export function trackPageView(path: string, title?: string) {
   if (typeof window === "undefined") return;
   if (!activeGoogleTagId || typeof window.gtag !== "function") return;
+  if (
+    window.__shivrayInlineGaPageView &&
+    !skippedInlineInitialPageView &&
+    path === window.location.pathname + window.location.search + window.location.hash
+  ) {
+    skippedInlineInitialPageView = true;
+    return;
+  }
 
   window.gtag("event", "page_view", {
     page_path: path,
