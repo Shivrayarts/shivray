@@ -2104,6 +2104,7 @@ export default function AdminPage() {
     };
     const next = [...storedHomeContent.videos];
     const existingIndex = next.findIndex((item) => item.id === nextVideo.id);
+    const isNewVideo = existingIndex < 0;
 
     if (existingIndex >= 0) next[existingIndex] = nextVideo;
     else next.push(nextVideo);
@@ -2113,8 +2114,8 @@ export default function AdminPage() {
       setMediaNotice("Unable to save video right now. Please try again.");
       return;
     }
-    setVideoDraft(nextVideo);
-    setMediaNotice("Video saved successfully.");
+    setVideoDraft(isNewVideo ? videoTemplate : nextVideo);
+    setMediaNotice(isNewVideo ? "Video saved successfully. Add the next reel now." : "Video updated successfully.");
   }
 
   async function saveReview() {
