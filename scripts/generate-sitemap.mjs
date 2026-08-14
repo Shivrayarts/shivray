@@ -46,6 +46,11 @@ const routes = [
   { path: "/our-team", changefreq: "monthly", priority: "0.6" },
   { path: "/wall-of-fame", changefreq: "monthly", priority: "0.7" },
   { path: "/contact", changefreq: "monthly", priority: "0.8" },
+  { path: "/shipping-delivery-policy", changefreq: "yearly", priority: "0.4" },
+  { path: "/cancellation-refund-policy", changefreq: "yearly", priority: "0.4" },
+  { path: "/privacy-policy", changefreq: "yearly", priority: "0.4" },
+  { path: "/terms-and-conditions", changefreq: "yearly", priority: "0.4" },
+  { path: "/faq", changefreq: "monthly", priority: "0.5" },
 ];
 
 async function fetchProductRoutes() {

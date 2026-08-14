@@ -22,6 +22,7 @@ const BlogPage = lazy(() => import("@/pages/BlogPage"));
 const BlogDetailPage = lazy(() => import("@/pages/BlogDetailPage"));
 const OurTeamPage = lazy(() => import("@/pages/OurTeamPage"));
 const WallOfFamePage = lazy(() => import("@/pages/WallOfFamePage"));
+const PolicyPage = lazy(() => import("@/pages/PolicyPage"));
 const AdminLoginPage = lazy(() => import("@/pages/AdminLoginPage"));
 const AdminPage = lazy(() => import("@/pages/AdminPage"));
 
@@ -142,6 +143,46 @@ function AppShell() {
         description: "See featured recognitions, customer appreciation, and memorable Shivray Art work.",
         canonicalPath: "/wall-of-fame",
         node: <WallOfFamePage />,
+      };
+    }
+    if (location.pathname === "/shipping-delivery-policy") {
+      return {
+        title: "Shipping and Delivery | Shivray Art",
+        description: "Review Shivray Art shipping, delivery timelines, and order handling information.",
+        canonicalPath: "/shipping-delivery-policy",
+        node: <PolicyPage type="shipping" />,
+      };
+    }
+    if (location.pathname === "/cancellation-refund-policy") {
+      return {
+        title: "Cancellation and Refund Policy | Shivray Art",
+        description: "Review Shivray Art cancellation, refund, and damaged product support policy.",
+        canonicalPath: "/cancellation-refund-policy",
+        node: <PolicyPage type="refund" />,
+      };
+    }
+    if (location.pathname === "/privacy-policy") {
+      return {
+        title: "Privacy Policy | Shivray Art",
+        description: "Learn how Shivray Art handles customer enquiry, account, and order information.",
+        canonicalPath: "/privacy-policy",
+        node: <PolicyPage type="privacy" />,
+      };
+    }
+    if (location.pathname === "/terms-and-conditions") {
+      return {
+        title: "Terms and Conditions | Shivray Art",
+        description: "Read Shivray Art website, product, order, payment, and intellectual property terms.",
+        canonicalPath: "/terms-and-conditions",
+        node: <PolicyPage type="terms" />,
+      };
+    }
+    if (location.pathname === "/faq") {
+      return {
+        title: "Help and FAQs | Shivray Art",
+        description: "Find answers about Shivray Art orders, custom product requests, catalogues, and support.",
+        canonicalPath: "/faq",
+        node: <PolicyPage type="faq" />,
       };
     }
     if (location.pathname === "/admin") {

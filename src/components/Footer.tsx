@@ -39,7 +39,8 @@ export default function Footer() {
     siteConfig.alternatePhoneHref !== siteConfig.phoneHref;
 
   const shoppingLinks = [
-    { to: "/products", label: resolvedLocale === "mr" ? "शिपिंग आणि डिलिव्हरी" : "Shipping and Delivery" },
+    { to: "/shipping-delivery-policy", label: resolvedLocale === "mr" ? "शिपिंग आणि डिलिव्हरी" : "Shipping and Delivery" },
+    { to: "/cancellation-refund-policy", label: resolvedLocale === "mr" ? "कॅन्सलेशन आणि रिफंड" : "Cancellation and Refund" },
     { to: "/required-catalogue", label: resolvedLocale === "mr" ? "कॅटलॉग विनंती" : "Catalogue Request" },
     { to: "/wishlist", label: resolvedLocale === "mr" ? "आवडीचे" : "Wishlist" },
     { to: "/cart", label: resolvedLocale === "mr" ? "कार्ट" : "Cart" },
@@ -49,6 +50,8 @@ export default function Footer() {
     { to: "/about", label: resolvedLocale === "mr" ? "आमच्याबद्दल" : "About Us" },
     { to: "/contact", label: resolvedLocale === "mr" ? "संपर्क" : "Contact" },
     { to: "/blog", label: resolvedLocale === "mr" ? "बातम्या आणि ब्लॉग" : "News & Blog" },
+    { to: "/privacy-policy", label: resolvedLocale === "mr" ? "प्रायव्हसी पॉलिसी" : "Privacy Policy" },
+    { to: "/terms-and-conditions", label: resolvedLocale === "mr" ? "टर्म्स आणि कंडिशन्स" : "Terms and Conditions" },
     { to: "/login", label: resolvedLocale === "mr" ? "माझे खाते" : "My Account" },
   ] as const;
 
@@ -304,7 +307,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-10 border-t border-white/10 pt-6 text-[#cfb097] lg:mt-14 lg:flex lg:items-center lg:justify-between">
-          <Link to="/contact" className="text-lg font-semibold text-[#f2dfcc] transition hover:text-[#ffd68d]">
+          <Link to="/faq" className="text-lg font-semibold text-[#f2dfcc] transition hover:text-[#ffd68d]">
             {resolvedLocale === "mr" ? "मदत आणि प्रश्नोत्तरे" : "Help & FAQs"}
           </Link>
           <p className="mt-4 text-sm leading-6 lg:mt-0">

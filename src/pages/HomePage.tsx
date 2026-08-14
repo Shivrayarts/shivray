@@ -1,5 +1,5 @@
 import { Link } from "@/lib/spa-router";
-import { Suspense, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   useStoredHomeContent,
   useStoredCatalogueTypes,
@@ -25,9 +25,13 @@ export default function HomePage() {
   const storedHomeContent = useStoredHomeContent();
   const { isWishlisted, toggleWishlist } = useWishlist();
   const [categorySlide, setCategorySlide] = useState(0);
+  const [heroVideoEnabled, setHeroVideoEnabled] = useState(false);
   const categoriesRef = useRef<HTMLDivElement | null>(null);
   const reviews = storedHomeContent.reviews;
   const featuredVideos = storedHomeContent.videos;
+  const heroBanner = storedHomeContent.banners.find((banner) => banner.mediaType === "video" && banner.videoUrl);
+  const heroPoster = heroBanner?.image || "";
+  const heroVideoUrl = heroBanner?.videoUrl || "";
   const homeProducts = products.slice(0, 8);
   const isStorefrontLoading = products.length === 0 && catalogueTypes.length === 0;
 
@@ -116,10 +120,47 @@ export default function HomePage() {
     setCategorySlide(safeIndex);
   };
 
+  useEffect(() => {
+    if (!heroVideoUrl) {
+      setHeroVideoEnabled(false);
+      return;
+    }
+
+    const timerId = window.setTimeout(() => setHeroVideoEnabled(true), 1200);
+    return () => window.clearTimeout(timerId);
+  }, [heroVideoUrl]);
+
   return (
     <div className="bg-[#f7f1e7]">
       <section className="relative isolate overflow-hidden bg-[#2b0b08] text-white">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#2b0b08_0%,#3b120d_45%,#1f0b07_100%)]" />
+        {heroVideoUrl ? (
+          <div className="absolute inset-0">
+            {heroPoster ? (
+              <img
+                src={heroPoster}
+                alt=""
+                className="h-full w-full object-cover opacity-35"
+                fetchPriority="high"
+                decoding="async"
+              />
+            ) : null}
+            {heroVideoEnabled ? (
+              <video
+                className="absolute inset-0 h-full w-full object-cover opacity-35"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                poster={heroPoster || undefined}
+                aria-hidden="true"
+              >
+                <source src={heroVideoUrl} type={heroVideoUrl.toLowerCase().endsWith(".webm") ? "video/webm" : "video/mp4"} />
+              </video>
+            ) : null}
+          </div>
+        ) : null}
+        <div className={`absolute inset-0 bg-[linear-gradient(180deg,#2b0b08_0%,#3b120d_45%,#1f0b07_100%)] ${heroVideoUrl ? "opacity-80" : ""}`} />
         <div className="relative mx-auto flex min-h-[280px] w-full max-w-[72rem] items-center justify-center px-6 py-14 text-center md:min-h-[360px] md:px-8 md:py-20">
           <div className="max-w-4xl">
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#e3a92b] md:text-sm">
