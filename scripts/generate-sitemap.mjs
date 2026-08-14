@@ -27,13 +27,14 @@ const localEnv = {
   ...readEnvFile(".env.production"),
 };
 
-const siteUrl = String(
+const configuredSiteUrl = String(
   process.env.VITE_SITE_URL ||
     process.env.SITE_URL ||
     localEnv.VITE_SITE_URL ||
     localEnv.SITE_URL ||
     "https://www.shivrayart.in",
 ).replace(/\/+$/, "");
+const siteUrl = configuredSiteUrl.replace("https://shivrayart.in", "https://www.shivrayart.in");
 const today = new Date().toISOString().slice(0, 10);
 
 const routes = [
@@ -47,10 +48,37 @@ const routes = [
   { path: "/contact", changefreq: "monthly", priority: "0.8" },
 ];
 
+async function fetchProductRoutes() {
+  try {
+    const response = await fetch(`${siteUrl}/api/storefront`);
+    if (!response.ok) return [];
+
+    const payload = await response.json();
+    if (!Array.isArray(payload?.products)) return [];
+
+    return payload.products
+      .map((product) => String(product?.id || "").trim())
+      .filter(Boolean)
+      .map((id) => ({
+        path: `/products/${encodeURIComponent(id)}`,
+        changefreq: "weekly",
+        priority: "0.7",
+      }));
+  } catch (error) {
+    console.warn(
+      "Unable to fetch product routes for sitemap. Continuing with static routes only.",
+      error instanceof Error ? error.message : error,
+    );
+    return [];
+  }
+}
+
+const allRoutes = [...routes, ...(await fetchProductRoutes())];
+
 const xml = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-  ...routes.map(
+  ...allRoutes.map(
     ({ path, changefreq, priority }) => `  <url>
     <loc>${siteUrl}${path}</loc>
     <lastmod>${today}</lastmod>
@@ -66,11 +94,11 @@ const sitemapPath = resolve("public", "sitemap.xml");
 const existingXml = existsSync(sitemapPath) ? readFileSync(sitemapPath, "utf8") : null;
 
 if (existingXml === xml) {
-  console.log(`sitemap.xml already up to date for ${routes.length} routes.`);
+  console.log(`sitemap.xml already up to date for ${allRoutes.length} routes.`);
 } else {
   try {
     writeFileSync(sitemapPath, xml, "utf8");
-    console.log(`Generated sitemap.xml for ${routes.length} routes.`);
+    console.log(`Generated sitemap.xml for ${allRoutes.length} routes.`);
   } catch (error) {
     if (error && typeof error === "object" && "code" in error && error.code === "EPERM") {
       console.warn("Unable to update sitemap.xml because the file is locked. Continuing with the existing sitemap.");
