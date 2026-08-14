@@ -43,6 +43,34 @@ function getYoutubeEmbedUrl(value: string) {
   }
 }
 
+function getYoutubeVideoId(value: string) {
+  if (!value.trim()) return "";
+
+  try {
+    const url = new URL(value);
+    const host = url.hostname.replace(/^www\./, "");
+
+    if (host === "youtu.be") {
+      return url.pathname.split("/").filter(Boolean)[0] ?? "";
+    }
+    if (host.endsWith("youtube.com")) {
+      if (url.pathname.startsWith("/embed/") || url.pathname.startsWith("/shorts/")) {
+        return url.pathname.split("/").filter(Boolean)[1] ?? "";
+      }
+      return url.searchParams.get("v") ?? "";
+    }
+  } catch {
+    return "";
+  }
+
+  return "";
+}
+
+function getYoutubeThumbnailUrl(value: string) {
+  const videoId = getYoutubeVideoId(value);
+  return videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : "";
+}
+
 function isYoutubeShortUrl(value: string) {
   if (!value.trim()) return false;
 
@@ -67,6 +95,7 @@ export default function HomeDeferredSections({
 }: HomeDeferredSectionsProps) {
   const [currentReview, setCurrentReview] = useState(0);
   const [videoSlide, setVideoSlide] = useState(0);
+  const [loadedVideoIds, setLoadedVideoIds] = useState<Set<string>>(() => new Set());
   const videosRef = useRef<HTMLDivElement | null>(null);
   const hasReviews = reviews.length > 0;
   const activeReview = hasReviews ? reviews[currentReview] : null;
@@ -209,6 +238,8 @@ export default function HomeDeferredSections({
                 const isYoutube = video.videoType === "youtube";
                 const isShort = isYoutube && isYoutubeShortUrl(video.videoUrl);
                 const embedUrl = isYoutube ? getYoutubeEmbedUrl(video.videoUrl) : "";
+                const thumbnailUrl = video.thumbnail || (isYoutube ? getYoutubeThumbnailUrl(video.videoUrl) : "");
+                const isLoaded = loadedVideoIds.has(video.id);
                 const hasPlayableMedia = Boolean(embedUrl || (!isYoutube && video.videoUrl));
 
                 return (
@@ -219,7 +250,7 @@ export default function HomeDeferredSections({
                     }`}
                   >
                     <div className={`relative bg-[#120907] ${isShort || !isYoutube ? "mx-auto aspect-[9/16] max-w-[22rem]" : "aspect-video"}`}>
-                      {embedUrl ? (
+                      {embedUrl && isLoaded ? (
                         <iframe
                           src={embedUrl}
                           title={resolveLocalizedText(video.title, resolvedLocale)}
@@ -229,10 +260,39 @@ export default function HomeDeferredSections({
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                           allowFullScreen
                         />
+                      ) : embedUrl ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLoadedVideoIds((current) => {
+                              const next = new Set(current);
+                              next.add(video.id);
+                              return next;
+                            });
+                          }}
+                          className="relative h-full w-full overflow-hidden bg-[#120907]"
+                          aria-label={`Play ${resolveLocalizedText(video.title, resolvedLocale) || `video ${index + 1}`}`}
+                        >
+                          {thumbnailUrl ? (
+                            <img
+                              src={thumbnailUrl}
+                              alt=""
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          ) : null}
+                          <span className="absolute inset-0 bg-[linear-gradient(180deg,rgba(12,5,4,0.1)_0%,rgba(12,5,4,0.58)_100%)]" />
+                          <span className="absolute inset-0 flex items-center justify-center">
+                            <span className="inline-flex h-16 w-16 items-center justify-center rounded-full border border-white/30 bg-white/15 text-[#f3bf56] backdrop-blur">
+                              <Play className="h-7 w-7 fill-current" />
+                            </span>
+                          </span>
+                        </button>
                       ) : !isYoutube && video.videoUrl ? (
                         <video
                           src={video.videoUrl}
-                          poster={video.thumbnail || undefined}
+                          poster={thumbnailUrl || undefined}
                           className="h-full w-full object-cover"
                           controls
                           preload="metadata"
