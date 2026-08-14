@@ -33,6 +33,7 @@ function ensureServerBootstrap() {
       await ensureHomepageSettingsValueColumnSupportsLargePayloads();
       await ensureCataloguesDownloadUrlColumn();
       await ensureCatalogueRequestsTable();
+      await ensureInquiriesTable();
       await ensureBlogSubmissionsTable();
       await ensureHomepageVideosSchema();
       await ensureProductsCategoryColumnSupportsCustomValues();
@@ -575,6 +576,32 @@ async function ensureCatalogueRequestsTable() {
   } catch (error) {
     console.warn(
       "Unable to verify catalogue requests table.",
+      error instanceof Error ? error.message : error,
+    );
+  }
+}
+
+async function ensureInquiriesTable() {
+  try {
+    await query(
+      `
+      CREATE TABLE IF NOT EXISTS inquiries (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(120) NOT NULL,
+        email VARCHAR(191) NOT NULL,
+        phone VARCHAR(30) DEFAULT NULL,
+        subject VARCHAR(191) DEFAULT NULL,
+        message TEXT NOT NULL,
+        status ENUM('new', 'in_progress', 'resolved') NOT NULL DEFAULT 'new',
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        KEY idx_inquiries_status (status)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `,
+    );
+  } catch (error) {
+    console.warn(
+      "Unable to verify inquiries table.",
       error instanceof Error ? error.message : error,
     );
   }
@@ -1338,7 +1365,7 @@ async function fetchCachedStorefrontSummaryPayload({ forceFresh = false } = {}) 
 }
 
 async function fetchCustomersPayload() {
-  const [customerRows, catalogueRequestRows] = await Promise.all([
+  const [customerRows, catalogueRequestRows, inquiryRows] = await Promise.all([
     query(
       `
       SELECT id, full_name, email, phone, address, created_at, last_login_at, updated_at
@@ -1351,6 +1378,13 @@ async function fetchCustomersPayload() {
       `
       SELECT id, full_name, phone, address, note, catalogue_slug, catalogue_title, created_at
       FROM catalogue_requests
+      ORDER BY created_at DESC, id DESC
+      `,
+    ).catch(() => []),
+    query(
+      `
+      SELECT id, name, email, phone, subject, message, created_at, updated_at
+      FROM inquiries
       ORDER BY created_at DESC, id DESC
       `,
     ).catch(() => []),
@@ -1381,7 +1415,21 @@ async function fetchCustomersPayload() {
     requestedCatalogueTitle: row.catalogue_title ?? "",
   }));
 
-  return [...catalogueLeads, ...customers];
+  const contactLeads = inquiryRows.map((row) => ({
+    id: `contact-inquiry-${row.id}`,
+    name: row.name,
+    email: row.email ?? "",
+    phone: row.phone ?? "",
+    address: "",
+    createdAt: new Date(row.created_at).toISOString(),
+    lastLoginAt: new Date(row.updated_at ?? row.created_at).toISOString(),
+    source: "catalogue-request",
+    note: [row.subject, row.message].filter(Boolean).join("\n\n"),
+    requestedCatalogueId: "contact-enquiry",
+    requestedCatalogueTitle: "Contact Enquiry",
+  }));
+
+  return [...contactLeads, ...catalogueLeads, ...customers];
 }
 
 function mapOrderStatusFromDb(status) {
@@ -2003,31 +2051,39 @@ app.post("/api/contact", async (req, res) => {
     return;
   }
 
-  const contactApiKey = String(env.CONTACT_FORM_API_KEY || "").trim();
-  if (!contactApiKey) {
-    res.status(500).json({ message: "Contact form API key is not configured on server." });
-    return;
-  }
+  const subject = "New contact enquiry from Shivray website";
+  const message = `Name: ${name}\nPhone: ${phone}\nCity: ${city}`;
 
   try {
-    const response = await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        access_key: contactApiKey,
-        subject: "New contact enquiry from Shivray website",
-        from_name: "Shivray Contact Form",
-        name,
-        phone,
-        city,
-      }),
-    });
+    await query(
+      `
+      INSERT INTO inquiries (name, email, phone, subject, message, status)
+      VALUES (?, ?, ?, ?, ?, 'new')
+      `,
+      [name, `contact-${phone}@shivray.local`, phone, subject, message],
+    );
 
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || data?.success === false) {
-      const message = String(data?.message || "Unable to submit contact form right now.");
-      res.status(502).json({ message });
-      return;
+    const contactApiKey = String(env.CONTACT_FORM_API_KEY || "").trim();
+    if (contactApiKey) {
+      void fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          access_key: contactApiKey,
+          subject,
+          from_name: "Shivray Contact Form",
+          name,
+          email: `contact-${phone}@shivray.local`,
+          phone,
+          city,
+          message,
+        }),
+      }).catch((error) => {
+        console.warn(
+          "Contact enquiry saved, but Web3Forms email relay failed.",
+          error instanceof Error ? error.message : error,
+        );
+      });
     }
 
     res.json({ ok: true, message: "Contact form submitted successfully." });
