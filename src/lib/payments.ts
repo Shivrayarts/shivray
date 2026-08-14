@@ -9,13 +9,12 @@ declare global {
   }
 }
 
-const DEFAULT_RAZORPAY_KEY_ID = "rzp_test_Sz5olofeeZ5C7u";
 const RAZORPAY_CHECKOUT_SCRIPT = "https://checkout.razorpay.com/v1/checkout.js";
 
 let razorpayScriptPromise: Promise<void> | null = null;
 
 export function getRazorpayKeyId() {
-  return String(import.meta.env.VITE_RAZORPAY_KEY_ID || DEFAULT_RAZORPAY_KEY_ID).trim();
+  return String(import.meta.env.VITE_RAZORPAY_KEY_ID || "").trim();
 }
 
 export function loadRazorpayCheckoutScript() {

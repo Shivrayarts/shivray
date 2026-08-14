@@ -2601,7 +2601,9 @@ app.post("/api/payments/razorpay/order", async (req, res) => {
     });
   } catch (error) {
     console.error("Unable to create Razorpay order.", error);
-    res.status(500).json({ message: "Unable to create Razorpay order right now." });
+    res.status(error?.statusCode || 500).json({
+      message: error instanceof Error ? error.message : "Unable to create Razorpay order right now.",
+    });
   }
 });
 
