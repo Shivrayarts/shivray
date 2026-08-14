@@ -251,14 +251,14 @@ export default function CartPage() {
   return (
     <div>
       <section className="border-b border-[#eadbc8] bg-[#f7f1e7] py-6 text-[#34180e] md:py-6">
-        <div className="layout-shell px-4"><h1 className="font-heading text-3xl font-bold md:text-4xl">Your Cart</h1>
+        <div className="layout-shell px-4"><h1 className="font-heading text-3xl font-bold md:text-4xl">{resolvedLocale === "mr" ? "तुमचे कार्ट" : "Your Cart"}</h1>
         {/* <p className="mt-2 text-sm opacity-90 md:text-base">Review your selected products before proceeding.</p> */}
         </div>
         </section>
       <section className="py-12 md:py-16">
         <div className="layout-shell px-4">
           {items.length === 0 ? (
-            <div className="rounded-lg border border-border bg-card p-8 text-center"><p className="text-muted-foreground">Your cart is currently empty.</p><Link to="/products" className="mt-4 inline-flex rounded-md bg-primary px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-primary-foreground">Browse Products</Link></div>
+            <div className="rounded-lg border border-border bg-card p-8 text-center"><p className="text-muted-foreground">{resolvedLocale === "mr" ? "तुमचे कार्ट सध्या रिकामे आहे." : "Your cart is currently empty."}</p><Link to="/products" className="mt-4 inline-flex rounded-md bg-primary px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-primary-foreground">{resolvedLocale === "mr" ? "उत्पादने पहा" : "Browse Products"}</Link></div>
           ) : (
             <div className="space-y-4">
               {items.map(({ product, quantity }) => {
