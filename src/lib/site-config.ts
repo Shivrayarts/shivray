@@ -1,5 +1,5 @@
 export const siteConfig = {
-  address: "Sainath Chowk, Dhankawadi, Pune, Maharashtra 411043",
+  address: "Sainath Chowk, Dhanakwadi, Pune, Maharashtra 411043",
   phoneDisplay: "75 58 58 58 58",
   phoneHref: "+917558585858",
   alternatePhoneDisplay: "75 58 58 58 58",
@@ -22,5 +22,5 @@ export const siteConfig = {
   },
   addressMapHref: "https://maps.app.goo.gl/Lswc5pBK7mA6m6tn6",
   googleBusinessHref: "https://share.google/aMyMp41RaTysLpzns",
-  googleDirectionsHref: "https://www.google.com/maps/dir/?api=1&destination=Sainath+Chowk%2C+Dhankawadi%2C+Pune%2C+Maharashtra+411043&travelmode=driving",
+  googleDirectionsHref: "https://www.google.com/maps/dir/?api=1&destination=Sainath+Chowk%2C+Dhanakwadi%2C+Pune%2C+Maharashtra+411043&travelmode=driving",
 } as const;

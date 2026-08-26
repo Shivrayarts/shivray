@@ -39,7 +39,7 @@ function AppShell() {
       return {
         title: "Shivray Art | Maratha Heritage Statues, Weapons, and Replicas",
         description:
-          "Explore Shivray Art's handcrafted Maratha heritage statues, weapons, shields, and historical replicas from Pune.",
+          "Shivray Art and Handcraft in Dhanakwadi, Pune 43. Book blunt decorative Maratha heritage weapons, Dhop Talwar, Bhavani Talwar, statues, shields, and historical replicas at 75 58 58 58 58.",
         canonicalPath: "/",
         node: <HomePage />,
       };
@@ -47,7 +47,7 @@ function AppShell() {
     if (location.pathname === "/products") {
       return {
         title: "Products | Shivray Art",
-        description: "Browse handcrafted statues, weapons, shields, and heritage pieces by Shivray Art.",
+        description: "Browse handcrafted statues, blunt decorative weapons, shields, and Maratha heritage pieces by Shivray Art.",
         canonicalPath: "/products",
         node: <ProductsPage />,
       };
@@ -72,7 +72,7 @@ function AppShell() {
     if (location.pathname === "/contact") {
       return {
         title: "Contact | Shivray Art",
-        description: "Contact Shivray Art in Pune for orders, custom requirements, and heritage craft enquiries.",
+        description: "Contact Shivray Art and Handcraft in Dhanakwadi, Pune 43 at 75 58 58 58 58 for bookings, custom requirements, blunt decorative weapons, and heritage craft enquiries.",
         canonicalPath: "/contact",
         node: <ContactPage />,
       };
